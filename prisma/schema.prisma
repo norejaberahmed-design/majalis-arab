@@ -1,0 +1,205 @@
+// Prisma schema — «مجالس عرب»
+// PHASE 1: Foundation — Entity Core + Users + Auth + Audit
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ────────────────────────────────────────
+// Enums
+// ────────────────────────────────────────
+
+enum UserRole {
+  USER
+  CONTRIBUTOR
+  RESEARCHER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum EntityType {
+  TRIBE
+  FAMILY
+  BRANCH
+  PERSON
+  REGION
+}
+
+enum EntityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RelationshipPredicate {
+  BRANCH_OF
+  BELONGS_TO
+  DESCENDANT_OF
+  RELATED_TO
+  LIVED_IN
+  MIGRATED_TO
+  ASSOCIATED_WITH
+}
+
+enum ChangeType {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+}
+
+// ────────────────────────────────────────
+// User
+// ────────────────────────────────────────
+
+model User {
+  id              String      @id @default(cuid())
+  email           String      @unique
+  passwordHash    String
+  displayName     String
+  bio             String?     @db.Text
+  avatarUrl       String?
+  role            UserRole    @default(USER)
+  status          UserStatus  @default(ACTIVE)
+  privacySettings Json        @default("{}")
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  entitiesCreated     Entity[]        @relation("EntityCreatedBy")
+  entitiesUpdated     Entity[]        @relation("EntityUpdatedBy")
+  relationshipsCreated Relationship[]  @relation("RelationshipCreatedBy")
+  entityVersions      EntityVersion[]
+  auditLogs           AuditLog[]      @relation("AuditActor")
+  sessions            Session[]
+
+  @@index([role])
+  @@index([status])
+}
+
+// ────────────────────────────────────────
+// Entity — الكيان الموحّد الأساسي
+// ────────────────────────────────────────
+
+model Entity {
+  id              String        @id @default(cuid())
+  entityType      EntityType
+  name            String
+  normalizedName  String
+  aliases         String[]      @default([])
+  description     String?       @db.Text
+  status          EntityStatus  @default(DRAFT)
+
+  createdBy       String
+  updatedBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  creator             User            @relation("EntityCreatedBy", fields: [createdBy], references: [id])
+  updater             User            @relation("EntityUpdatedBy", fields: [updatedBy], references: [id])
+  versions            EntityVersion[]
+  subjectRelationships Relationship[] @relation("RelationshipSubject")
+  objectRelationships  Relationship[] @relation("RelationshipObject")
+
+  @@unique([entityType, normalizedName])
+  @@index([entityType])
+  @@index([normalizedName])
+  @@index([status])
+}
+
+// ────────────────────────────────────────
+// Relationship — العلاقات بين الكيانات
+// ────────────────────────────────────────
+
+model Relationship {
+  id              String                @id @default(cuid())
+  subjectEntityId String
+  predicate       RelationshipPredicate
+  objectEntityId  String?
+  valueText       String?
+  claimId         String?               // رابط بـ Claim في PHASE 3
+  createdBy       String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  subjectEntity   Entity  @relation("RelationshipSubject", fields: [subjectEntityId], references: [id])
+  objectEntity    Entity? @relation("RelationshipObject",  fields: [objectEntityId],  references: [id])
+  creator         User    @relation("RelationshipCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([subjectEntityId])
+  @@index([objectEntityId])
+  @@index([predicate])
+}
+
+// ────────────────────────────────────────
+// EntityVersion — تاريخ التعديلات (لا يُحذف)
+// ────────────────────────────────────────
+
+model EntityVersion {
+  id            String      @id @default(cuid())
+  entityId      String
+  versionNumber Int
+  changeType    ChangeType
+  previousData  Json?
+  newData        Json?
+  reason        String?
+  createdBy     String
+  createdAt     DateTime    @default(now())
+
+  entity        Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  creator       User        @relation(fields: [createdBy], references: [id])
+
+  @@unique([entityId, versionNumber])
+  @@index([entityId])
+}
+
+// ────────────────────────────────────────
+// AuditLog — سجل التدقيق (append-only)
+// ────────────────────────────────────────
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  actorId       String
+  action        String
+  entityType    String
+  entityId      String?
+  previousValue Json?
+  newValue      Json?
+  reason        String?
+  ipAddress     String?
+  createdAt     DateTime @default(now())
+
+  actor         User     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+// ────────────────────────────────────────
+// Session — NextAuth sessions
+// ────────────────────────────────────────
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
