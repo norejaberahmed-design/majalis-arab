@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { EntityType } from "@prisma/client";
+import { EntityType, Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,17 @@ export default async function SearchPage({
   const pageSize = 20;
   const skip = (page - 1) * pageSize;
 
-  let results: Awaited<ReturnType<typeof prisma.entity.findMany>> = [];
+  type SearchResult = Prisma.EntityGetPayload<{
+    select: {
+      id: true;
+      entityType: true;
+      name: true;
+      description: true;
+      status: true;
+    };
+  }>;
+
+  let results: SearchResult[] = [];
   let total = 0;
 
   if (query || type) {
