@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserById, updatePrivacySettings } from "@/lib/services/users.service";
+import { privacySettingsSchema } from "@/lib/validations/auth.schema";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -18,10 +19,15 @@ export async function PUT(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
 
   const body = await req.json();
+  const parsed = privacySettingsSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.errors[0]?.message || "بيانات غير صالحة" }, { status: 400 });
+  }
+
   try {
-    const updated = await updatePrivacySettings(session.user.id, body);
+    const updated = await updatePrivacySettings(session.user.id, parsed.data);
     return NextResponse.json(updated);
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "خطأ" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "حدث خطأ أثناء التحديث" }, { status: 400 });
   }
 }

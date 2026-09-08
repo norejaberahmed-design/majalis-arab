@@ -61,6 +61,17 @@ docker compose -f docker-compose.base44.yml up -d --build
 - التطبيع العربي للبحث
 - TypeScript strict mode (no errors)
 - Next.js production build (نجح)
+- Zod validation على جميع API routes (بما فيها settings — تم إصلاح mass assignment)
+- Error boundary (`src/app/error.tsx`)
+- `.env.example` يوثّق جميع متغيرات البيئة المطلوبة
+
+## PHASE 5.5 — Production Boundary Verification
+تقرير كامل في `docs/PHASE_5_5_BOUNDARY_VERIFICATION.md`.
+تم إصلاح:
+- Mass assignment على `PUT /api/settings` (أضيف Zod validation)
+- تسريب أخطاء داخلية في API routes (تم تعقيم رسائل الخطأ)
+- عدم وجود error boundary (تم إضافة `src/app/error.tsx`)
+- عدم وجود `.env.example` (تم إنشاؤه)
 
 ## ما هو غير مكتمل (مراحل قادمة)
 - Knowledge Model: Claims, Evidence, Sources, Narratives, Conflicts

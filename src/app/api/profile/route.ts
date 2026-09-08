@@ -27,7 +27,7 @@ export async function PUT(req: Request) {
   try {
     const updated = await updateProfile(session.user.id, parsed.data);
     return NextResponse.json(updated);
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "خطأ" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "حدث خطأ أثناء التحديث" }, { status: 400 });
   }
 }

@@ -20,6 +20,7 @@ export async function POST(
     const updated = await changeUserStatus(session.user.id, session.user.role, userId, status, body.reason);
     return NextResponse.json(updated);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "خطأ" }, { status: 400 });
+    const msg = error instanceof Error ? error.message : "حدث خطأ";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 }
