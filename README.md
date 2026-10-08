@@ -65,3 +65,8 @@ No claim of being "unhackable" or production-ready is made. Remove the productio
 - Entity API responses are marked no-store, search input length is bounded, returned entity fields are minimized, and server errors do not expose exception details to clients.
 - External source links accept only HTTP(S) URLs and reject script schemes or embedded credentials.
 - Unit tests cover the release gate and these input-validation rules. These tests are authored but **have not yet been executed in a runtime**.
+
+
+## خطة الفريق ومعايير الإنجاز
+
+راجع [ميثاق فريق التنفيذ وبوابات التسليم](docs/DELIVERY_TEAM_AND_EXECUTION_CHARTER.md) لمعرفة مسؤوليات المسارات التخصصية، ومعايير توثيق الأدلة، ومراحل التحقق، وشروط فتح الإنتاج. وتتبع العمل الأمني في [Issue #5](https://github.com/norejaberahmed-design/majalis-arab/issues/5).
