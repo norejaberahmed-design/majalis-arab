@@ -28,3 +28,26 @@
 - مراجعة بشرية لأي ادعاء يراد نقله إلى حالة `SUPPORTED`.
 
 لا تعتبر هذه المرحلة جاهزة للإنتاج أو آمنة لبيانات متعددة المستخدمين؛ لا يوجد حتى الآن نظام مصادقة أو صلاحيات على مستوى المستخدم.
+
+
+## Security release gate (important)
+
+The application currently has no authentication, authorization, or per-user/workspace data isolation. Therefore, **it is not safe to deploy as a public production application**.
+
+A temporary production middleware gate now returns HTTP 503 for application routes until the missing security controls are implemented and reviewed. Local development remains available. Do not remove this gate just to make a deployment appear live.
+
+Security controls added in this branch:
+- Common HTTP security headers (content-type sniffing, framing, referrer policy, permissions policy, and cross-origin opener policy).
+- Production fail-closed gate while authentication and data isolation are absent.
+- Audit-log model and an audit record for entity creation only.
+
+Release blockers still open:
+- Authentication and secure session lifecycle.
+- Authorization checks on every page and API route.
+- Workspace/tenant ownership on every private record and database query.
+- CSRF/origin protections for state-changing requests once cookie sessions are added.
+- Durable rate limiting and abuse protection.
+- Backup/restore and encryption-at-rest strategy appropriate to the hosting platform.
+- Security test coverage, dependency audit, and external penetration test before launch.
+
+No claim of being "unhackable" or production-ready is made. Remove the production gate only after the blockers are addressed and tests pass.
