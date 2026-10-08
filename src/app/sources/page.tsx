@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
@@ -42,6 +43,7 @@ export default async function SourcesPage() {
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل المصادر</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
+      <WorkspaceActions />
       </header>
       <section className="page-intro"><p className="eyebrow">المراجع أولًا</p><h1>المصادر والأدلة</h1><p className="intro">نفصل بين وجود المرجع، وإمكانية الوصول إليه، واستخراج نصه، ومراجعته بشريًا.</p></section>
       <section className="panel list-panel">
