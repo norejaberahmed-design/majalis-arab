@@ -1,5 +1,9 @@
 name: Phase 1 checks
 
+concurrency:
+  group: phase-1-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
