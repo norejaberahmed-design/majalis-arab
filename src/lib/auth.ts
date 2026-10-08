@@ -3,13 +3,18 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 
 const secret = process.env.BETTER_AUTH_SECRET;
+const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_URL) {
+  throw new Error("BETTER_AUTH_URL must be set to the canonical HTTPS application origin in production.");
+}
 if (process.env.NODE_ENV === "production" && (!secret || secret.length < 32)) {
   throw new Error("BETTER_AUTH_SECRET must be set to a random value of at least 32 characters in production.");
 }
 
 export const auth = betterAuth({
   appName: "مجالس العرب",
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL,
+  trustedOrigins: [baseURL],
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
   emailAndPassword: {
