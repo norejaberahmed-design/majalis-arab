@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const secret = process.env.BETTER_AUTH_SECRET;
 const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_URL) {
+if (process.env.NODE_ENV === "production" && (!process.env.BETTER_AUTH_URL || !process.env.BETTER_AUTH_URL.startsWith("https://"))) {
   throw new Error("BETTER_AUTH_URL must be set to the canonical HTTPS application origin in production.");
 }
 if (process.env.NODE_ENV === "production" && (!secret || secret.length < 32)) {
