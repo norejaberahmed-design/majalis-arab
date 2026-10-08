@@ -18,8 +18,6 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - name: Audit dependency vulnerabilities
-        run: npm audit --audit-level=high
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
@@ -41,3 +39,5 @@ jobs:
           SMTP_USER: "ci-user"
           SMTP_PASS: "ci-password-not-used"
           MAIL_FROM: "Majalis CI <ci@example.invalid>"
+      - name: Audit dependency vulnerabilities
+        run: npm audit --audit-level=high
