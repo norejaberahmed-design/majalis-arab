@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { entityInputSchema, normalizeName } from "@/lib/validation";
 import { readJsonBody } from "@/lib/http";
+import { getWorkspaceContext, hasTrustedOrigin, roleAtLeast } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
 
 export async function GET(request: NextRequest) {
+  const context = await getWorkspaceContext(request.headers);
+  if (!context) return NextResponse.json({ error: "سجّل الدخول واختر مساحة عمل" }, { status: 401, headers: NO_STORE });
   const rawQuery = request.nextUrl.searchParams.get("q");
   const query = rawQuery?.trim();
   const kind = request.nextUrl.searchParams.get("kind");
@@ -50,6 +53,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "مصدر الطلب غير مسموح" }, { status: 403, headers: NO_STORE });
+  const context = await getWorkspaceContext(request.headers);
+  if (!context) return NextResponse.json({ error: "سجّل الدخول واختر مساحة عمل" }, { status: 401, headers: NO_STORE });
+  if (!roleAtLeast(context.role, "EDITOR")) return NextResponse.json({ error: "تحتاج إلى صلاحية محرر لإضافة كيان" }, { status: 403, headers: NO_STORE });
   const body = await readJsonBody(request);
   if (!body.ok) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
@@ -86,6 +93,9 @@ export async function POST(request: NextRequest) {
       });
       await tx.auditLog.create({
         data: {
+          workspaceId: context.workspaceId,
+          actorUserId: context.user.id,
+          actor: context.user.email,
           action: "ENTITY_CREATED",
           targetType: "TribalEntity",
           targetId: created.id,
