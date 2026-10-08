@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeName } from "@/lib/validation";
 import { getWorkspaceContext, hasTrustedOrigin, roleAtLeast } from "@/lib/workspace";
 
 export const runtime = "nodejs";
