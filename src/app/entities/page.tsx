@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/current-user";
+import { requireWorkspace } from "@/lib/current-user";
 import EntityForm from "./entity-form";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ const labels: Record<string, string> = {
 };
 
 export default async function EntitiesPage() {
-  await requireUser();
+  await requireWorkspace();
   const entities = await prisma.tribalEntity.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
