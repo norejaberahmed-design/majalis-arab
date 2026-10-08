@@ -10,24 +10,32 @@ import { shouldBlockProduction } from "@/lib/release-gate";
  *
  * Remove this gate only in a reviewed change after auth/RBAC/isolation tests pass.
  */
-export function middleware(_request: NextRequest) {
+export function middleware(request: NextRequest) {
   if (shouldBlockProduction(process.env.NODE_ENV)) {
-    return new NextResponse(
-      "مجالس العرب غير متاح للعامة بعد. لم يكتمل نظام تسجيل الدخول وعزل البيانات.",
-      {
-        status: 503,
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-store, max-age=0",
-          "Retry-After": "3600",
-          "X-Content-Type-Options": "nosniff",
-          "X-Frame-Options": "DENY",
-          "Referrer-Policy": "no-referrer"
+    const path = request.nextUrl.pathname;
+    const authSurface =
+      path === "/login" ||
+      path === "/setup" ||
+      path.startsWith("/api/auth/") ||
+      path === "/api/workspaces" ||
+      path === "/api/workspaces/active";
+    if (!authSurface) {
+      return new NextResponse(
+        "مجالس العرب غير متاح للإنتاج بعد. ما زالت مراجعة الحماية والاختبارات مطلوبة.",
+        {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-store, max-age=0",
+            "Retry-After": "3600",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "no-referrer"
+          }
         }
-      }
-    );
+      );
+    }
   }
-
   return NextResponse.next();
 }
 
