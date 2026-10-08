@@ -7,56 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum EntityKind {
-  TRIBE
-  CLAN
-  FAMILY
-  PERSON
-  PLACE
-  OTHER
-}
-
-enum ClaimStatus {
-  UNREVIEWED
-  UNDER_REVIEW
-  SUPPORTED
-  DISPUTED
-  REJECTED
-}
-
-enum SourceAccessStatus {
-  NOT_CHECKED
-  OPEN_ACCESS
-  RESTRICTED
-  UNAVAILABLE
-}
-
-enum PassageExtractionStatus {
-  NOT_ATTEMPTED
-  EXTRACTED
-  OCR_REQUIRED
-  FAILED
-}
-
-enum RequestStatus {
-  SUBMITTED
-  IN_REVIEW
-  ACCEPTED
-  DECLINED
-}
-
-enum DecisionType {
-  CLAIM_REVIEW
-  SOURCE_REVIEW
-  RELATIONSHIP_REVIEW
-  ADDITION_REQUEST
-}
-
 model TribalEntity {
   id          String         @id @default(cuid())
   name        String
   normalizedName String
-  kind        EntityKind     @default(OTHER)
+  kind        String         @default("OTHER")
   summary     String?
   notes       String?
   createdAt   DateTime       @default(now())
@@ -95,9 +50,9 @@ model Source {
   publicationYear    Int?
   url                String?
   bibliographicNote  String?
-  accessStatus       SourceAccessStatus @default(NOT_CHECKED)
+  accessStatus       String          @default("NOT_CHECKED")
   accessCheckedAt    DateTime?
-  extractionStatus   PassageExtractionStatus @default(NOT_ATTEMPTED)
+  extractionStatus   String          @default("NOT_ATTEMPTED")
   humanReviewed      Boolean         @default(false)
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
@@ -128,7 +83,7 @@ model EvidencePassage {
 model HistoricalClaim {
   id                 String           @id @default(cuid())
   statement          String
-  status             ClaimStatus      @default(UNREVIEWED)
+  status             String           @default("UNREVIEWED")
   confidenceNote     String?
   reviewerNote       String?
   reviewedByHuman    Boolean          @default(false)
@@ -164,7 +119,7 @@ model Place {
 
 model ResearchDecision {
   id            String       @id @default(cuid())
-  decisionType  DecisionType
+  decisionType  String
   targetId      String
   decision      String
   rationale     String
@@ -182,7 +137,7 @@ model AdditionRequest {
   explanation String
   sourceUrl   String?
   submitter   String?
-  status      RequestStatus @default(SUBMITTED)
+  status        String        @default("SUBMITTED")
   reviewerNote String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
