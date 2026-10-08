@@ -1,8 +1,24 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
+import nodemailer from "nodemailer";
 
 const secret = process.env.BETTER_AUTH_SECRET;
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT || 587);
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const mailFrom = process.env.MAIL_FROM;
+const smtpConfigured = Boolean(smtpHost && smtpUser && smtpPass && mailFrom && Number.isFinite(smtpPort));
+if (process.env.NODE_ENV === "production" && !smtpConfigured) {
+  throw new Error("SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM are required in production for account verification.");
+}
+const mailer = smtpConfigured ? nodemailer.createTransport({
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpPort === 465,
+  auth: { user: smtpUser, pass: smtpPass }
+}) : null;
 const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
 let productionBaseURLIsValid = false;
 try { productionBaseURLIsValid = new URL(baseURL).protocol === "https:"; } catch { productionBaseURLIsValid = false; }
@@ -23,7 +39,28 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 12,
     maxPasswordLength: 128,
-    autoSignIn: true
+    autoSignIn: true,
+    requireEmailVerification: true
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60,
+    sendVerificationEmail: async ({ user, url }) => {
+      if (!mailer || !mailFrom) {
+        if (process.env.NODE_ENV === "development") {
+          console.info("[DEV ONLY] Verification link for " + user.email + ": " + url);
+          return;
+        }
+        throw new Error("Email verification delivery is not configured.");
+      }
+      await mailer.sendMail({
+        from: mailFrom,
+        to: user.email,
+        subject: "تحقق من بريدك الإلكتروني — مجالس العرب",
+        text: "مرحبًا " + user.name + ",\n\nافتح الرابط التالي لتأكيد بريدك الإلكتروني: " + url + "\n\nينتهي الرابط خلال ساعة. إذا لم تطلب إنشاء الحساب فتجاهل الرسالة."
+      });
+    }
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
