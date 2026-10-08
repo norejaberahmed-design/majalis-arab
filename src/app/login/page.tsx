@@ -26,7 +26,13 @@ export default function LoginPage() {
         setMessage(result.error.message || "تعذر إكمال العملية. تحقق من البيانات وحاول مجددًا.");
         return;
       }
-      router.replace(mode === "signup" ? "/setup" : "/");
+      if (mode === "signup") {
+        setMessage("تم إنشاء الحساب. افتح رسالة التحقق في بريدك الإلكتروني ثم سجّل الدخول.");
+        setMode("signin");
+        setPassword("");
+        return;
+      }
+      router.replace("/setup");
       router.refresh();
     } catch {
       setMessage("تعذر الاتصال بالخدمة. حاول مجددًا.");
