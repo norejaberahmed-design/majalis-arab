@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { roleAtLeast, hasTrustedOrigin } from "@/lib/access-control";
 export { roleAtLeast, hasTrustedOrigin } from "@/lib/access-control";
 
 export const ACTIVE_WORKSPACE_COOKIE = "majalis_workspace";
