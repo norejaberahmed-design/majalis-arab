@@ -34,3 +34,5 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: "file:./dev.db"
+          BETTER_AUTH_SECRET: "ci-only-secret-with-at-least-32-characters"
+          BETTER_AUTH_URL: "https://majalis-ci.example.invalid"
