@@ -52,6 +52,7 @@ export default function LoginPage() {
           {mode === "signup" && <label>الاسم<input autoComplete="name" value={name} onChange={e => setName(e.target.value)} minLength={2} maxLength={80} required /></label>}
           <label>البريد الإلكتروني<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} maxLength={254} required /></label>
           <label>كلمة المرور<input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={e => setPassword(e.target.value)} minLength={12} maxLength={128} required /></label>
+          {mode === "signin" && <p className="auth-hint"><Link href="/forgot-password">نسيت كلمة المرور؟</Link></p>}
           {mode === "signup" && <p className="auth-hint">استخدم 12 حرفًا على الأقل. لا تستخدم كلمة مرور تستعملها في خدمة أخرى.</p>}
           {message && <p role="alert" className="auth-error">{message}</p>}
           <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "جارٍ التنفيذ…" : mode === "signin" ? "تسجيل الدخول" : "إنشاء الحساب"}</button>
