@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum EntityKind {
+  TRIBE
+  CLAN
+  FAMILY
+  PERSON
+  PLACE
+  OTHER
+}
+
+enum ClaimStatus {
+  UNREVIEWED
+  UNDER_REVIEW
+  SUPPORTED
+  DISPUTED
+  REJECTED
+}
+
+enum SourceAccessStatus {
+  NOT_CHECKED
+  OPEN_ACCESS
+  RESTRICTED
+  UNAVAILABLE
+}
+
+enum PassageExtractionStatus {
+  NOT_ATTEMPTED
+  EXTRACTED
+  OCR_REQUIRED
+  FAILED
+}
+
+enum RequestStatus {
+  SUBMITTED
+  IN_REVIEW
+  ACCEPTED
+  DECLINED
+}
+
+enum DecisionType {
+  CLAIM_REVIEW
+  SOURCE_REVIEW
+  RELATIONSHIP_REVIEW
+  ADDITION_REQUEST
+}
+
+model TribalEntity {
+  id          String         @id @default(cuid())
+  name        String
+  normalizedName String
+  kind        EntityKind     @default(OTHER)
+  summary     String?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  outgoing    Relationship[] @relation("RelationshipFrom")
+  incoming    Relationship[] @relation("RelationshipTo")
+  claims      HistoricalClaim[]
+  passages    EvidencePassage[]
+  requests    AdditionRequest[]
+
+  @@index([normalizedName])
+  @@index([kind])
+}
+
+model Relationship {
+  id             String       @id @default(cuid())
+  fromEntityId   String
+  toEntityId     String
+  relationshipType String
+  description    String?
+  claimId        String?
+  createdAt      DateTime     @default(now())
+  fromEntity     TribalEntity @relation("RelationshipFrom", fields: [fromEntityId], references: [id], onDelete: Cascade)
+  toEntity       TribalEntity @relation("RelationshipTo", fields: [toEntityId], references: [id], onDelete: Cascade)
+  claim          HistoricalClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([fromEntityId, relationshipType])
+  @@index([toEntityId, relationshipType])
+}
+
+model Source {
+  id                 String          @id @default(cuid())
+  title              String
+  author             String?
+  publisher          String?
+  publicationYear    Int?
+  url                String?
+  bibliographicNote  String?
+  accessStatus       SourceAccessStatus @default(NOT_CHECKED)
+  accessCheckedAt    DateTime?
+  extractionStatus   PassageExtractionStatus @default(NOT_ATTEMPTED)
+  humanReviewed      Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  passages           EvidencePassage[]
+  claims             HistoricalClaim[]
+}
+
+model EvidencePassage {
+  id              String       @id @default(cuid())
+  sourceId        String
+  entityId        String?
+  pageLabel       String?
+  passageText     String
+  locator         String?
+  extractedAt     DateTime?
+  reviewedByHuman Boolean      @default(false)
+  reviewNote      String?
+  createdAt       DateTime     @default(now())
+  source          Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  entity          TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  claims          HistoricalClaim[] @relation("ClaimSupportingPassages")
+  contradicts     HistoricalClaim[] @relation("ClaimContradictingPassages")
+
+  @@index([sourceId, pageLabel])
+  @@index([entityId])
+}
+
+model HistoricalClaim {
+  id                 String           @id @default(cuid())
+  statement          String
+  status             ClaimStatus      @default(UNREVIEWED)
+  confidenceNote     String?
+  reviewerNote       String?
+  reviewedByHuman    Boolean          @default(false)
+  reviewedAt         DateTime?
+  sourceId           String?
+  entityId           String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  source             Source?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  entity             TribalEntity?    @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  supportingPassages EvidencePassage[] @relation("ClaimSupportingPassages")
+  contradictingPassages EvidencePassage[] @relation("ClaimContradictingPassages")
+  relationships      Relationship[]
+
+  @@index([status, updatedAt])
+  @@index([entityId])
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  country     String?
+  region      String?
+  description String?
+  latitude    Float?
+  longitude   Float?
+  sourceNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+model ResearchDecision {
+  id            String       @id @default(cuid())
+  decisionType  DecisionType
+  targetId      String
+  decision      String
+  rationale     String
+  reviewer      String?
+  createdAt     DateTime     @default(now())
+
+  @@index([decisionType, targetId])
+}
+
+model AdditionRequest {
+  id          String        @id @default(cuid())
+  entityId    String?
+  proposedName String
+  proposedKind EntityKind   @default(OTHER)
+  explanation String
+  sourceUrl   String?
+  submitter   String?
+  status      RequestStatus @default(SUBMITTED)
+  reviewerNote String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entity      TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
