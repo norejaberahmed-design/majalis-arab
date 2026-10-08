@@ -22,7 +22,7 @@ model TribalEntity {
   passages    EvidencePassage[]
   requests    AdditionRequest[]
 
-  @@index([normalizedName])
+  @@unique([normalizedName])
   @@index([kind])
 }
 
@@ -133,7 +133,7 @@ model AdditionRequest {
   id          String        @id @default(cuid())
   entityId    String?
   proposedName String
-  proposedKind EntityKind   @default(OTHER)
+  proposedKind String        @default("OTHER")
   explanation String
   sourceUrl   String?
   submitter   String?
@@ -144,4 +144,17 @@ model AdditionRequest {
   entity      TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String?
+  action     String
+  targetType String
+  targetId   String
+  details    String?
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId, createdAt])
+  @@index([createdAt])
 }
