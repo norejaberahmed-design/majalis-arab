@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
           normalizedName,
           kind: parsed.data.kind,
           summary: parsed.data.summary || null,
-          notes: parsed.data.notes || null
+          notes: null
         },
         select: {
           id: true,
@@ -91,6 +91,16 @@ export async function POST(request: NextRequest) {
           createdAt: true
         }
       });
+      if (parsed.data.notes?.trim()) {
+        await tx.workspaceEntityNote.create({
+          data: {
+            workspaceId: context.workspaceId,
+            entityId: created.id,
+            userId: context.user.id,
+            note: parsed.data.notes.trim()
+          }
+        });
+      }
       await tx.auditLog.create({
         data: {
           workspaceId: context.workspaceId,
