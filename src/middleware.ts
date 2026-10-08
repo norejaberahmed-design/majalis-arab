@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { shouldBlockProduction } from "@/lib/release-gate";
 
 /**
  * Temporary release safety gate.
@@ -10,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
  * Remove this gate only in a reviewed change after auth/RBAC/isolation tests pass.
  */
 export function middleware(_request: NextRequest) {
-  if (process.env.NODE_ENV === "production") {
+  if (shouldBlockProduction(process.env.NODE_ENV)) {
     return new NextResponse(
       "مجالس العرب غير متاح للعامة بعد. لم يكتمل نظام تسجيل الدخول وعزل البيانات.",
       {
