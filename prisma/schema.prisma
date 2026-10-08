@@ -21,6 +21,7 @@ model TribalEntity {
   claims      HistoricalClaim[]
   passages    EvidencePassage[]
   requests    AdditionRequest[]
+  workspaceNotes WorkspaceEntityNote[]
 
   @@unique([normalizedName])
   @@index([kind])
@@ -188,6 +189,7 @@ model User {
   memberships   WorkspaceMember[]
   additionRequests AdditionRequest[]
   auditEvents   AuditLog[]
+  entityNotes   WorkspaceEntityNote[]
 
   @@map("user")
 }
@@ -249,6 +251,7 @@ model Workspace {
   requests    AdditionRequest[]
   decisions   ResearchDecision[]
   auditLogs   AuditLog[]
+  entityNotes WorkspaceEntityNote[]
 }
 
 model WorkspaceMember {
@@ -263,4 +266,23 @@ model WorkspaceMember {
   @@unique([workspaceId, userId])
   @@index([userId, role])
   @@map("workspace_member")
+}
+
+
+model WorkspaceEntityNote {
+  id          String       @id @default(cuid())
+  workspaceId String
+  entityId    String
+  userId      String
+  note        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entity      TribalEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, entityId])
+  @@index([workspaceId, updatedAt])
+  @@index([userId, createdAt])
+  @@map("workspace_entity_note")
 }
