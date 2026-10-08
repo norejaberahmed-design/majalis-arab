@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
 
@@ -20,7 +21,7 @@ export default async function HomePage() {
           <span className="brand-mark">م</span>
           <span><strong>مجالس العرب</strong><small>البحث الموثق</small></span>
         </Link>
-        <span className="phase-label">المرحلة الأولى · أساس الأدلة</span>
+        <WorkspaceActions />
       </header>
 
       <section className="hero">
