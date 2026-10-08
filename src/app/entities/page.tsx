@@ -13,7 +13,14 @@ export default async function EntitiesPage() {
   const entities = await prisma.tribalEntity.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
-    include: { claims: { select: { id: true, status: true } } }
+    select: {
+      id: true,
+      name: true,
+      kind: true,
+      summary: true,
+      updatedAt: true,
+      claims: { select: { id: true, status: true } }
+    }
   });
 
   return (
