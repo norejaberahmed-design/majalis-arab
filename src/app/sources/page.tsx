@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/current-user";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ const extractionLabels: Record<string, string> = {
 };
 
 export default async function SourcesPage() {
+  await requireUser();
   const sources = await prisma.source.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
