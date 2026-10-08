@@ -6,12 +6,12 @@ import { requireWorkspace } from "@/lib/current-user";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await requireWorkspace();
+  const workspace = await requireWorkspace();
   const [entities, sources, claims, pendingRequests] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
     prisma.historicalClaim.count(),
-    prisma.additionRequest.count({ where: { status: "SUBMITTED" } })
+    prisma.additionRequest.count({ where: { workspaceId: workspace.workspaceId, status: "SUBMITTED" } })
   ]);
 
   return (
