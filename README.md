@@ -16,18 +16,20 @@
 1. ثبّت Node.js 20 أو أحدث.
 2. انسخ `.env.example` إلى `.env`.
 3. ثبّت الاعتماديات: `npm install`.
-4. أنشئ قاعدة البيانات ومخططها: `npx prisma migrate dev --name init`.
-5. شغّل التطبيق: `npm run dev`.
+4. طبّق مخطط قاعدة البيانات: `npm run db:deploy`.
+5. ولّد Prisma Client: `npm run db:generate`.
+6. أنشئ `BETTER_AUTH_SECRET` عشوائيًا بطول 32 حرفًا على الأقل، واضبط `BETTER_AUTH_URL`.
+7. شغّل التطبيق: `npm run dev`.
 
 ## نقاط لم تُنجز بعد
 
 - صفحات إدارة CRUD كاملة للمصادر والمقاطع والادعاءات والأماكن وطلبات الإضافة.
-- تسجيل الدخول والأدوار. يوجد نموذج سجل تدقيق وتُسجل فيه عملية إنشاء الكيان، لكن يلزم توسيع التغطية لبقية العمليات.
+- المصادقة بالبريد وكلمة المرور والتحقق من البريد، وإنشاء مساحة عمل وصلاحية مالك أولية. إدارة الدعوات وتغيير الأدوار وإجراءات المراجعة ما زالت بحاجة إلى تنفيذ.
 - اختبارات وحدة أولية للتحقق من المدخلات وتطبيع الأسماء؛ اختبارات تكامل فعلية للقاعدة وواجهات API لم تُشغّل بعد.
 - تدقيق قانونية الوصول للمصادر وحقوق النصوص قبل استيرادها.
 - مراجعة بشرية لأي ادعاء يراد نقله إلى حالة `SUPPORTED`.
 
-لا تعتبر هذه المرحلة جاهزة للإنتاج أو آمنة لبيانات متعددة المستخدمين؛ لا يوجد حتى الآن نظام مصادقة أو صلاحيات على مستوى المستخدم.
+لا تعتبر هذه المرحلة جاهزة للإنتاج. توجد بنية أولية للمصادقة ومساحات العمل، لكن لم يكتمل بعد اختبار عزل جميع المسارات أو إدارة العضويات، وبوابة الإنتاج ما زالت تمنع الوصول إلى بيانات التطبيق.
 
 
 ## Authentication and workspace-isolation plan
@@ -36,7 +38,7 @@ The implementation requirements and release criteria are documented in [`docs/AU
 
 ## Security release gate (important)
 
-The application currently has no authentication, authorization, or per-user/workspace data isolation. Therefore, **it is not safe to deploy as a public production application**.
+The application now has an initial authentication and workspace-membership implementation, but full authorization coverage, member administration, and end-to-end isolation tests are still incomplete. Therefore, **it is not safe to deploy as a public production application**.
 
 A temporary production middleware gate now returns HTTP 503 for application routes until the missing security controls are implemented and reviewed. Local development remains available. Do not remove this gate just to make a deployment appear live.
 
@@ -46,7 +48,7 @@ Security controls added in this branch:
 - Audit-log model and an audit record for entity creation only.
 
 Release blockers still open:
-- Authentication and secure session lifecycle.
+- Full authentication lifecycle including password recovery and verified-email delivery configuration.
 - Authorization checks on every page and API route.
 - Workspace/tenant ownership on every private record and database query.
 - CSRF/origin protections for state-changing requests once cookie sessions are added.
