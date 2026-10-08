@@ -9,12 +9,16 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
       - run: npm install
+      - name: Audit dependency vulnerabilities
+        run: npm audit --audit-level=high
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
