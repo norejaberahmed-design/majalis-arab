@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/current-user";
+import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ const labels: Record<string, string> = {
 };
 
 export default async function ClaimsPage() {
-  await requireUser();
+  await requireWorkspace();
   const claims = await prisma.historicalClaim.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
