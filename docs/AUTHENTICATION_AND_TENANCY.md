@@ -9,6 +9,10 @@ Status: design gate for Phase 1. This document is not evidence that authenticati
 - User submissions, reviewer decisions/notes, and audit events must not become globally readable by default.
 - Never treat a hidden UI control, client-provided user/workspace ID, or a URL identifier as authorization.
 
+## Current enforced interim rule
+
+Until catalogue visibility and curator permissions are formally implemented, the global entity-creation API fails closed with HTTP 503 for every workspace role. This prevents a workspace editor from silently writing a record into a catalogue that is currently read globally by every workspace. Existing catalogue reads are still shared and must contain no private workspace content. This temporary guard is not a substitute for the final authorization model or cross-workspace tests.
+
 ## Intended identity and tenancy model
 
 1. Use a maintained authentication library with Prisma support and secure server-managed sessions. Do not implement password hashing or session tokens from scratch.
