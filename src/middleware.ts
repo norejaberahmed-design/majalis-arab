@@ -4,11 +4,12 @@ import { shouldBlockProduction } from "@/lib/release-gate";
 /**
  * Temporary release safety gate.
  *
- * The current application has no authentication, authorization, or tenant
- * isolation. Do not expose research records publicly until those controls are
- * implemented and tested. Development remains available for local work.
+ * Authentication and workspace membership foundations exist, but complete
+ * record-level authorization, shared-catalogue governance, and cross-workspace
+ * isolation have not yet been verified. Keep production closed until those
+ * controls and the full release checks pass. Development remains available.
  *
- * Remove this gate only in a reviewed change after auth/RBAC/isolation tests pass.
+ * Remove this gate only in a reviewed release change after the security tests pass.
  */
 export function middleware(request: NextRequest) {
   if (shouldBlockProduction(process.env.NODE_ENV)) {
