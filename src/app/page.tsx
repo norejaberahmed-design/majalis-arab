@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/current-user";
+import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await requireUser();
+  await requireWorkspace();
   const [entities, sources, claims, pendingRequests] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
