@@ -21,7 +21,19 @@ export default async function SourcesPage() {
   const sources = await prisma.source.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
-    include: { _count: { select: { passages: true, claims: true } } }
+    select: {
+      id: true,
+      title: true,
+      author: true,
+      publisher: true,
+      publicationYear: true,
+      url: true,
+      accessStatus: true,
+      extractionStatus: true,
+      humanReviewed: true,
+      updatedAt: true,
+      _count: { select: { passages: true, claims: true } }
+    }
   });
   return (
     <main className="shell">
