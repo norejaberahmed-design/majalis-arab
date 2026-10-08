@@ -30,6 +30,10 @@
 لا تعتبر هذه المرحلة جاهزة للإنتاج أو آمنة لبيانات متعددة المستخدمين؛ لا يوجد حتى الآن نظام مصادقة أو صلاحيات على مستوى المستخدم.
 
 
+## Authentication and workspace-isolation plan
+
+The implementation requirements and release criteria are documented in [`docs/AUTHENTICATION_AND_TENANCY.md`](docs/AUTHENTICATION_AND_TENANCY.md). This is a plan only: authentication, workspace ownership, and isolation are still not implemented. The production release gate must remain enabled.
+
 ## Security release gate (important)
 
 The application currently has no authentication, authorization, or per-user/workspace data isolation. Therefore, **it is not safe to deploy as a public production application**.
