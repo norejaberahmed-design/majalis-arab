@@ -1,0 +1,32 @@
+name: Phase 1 checks
+
+on:
+  push:
+    branches: ["phase-1/evidence-foundation"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - name: Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - run: npm test
+      - run: npm run lint
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: "file:./dev.db"
