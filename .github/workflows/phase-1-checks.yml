@@ -45,4 +45,5 @@ jobs:
           SMTP_PASS: "ci-password-not-used"
           MAIL_FROM: "Majalis CI <ci@example.invalid>"
       - name: Audit dependency vulnerabilities
+        if: always()
         run: npm audit --audit-level=high
