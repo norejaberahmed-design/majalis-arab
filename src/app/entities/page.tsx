@@ -1,0 +1,51 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import EntityForm from "./entity-form";
+
+export const dynamic = "force-dynamic";
+
+const labels: Record<string, string> = {
+  TRIBE: "قبيلة", CLAN: "فرع", FAMILY: "أسرة",
+  PERSON: "شخص", PLACE: "مكان", OTHER: "نوع آخر"
+};
+
+export default async function EntitiesPage() {
+  const entities = await prisma.tribalEntity.findMany({
+    orderBy: { updatedAt: "desc" },
+    take: 100,
+    include: { claims: { select: { id: true, status: true } } }
+  });
+
+  return (
+    <main className="shell">
+      <header className="topbar">
+        <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الكيانات</small></span></Link>
+        <Link href="/" className="secondary-button">الرئيسية</Link>
+      </header>
+      <section className="page-intro">
+        <p className="eyebrow">السجل البحثي</p>
+        <h1>الكيانات</h1>
+        <p className="intro">الأسماء المسجلة في قاعدة البيانات. وجود كيان في السجل لا يعني توثيق نسب أو رواية عنه.</p>
+      </section>
+      <div className="entity-layout">
+        <section className="panel list-panel">
+          <div className="list-heading"><h2>السجلات الحالية</h2><span className="count-pill">{entities.length}</span></div>
+          {entities.length === 0 ? (
+            <div className="empty-state"><strong>لا توجد سجلات بعد</strong><p>ابدأ بإضافة كيان، ثم اربطه بمصادر وأدلة قابلة للمراجعة.</p></div>
+          ) : (
+            <div className="entity-list">
+              {entities.map(entity => (
+                <article className="entity-row" key={entity.id}>
+                  <div><h3>{entity.name}</h3><p>{entity.summary || "لا يوجد ملخص موثق بعد."}</p><small>{labels[entity.kind] ?? "نوع غير محدد"} · {entity.claims.length} ادعاء مرتبط</small></div>
+                  <span className="status-label">سجل أولي</span>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+        <EntityForm />
+      </div>
+      <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>لا تُعرض هنا شجرة أنساب أو علاقات مستنتجة تلقائيًا. يلزم تسجيل المصدر والأدلة ومراجعتها قبل تقييم أي ادعاء.</p></section>
+    </main>
+  );
+}
