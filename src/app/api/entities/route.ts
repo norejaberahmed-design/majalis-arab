@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
   const context = await getWorkspaceContext(request.headers);
   if (!context) return NextResponse.json({ error: "سجّل الدخول واختر مساحة عمل" }, { status: 401, headers: NO_STORE });
   if (!roleAtLeast(context.role, "EDITOR")) return NextResponse.json({ error: "تحتاج إلى صلاحية محرر لإضافة كيان" }, { status: 403, headers: NO_STORE });
+  return NextResponse.json({ error: "إضافة السجلات متوقفة مؤقتًا حتى يكتمل اعتماد سياسة الكتالوج المشترك وصلاحيات المراجعة." }, { status: 503, headers: { ...NO_STORE, "Retry-After": "86400" } });
   const body = await readJsonBody(request);
   if (!body.ok) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
