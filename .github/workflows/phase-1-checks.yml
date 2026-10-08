@@ -1,6 +1,7 @@
 name: Phase 1 checks
 
 on:
+  workflow_dispatch:
   push:
     branches: ["phase-1/evidence-foundation"]
   pull_request:
