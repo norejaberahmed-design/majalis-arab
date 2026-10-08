@@ -51,3 +51,11 @@ Release blockers still open:
 - Security test coverage, dependency audit, and external penetration test before launch.
 
 No claim of being "unhackable" or production-ready is made. Remove the production gate only after the blockers are addressed and tests pass.
+
+
+## Security tests added
+
+- Bounded JSON parsing rejects non-JSON content types, malformed JSON, and bodies exceeding the configured byte limit.
+- Entity API responses are marked no-store, search input length is bounded, returned entity fields are minimized, and server errors do not expose exception details to clients.
+- External source links accept only HTTP(S) URLs and reject script schemes or embedded credentials.
+- Unit tests cover the release gate and these input-validation rules. These tests are authored but **have not yet been executed in a runtime**.
