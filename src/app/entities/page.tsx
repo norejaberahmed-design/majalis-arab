@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
 import EntityForm from "./entity-form";
@@ -30,6 +31,7 @@ export default async function EntitiesPage() {
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الكيانات</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
+      <WorkspaceActions />
       </header>
       <section className="page-intro">
         <p className="eyebrow">السجل البحثي</p>
