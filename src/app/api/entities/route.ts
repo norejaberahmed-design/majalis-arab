@@ -53,15 +53,33 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const entity = await prisma.tribalEntity.create({
-    data: {
-      name,
-      normalizedName,
-      kind: parsed.data.kind,
-      summary: parsed.data.summary || null,
-      notes: parsed.data.notes || null
+  try {
+    const entity = await prisma.$transaction(async (tx) => {
+      const created = await tx.tribalEntity.create({
+        data: {
+          name,
+          normalizedName,
+          kind: parsed.data.kind,
+          summary: parsed.data.summary || null,
+          notes: parsed.data.notes || null
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          action: "ENTITY_CREATED",
+          targetType: "TribalEntity",
+          targetId: created.id,
+          details: JSON.stringify({ kind: created.kind })
+        }
+      });
+      return created;
+    });
+    return NextResponse.json({ data: entity }, { status: 201 });
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return NextResponse.json({ error: "يوجد كيان مسجل بالاسم نفسه" }, { status: 409 });
     }
-  });
-
-  return NextResponse.json({ data: entity }, { status: 201 });
+    console.error("Failed to create entity", error);
+    return NextResponse.json({ error: "تعذر حفظ السجل" }, { status: 500 });
+  }
 }
