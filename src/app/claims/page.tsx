@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
 
@@ -34,6 +35,7 @@ export default async function ClaimsPage() {
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الادعاءات</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
+      <WorkspaceActions />
       </header>
       <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">نعرض حالة كل ادعاء والأدلة المؤيدة والمناقضة. وجود ادعاء في النظام لا يجعله حقيقة مثبتة.</p></section>
       <section className="panel list-panel">
