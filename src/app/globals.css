@@ -92,3 +92,8 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .workspace-choice span{font-size:11px;color:var(--green);background:var(--green-soft);border-radius:100px;padding:3px 8px}
 .workspace-choice:disabled{opacity:.6;cursor:wait}
 @media(max-width:480px){.auth-card{padding:22px}.auth-card h1{font-size:24px}}
+
+.workspace-actions{display:flex;align-items:center;gap:8px}
+.workspace-actions a,.workspace-actions button{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;cursor:pointer}
+.workspace-actions button{color:#873b2d}
+@media(max-width:480px){.workspace-actions{gap:5px}.workspace-actions a,.workspace-actions button{font-size:10px;padding:6px}}
