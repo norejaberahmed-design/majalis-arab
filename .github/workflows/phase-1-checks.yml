@@ -36,3 +36,8 @@ jobs:
           DATABASE_URL: "file:./dev.db"
           BETTER_AUTH_SECRET: "ci-only-secret-with-at-least-32-characters"
           BETTER_AUTH_URL: "https://majalis-ci.example.invalid"
+          SMTP_HOST: "smtp.example.invalid"
+          SMTP_PORT: "587"
+          SMTP_USER: "ci-user"
+          SMTP_PASS: "ci-password-not-used"
+          MAIL_FROM: "Majalis CI <ci@example.invalid>"
