@@ -15,7 +15,12 @@ export default async function ClaimsPage() {
   const claims = await prisma.historicalClaim.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
-    include: {
+    select: {
+      id: true,
+      statement: true,
+      status: true,
+      reviewedByHuman: true,
+      reviewedAt: true,
       entity: { select: { name: true } },
       supportingPassages: { select: { id: true, reviewedByHuman: true } },
       contradictingPassages: { select: { id: true, reviewedByHuman: true } },
