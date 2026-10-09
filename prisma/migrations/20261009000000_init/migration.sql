@@ -170,7 +170,7 @@ CREATE INDEX "workspace_member_userId_role_idx" ON "workspace_member"("userId", 
 
 CREATE TABLE "ResearchDecision" (
   "id" TEXT NOT NULL PRIMARY KEY,
-  "workspaceId" TEXT,
+  "workspaceId" TEXT NOT NULL,
   "decisionType" TEXT NOT NULL,
   "targetId" TEXT NOT NULL,
   "decision" TEXT NOT NULL,
@@ -184,7 +184,7 @@ CREATE INDEX "ResearchDecision_decisionType_targetId_idx" ON "ResearchDecision"(
 
 CREATE TABLE "AdditionRequest" (
   "id" TEXT NOT NULL PRIMARY KEY,
-  "workspaceId" TEXT,
+  "workspaceId" TEXT NOT NULL,
   "userId" TEXT,
   "entityId" TEXT,
   "proposedName" TEXT NOT NULL,
@@ -206,7 +206,7 @@ CREATE INDEX "AdditionRequest_status_createdAt_idx" ON "AdditionRequest"("status
 
 CREATE TABLE "AuditLog" (
   "id" TEXT NOT NULL PRIMARY KEY,
-  "workspaceId" TEXT,
+  "workspaceId" TEXT NOT NULL,
   "actorUserId" TEXT,
   "actor" TEXT,
   "action" TEXT NOT NULL,
