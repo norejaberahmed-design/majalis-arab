@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/validation";
 import { requireWorkspace } from "@/lib/current-user";
 import EntitySearchPanel from "./entity-search-panel";
+import TribeCreateForm from "./tribe-create-form";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export default async function EntitiesPage({ searchParams }: { searchParams: Pro
         <Link href="/sources" className="secondary-button">المصادر والأدلة</Link>
       </header>
       <EntitySearchPanel initialEntities={entities} initialQuery={query} />
+      <TribeCreateForm />
       <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>العلاقات قد تمثل نسبًا أو حلفًا أو جوارًا أو هجرة أو رواية تاريخية. لا تُدمج هذه الأنواع ولا تُعامل بوصفها حقائق ثابتة دون دليل ومراجعة.</p></section>
     </main>
   );

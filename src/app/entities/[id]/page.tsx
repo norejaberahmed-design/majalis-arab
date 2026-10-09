@@ -95,6 +95,11 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
           source: { select: { id: true, title: true } }
         }
       },
+      knowledgeEntries: {
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        select: { id: true, content: true, sourceUrl: true, status: true, createdAt: true }
+      },
       places: {
         orderBy: { updatedAt: "desc" },
         take: 100,
@@ -172,6 +177,26 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
           <span className="status-label">{entity.claims.length} ادعاء مسجل</span>
           <span className="status-label">{relationships.length} علاقة مسجلة</span>
         </div>
+      </section>
+
+      <section className="panel list-panel">
+        <div className="list-heading"><h2>المعلومات المشتركة عن القبيلة</h2><span className="count-pill">{entity.knowledgeEntries.length}</span></div>
+        {entity.knowledgeEntries.length === 0 ? (
+          <div className="empty-state"><strong>لا توجد معلومات أولية مسجلة</strong><p>يمكن للأعضاء إضافة معلومات، وستظهر هنا لجميع المستخدمين مع حالة مراجعتها.</p></div>
+        ) : (
+          <div className="entity-list">
+            {entity.knowledgeEntries.map(entry => (
+              <article className="entity-row" key={entry.id}>
+                <div>
+                  <p>{entry.content}</p>
+                  {entry.sourceUrl && <p><a className="text-link" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer">فتح رابط المصدر ↗</a></p>}
+                  <small>{new Date(entry.createdAt).toLocaleDateString("ar-SA")}</small>
+                </div>
+                <span className={entry.status === "UNREVIEWED" ? "status-label pending" : "status-label"}>{entry.status === "UNREVIEWED" ? "معلومات غير مراجعة" : entry.status}</span>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="unknowns compact-unknowns">
