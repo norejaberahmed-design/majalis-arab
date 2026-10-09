@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "asc" },
       select: { id: true, role: true, createdAt: true, user: { select: { id: true, name: true, email: true, image: true } } }
     });
-    return NextResponse.json({ data: { workspace: workspace.workspace, members } }, { headers: NO_STORE });
+    return NextResponse.json({ data: { workspace: workspace.workspace, role: workspace.role, members } }, { headers: NO_STORE });
   } catch (error) {
     console.error("Council member list failed", error);
     return NextResponse.json({ error: "تعذر تحميل أعضاء المجلس" }, { status: 503, headers: NO_STORE });
