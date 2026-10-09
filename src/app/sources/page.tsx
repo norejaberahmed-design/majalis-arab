@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
 import { requireWorkspace } from "@/lib/current-user";
 import SourceIntakeForm from "./source-intake-form";
+import SourceCsvImportForm from "./source-csv-import-form";
 import { roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 
@@ -59,8 +60,9 @@ export default async function SourcesPage() {
             </div><span className={source.humanReviewed ? "status-label" : "status-label pending"}>{source.humanReviewed ? "مراجع بشريًا" : "لم يراجع بشريًا"}</span>
           </article>)}</div>}
       </section>
+      {canRegisterSource && <SourceCsvImportForm />}
       {canRegisterSource && <SourceIntakeForm />}
-      <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>لا يوجد حتى الآن استيراد آلي للمصادر أو OCR. حالة الإتاحة والاستخراج لا تُستنتج من رابط وحده.</p></section>
+      <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>يمكن استيراد بيانات الفهرسة من CSV. لا يوجد استخراج نص أو OCR آلي هنا، وحالة الإتاحة والاستخراج لا تُستنتج من رابط وحده.</p></section>
     </main>
   );
 }
