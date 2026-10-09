@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [entities, sources, claims, pendingRequests] = await Promise.all([
+  const [entities, sources, claims, passages] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
     prisma.historicalClaim.count(),
@@ -34,7 +34,7 @@ export default async function HomePage() {
         <article><span>الكيانات المسجلة</span><strong>{entities}</strong><small>من قاعدة البيانات</small></article>
         <article><span>المصادر</span><strong>{sources}</strong><small>مراجع مسجلة في قاعدة البيانات</small></article>
         <article><span>الادعاءات التاريخية</span><strong>{claims}</strong><small>مع حالات المراجعة</small></article>
-        <article><span>مقاطع الأدلة</span><strong>{pendingRequests}</strong><small>مقاطع مسجلة في قاعدة البيانات</small></article>
+        <article><span>مقاطع الأدلة</span><strong>{passages}</strong><small>مقاطع مسجلة في قاعدة البيانات</small></article>
       </section>
 
       <section className="work-grid">
