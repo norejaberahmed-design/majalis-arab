@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { requireWorkspace } from "@/lib/current-user";
+import { getWorkspaceContext, roleAtLeast } from "@/lib/workspace";
+import { isCatalogueCurator } from "@/lib/source-intake";
+import ClaimCreateForm from "./claim-create-form";
 
 export const dynamic = "force-dynamic";
 
@@ -13,45 +16,64 @@ const labels: Record<string, string> = {
 };
 
 export default async function ClaimsPage() {
-  await requireWorkspace();
-  const claims = await prisma.historicalClaim.findMany({
-    orderBy: { updatedAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      statement: true,
-      status: true,
-      reviewedByHuman: true,
-      reviewedAt: true,
-      entity: { select: { name: true } },
-      supportingPassages: { select: { id: true, reviewedByHuman: true } },
-      contradictingPassages: { select: { id: true, reviewedByHuman: true } },
-      source: { select: { title: true } }
-    }
-  });
+  const context = await getWorkspaceContext(await headers());
+  if (!context) {
+    return <main className="shell"><section className="panel"><h1>سجّل الدخول لعرض سجل الادعاءات</h1><Link className="text-link" href="/login">تسجيل الدخول ←</Link></section></main>;
+  }
+  const canCreateClaims = roleAtLeast(context.role, "REVIEWER") &&
+    isCatalogueCurator(context.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
+
+  const [claims, sources, entities, passages] = await Promise.all([
+    prisma.historicalClaim.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 100,
+      select: {
+        id: true, statement: true, status: true, reviewedByHuman: true, reviewedAt: true,
+        entity: { select: { name: true } },
+        supportingPassages: { select: { id: true, reviewedByHuman: true } },
+        contradictingPassages: { select: { id: true, reviewedByHuman: true } },
+        source: { select: { title: true } }
+      }
+    }),
+    canCreateClaims ? prisma.source.findMany({
+      where: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } },
+      orderBy: { title: "asc" }, take: 200,
+      select: { id: true, title: true }
+    }) : Promise.resolve([]),
+    canCreateClaims ? prisma.tribalEntity.findMany({
+      orderBy: { name: "asc" }, take: 500, select: { id: true, name: true }
+    }) : Promise.resolve([]),
+    canCreateClaims ? prisma.evidencePassage.findMany({
+      where: { reviewedByHuman: true, source: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } } },
+      orderBy: [{ sourceId: "asc" }, { pageLabel: "asc" }], take: 500,
+      select: { id: true, sourceId: true, pageLabel: true, locator: true, passageText: true }
+    }) : Promise.resolve([])
+  ]);
+
   return (
     <main className="shell">
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الادعاءات</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
       </header>
-      <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل. نعرض حالة كل ادعاء والأدلة المؤيدة والمناقضة؛ ووجود ادعاء لا يجعله حقيقة مثبتة.</p></section>
+      <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">كل ادعاء مرتبط بمصدر ومقاطع دليل. نعرض الأدلة المؤيدة والمناقضة معًا؛ ووجود الادعاء لا يجعله حقيقة مثبتة.</p></section>
+      {canCreateClaims && <ClaimCreateForm sources={sources} entities={entities} passages={passages} />}
       <section className="panel list-panel">
         <div className="list-heading"><h2>الادعاءات المسجلة</h2><span className="count-pill">{claims.length}</span></div>
-        {claims.length === 0 ? <div className="empty-state"><strong>لا توجد ادعاءات مسجلة بعد</strong><p>لن تُنشأ ادعاءات تلقائيًا. كل ادعاء مستقبلي يجب أن يرتبط بمصدر ومقاطع دليل ومراجعة واضحة.</p></div> :
+        {claims.length === 0 ? <div className="empty-state"><strong>لا توجد ادعاءات مسجلة بعد</strong><p>أنشئ ادعاءً من مقطع مراجع بشريًا، أو سجّل المصادر والأدلة أولًا.</p></div> :
           <div className="entity-list">{claims.map(claim => {
             const supportingReviewed = claim.supportingPassages.filter(p => p.reviewedByHuman).length;
             const contradictingReviewed = claim.contradictingPassages.filter(p => p.reviewedByHuman).length;
             const canLabelSupported = claim.status === "SUPPORTED" && claim.reviewedByHuman && claim.reviewedAt && claim.supportingPassages.length > 0 && supportingReviewed > 0;
             return <article className="entity-row" key={claim.id}>
-              <div><h3>{claim.statement}</h3><p>{claim.entity?.name ? `الكيان: ${claim.entity.name}` : "لم يُربط بكيان"}{claim.source ? ` · المصدر: ${claim.source.title}` : " · لا يوجد مصدر مباشر مرتبط"}</p>
+              <div><h3>{claim.statement}</h3><p>{claim.entity?.name ? "الكيان: " + claim.entity.name : "لم يُربط بكيان"}{claim.source ? " · المصدر: " + claim.source.title : " · لا يوجد مصدر مباشر مرتبط"}</p>
                 <small>أدلة مؤيدة: {claim.supportingPassages.length} (مراجع بشريًا: {supportingReviewed}) · أدلة مناقضة: {claim.contradictingPassages.length} (مراجع بشريًا: {contradictingReviewed})</small>
                 {!canLabelSupported && claim.status === "SUPPORTED" && <p className="warning-note">تنبيه: حالة الدعم تحتاج مراجعة السجل والأدلة قبل اعتمادها في العرض العام.</p>}
               </div><span className={claim.status === "DISPUTED" ? "status-label pending" : "status-label"}>{labels[claim.status] ?? claim.status}</span>
             </article>;
           })}</div>}
       </section>
-      <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>لم تُبنَ بعد واجهة إنشاء الادعاءات أو سير اعتماد المراجعين. هذه الصفحة للقراءة من قاعدة البيانات فقط في هذه المرحلة.</p></section>
+      <section className="unknowns compact-unknowns"><strong>حدود الاستنتاج</strong><p>الادعاءات الجديدة تحفظ بحالة «غير مراجع». لا يغيّر ربط الأدلة حالة الادعاء تلقائيًا، ويظل التعارض ظاهرًا بدل إخفائه.</p></section>
     </main>
   );
 }

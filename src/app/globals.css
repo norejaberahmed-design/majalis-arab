@@ -214,3 +214,17 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .member-add-row button:disabled{opacity:.55}
 .member-add-form>small{display:block;font-size:10px;line-height:1.7;color:var(--muted);margin-top:7px}
 @media(max-width:520px){.member-row{gap:7px}.member-role{font-size:9px}.member-add-row{flex-direction:column}.member-add-row button{padding:9px}}
+
+
+/* Evidence-backed claim creation */
+.claim-create-form{margin-bottom:22px}
+.claim-create-form select,.claim-create-form textarea{display:block;width:100%;margin-top:6px;border:1px solid #d9ddd6;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px;padding:10px 11px}
+.claim-evidence-list{border:1px solid var(--line);border-radius:10px;padding:12px;margin:16px 0}
+.claim-evidence-list legend{font-size:12px;font-weight:700;padding:0 6px}
+.claim-evidence-option{padding:12px 0;border-top:1px solid var(--line)}
+.claim-evidence-option:first-of-type{border-top:0}
+.claim-evidence-option p{font-size:13px;margin:0 0 6px;white-space:pre-wrap}
+.claim-evidence-option small{display:block;color:var(--muted);font-size:11px}
+.claim-evidence-controls{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.claim-evidence-controls label{display:flex;align-items:center;gap:5px;margin:0;font-size:12px;font-weight:500}
+.claim-evidence-controls input{width:auto;margin:0;accent-color:var(--green)}
