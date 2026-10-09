@@ -37,7 +37,7 @@ export default async function ClaimsPage() {
       }
     }),
     canCreateClaims ? prisma.source.findMany({
-      where: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } },
+      where: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" }, passages: { some: { reviewedByHuman: true } } },
       orderBy: { title: "asc" }, take: 200,
       select: { id: true, title: true }
     }) : Promise.resolve([]),
