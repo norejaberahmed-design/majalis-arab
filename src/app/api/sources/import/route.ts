@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "استيراد المصادر متاح لأمين كتالوج معتمد فقط" }, { status: 403, headers: NO_STORE });
     }
 
-    const body = await readJsonBody(request, 256_000);
+    const body = await readJsonBody(request, 1_200_000);
     if (!body.ok) return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
     const parsed = importSchema.safeParse(body.data);
     if (!parsed.success) return NextResponse.json({ error: "أرسل من 1 إلى 100 سجل مصدر في الطلب الواحد" }, { status: 400, headers: NO_STORE });
