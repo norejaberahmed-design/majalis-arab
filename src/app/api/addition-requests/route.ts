@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { additionRequestSchema } from "@/lib/addition-request";
 import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
 import { readJsonBody } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
@@ -7,13 +7,6 @@ import { safeExternalHttpUrl } from "@/lib/safe-url";
 
 export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
-
-const requestSchema = z.object({
-  proposedName: z.string().trim().min(2).max(160),
-  proposedKind: z.enum(["TRIBE", "CLAN", "FAMILY", "PERSON", "PLACE", "OTHER"]),
-  explanation: z.string().trim().min(10).max(3000),
-  sourceUrl: z.string().trim().max(2048).optional().or(z.literal(""))
-});
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
     }
 
-    const parsed = requestSchema.safeParse(body.data);
+    const parsed = additionRequestSchema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json({ error: "تحقق من الاسم ونوع الكيان والتفسير (10 إلى 3000 حرف)" }, { status: 400, headers: NO_STORE });
     }
