@@ -4,6 +4,7 @@ import { readJsonBody } from "@/lib/http";
 import { getWorkspaceContext, hasTrustedOrigin, roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 import { evidencePassageInputSchema } from "@/lib/evidence-passage";
+import { extractEvidenceDrafts } from "@/lib/evidence-extraction";
 
 export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
@@ -68,8 +69,51 @@ export async function POST(request: NextRequest, route: { params: Promise<{ id: 
       return created;
     });
 
+    let draftCount = 0;
+    try {
+      const drafts = await extractEvidenceDrafts(passage.passageText);
+      for (const draft of drafts) {
+        await prisma.researchSuggestion.upsert({
+          where: {
+            workspaceId_passageId_statement: {
+              workspaceId: context.workspaceId,
+              passageId: passage.id,
+              statement: draft.statement
+            }
+          },
+          update: {},
+          create: {
+            workspaceId: context.workspaceId,
+            sourceId,
+            passageId: passage.id,
+            statement: draft.statement,
+            evidenceQuote: draft.evidenceQuote,
+            status: "PENDING"
+          }
+        });
+        draftCount += 1;
+      }
+      if (draftCount > 0) {
+        await prisma.auditLog.create({
+          data: {
+            workspaceId: context.workspaceId,
+            actorUserId: context.user.id,
+            actor: context.user.email,
+            action: "CATALOGUE_REVIEW_DRAFTS_CREATED",
+            targetType: "EvidencePassage",
+            targetId: passage.id,
+            details: JSON.stringify({ draftCount, status: "PENDING" })
+          }
+        });
+      }
+    } catch (error) {
+      // Evidence is already saved. Optional extraction failure must not discard the source excerpt.
+      console.error("Background evidence drafting failed", error);
+    }
+
     return NextResponse.json({
       data: passage,
+      reviewDraftCount: draftCount,
       message: "حُفظ المقطع مع موضعه. لم يُعتبر مراجعًا بشريًا ولم يثبت الادعاء تلقائيًا."
     }, { status: 201, headers: NO_STORE });
   } catch (error) {
