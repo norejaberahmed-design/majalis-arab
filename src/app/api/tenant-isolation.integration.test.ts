@@ -11,6 +11,64 @@ const mocks = vi.hoisted(() => {
       return levels[role] !== undefined && levels[minimum] !== undefined && levels[role] >= levels[minimum];
     })
   };
+  it("does not list another workspace's council post", async () => {
+    const response = await listCouncilPosts(new NextRequest("https://majalis.example/api/council/posts"));
+    const body = await response.json() as { data: Array<{ id: string }> };
+
+    expect(response.status).toBe(200);
+    expect(body.data.some(item => item.id === foreignPost.id)).toBe(false);
+  });
+
+  it("rejects a comment against a post in another workspace", async () => {
+    const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/comments`, {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: "This comment must stay out of another workspace." })
+    });
+    const response = await createCouncilComment(request, { params: Promise.resolve({ id: foreignPost.id }) });
+    const comments = await prisma.councilComment.count({ where: { postId: foreignPost.id } });
+
+    expect(response.status).toBe(404);
+    expect(comments).toBe(0);
+  });
+
+  it("rejects a reaction against a post in another workspace", async () => {
+    const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/reaction`, {
+      method: "PUT",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ liked: true })
+    });
+    const response = await updateCouncilReaction(request, { params: Promise.resolve({ id: foreignPost.id }) });
+    const reactions = await prisma.councilReaction.count({ where: { postId: foreignPost.id } });
+
+    expect(response.status).toBe(404);
+    expect(reactions).toBe(0);
+  });
+
+  it("does not review a draft owned by another workspace", async () => {
+    process.env.CATALOGUE_CURATOR_EMAILS = userA.email;
+    mocks.getWorkspaceContext.mockResolvedValue({
+      workspaceId: workspaceA.id,
+      user: { id: userA.id, email: userA.email },
+      role: "REVIEWER"
+    });
+    const request = new NextRequest(`https://majalis.example/api/curation/drafts/${foreignSuggestion.id}`, {
+      method: "PATCH",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ decision: "APPROVE_DRAFT" })
+    });
+    const response = await reviewCurationDraft(request, { params: Promise.resolve({ id: foreignSuggestion.id }) });
+    const unchanged = await prisma.researchSuggestion.findUniqueOrThrow({
+      where: { id: foreignSuggestion.id },
+      select: { status: true }
+    });
+    const claims = await prisma.historicalClaim.count({ where: { statement: foreignSuggestion.statement } });
+
+    expect(response.status).toBe(404);
+    expect(unchanged.status).toBe("PENDING");
+    expect(claims).toBe(0);
+  });
+
 });
 
 vi.mock("@/lib/workspace", () => ({
@@ -23,6 +81,10 @@ import { prisma } from "@/lib/prisma";
 import { GET as listAdditionRequests } from "./addition-requests/route";
 import { PATCH as reviewAdditionRequest } from "./addition-requests/[id]/route";
 import { GET as getEntityNote } from "./entities/[id]/note/route";
+import { GET as listCouncilPosts } from "./council/posts/route";
+import { POST as createCouncilComment } from "./council/posts/[id]/comments/route";
+import { PUT as updateCouncilReaction } from "./council/posts/[id]/reaction/route";
+import { PATCH as reviewCurationDraft } from "./curation/drafts/[id]/route";
 
 const suffix = `tenant-test-${crypto.randomUUID()}`;
 let userA: { id: string; email: string };
@@ -31,9 +93,14 @@ let workspaceA: { id: string; name: string };
 let workspaceB: { id: string; name: string };
 let entity: { id: string; name: string };
 let foreignRequest: { id: string };
+let foreignPost: { id: string };
+let source: { id: string };
+let passage: { id: string; passageText: string };
+let foreignSuggestion: { id: string; statement: string };
+let originalCuratorAllowlist: string | undefined;
 
 describe("SQLite tenant-isolation integration", () => {
-  beforeAll(async () => {
+  beforeAll(async () => {\n    originalCuratorAllowlist = process.env.CATALOGUE_CURATOR_EMAILS;
     userA = await prisma.user.create({
       data: { name: "Tenant A", email: `${suffix}-a@example.test` },
       select: { id: true, email: true }
