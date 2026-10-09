@@ -29,6 +29,7 @@ export default async function HomePage() {
         <p className="intro">سجل الكيانات والمصادر والادعاءات التاريخية. نعرض ما هو مسجل فعليًا ونفصل بين وجود الرواية وبين ثبوتها بالدليل.</p>
         <div className="hero-actions">
           <Link className="primary-button" href="/council">العودة إلى المجلس</Link>
+          <Link className="secondary-button" href="/tribe">ملف قبيلتي</Link>
           <Link className="secondary-button" href="/search">البحث الموحد</Link>
           <Link className="secondary-button" href="/entities">استعراض الكيانات</Link>
         </div>
