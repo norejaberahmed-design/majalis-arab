@@ -24,6 +24,7 @@ model TribalEntity {
   requests    AdditionRequest[]
   workspaceNotes WorkspaceEntityNote[]
   councilWorkspaces WorkspaceTribe[]
+  places       Place[]
 
   @@unique([normalizedName])
   @@index([kind])
@@ -120,6 +121,8 @@ model Place {
   sourceNote  String?
   sourceId    String?
   evidencePassageId String?
+  entityId    String?
+  entity      TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   source      Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
@@ -128,6 +131,7 @@ model Place {
   @@index([name])
   @@index([sourceId])
   @@index([evidencePassageId])
+  @@index([entityId])
 }
 
 

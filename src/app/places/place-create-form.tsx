@@ -3,12 +3,14 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type EntityOption = { id: string; name: string; kind: string };
+
 type PassageOption = {
   id: string; pageLabel: string | null; locator: string | null; passageText: string;
   source: { id: string; title: string };
 };
 
-export default function PlaceCreateForm({ passages }: { passages: PassageOption[] }) {
+export default function PlaceCreateForm({ passages, entities }: { passages: PassageOption[]; entities: EntityOption[] }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -17,6 +19,7 @@ export default function PlaceCreateForm({ passages }: { passages: PassageOption[
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [passageId, setPassageId] = useState(passages[0]?.id ?? "");
+  const [entityId, setEntityId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -37,7 +40,7 @@ export default function PlaceCreateForm({ passages }: { passages: PassageOption[
       const response = await fetch("/api/curation/places", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, country, region, description, latitude: lat, longitude: lon, passageId })
+        body: JSON.stringify({ name, country, region, description, latitude: lat, longitude: lon, passageId, entityId: entityId || null })
       });
       const result = await response.json();
       if (!response.ok) {
@@ -77,6 +80,11 @@ export default function PlaceCreateForm({ passages }: { passages: PassageOption[
           <input id="place-latitude" inputMode="decimal" type="number" min="-90" max="90" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} />
           <label htmlFor="place-longitude">خط الطول (اختياري)</label>
           <input id="place-longitude" inputMode="decimal" type="number" min="-180" max="180" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} />
+          <label htmlFor="place-entity">القبيلة أو الفرع المرتبط (اختياري)</label>
+          <select id="place-entity" value={entityId} onChange={e => setEntityId(e.target.value)}>
+            <option value="">بدون ربط بكيان</option>
+            {entities.map(entity => <option key={entity.id} value={entity.id}>{entity.name} · {entity.kind}</option>)}
+          </select>
           <label htmlFor="place-passage">مقطع المصدر المراجع</label>
           <select id="place-passage" value={passageId} onChange={e => setPassageId(e.target.value)} required>
             {passages.map(p => <option key={p.id} value={p.id}>{p.source.title} · {p.pageLabel || p.locator || "موضع غير محدد"}</option>)}

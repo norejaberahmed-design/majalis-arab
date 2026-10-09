@@ -12,13 +12,14 @@ export default async function PlacesPage() {
   const canManagePlaces = roleAtLeast(workspace.role, "REVIEWER") &&
     isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
 
-  const [places, passages] = await Promise.all([
+  const [places, passages, entities] = await Promise.all([
     prisma.place.findMany({
       orderBy: { updatedAt: "desc" }, take: 200,
       select: {
         id: true, name: true, country: true, region: true, description: true,
         latitude: true, longitude: true, sourceNote: true,
         source: { select: { id: true, title: true } },
+        entity: { select: { id: true, name: true } },
         evidencePassage: { select: { id: true, pageLabel: true, locator: true, reviewedByHuman: true } }
       }
     }),
@@ -26,7 +27,8 @@ export default async function PlacesPage() {
       where: { reviewedByHuman: true, source: { is: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } } } },
       orderBy: [{ sourceId: "asc" }, { pageLabel: "asc" }], take: 500,
       select: { id: true, pageLabel: true, locator: true, passageText: true, source: { select: { id: true, title: true } } }
-    }) : Promise.resolve([])
+    }) : Promise.resolve([]),
+    canManagePlaces ? prisma.tribalEntity.findMany({ orderBy: { name: "asc" }, take: 500, select: { id: true, name: true, kind: true } }) : Promise.resolve([])
   ]);
 
   return (
@@ -47,6 +49,7 @@ export default async function PlacesPage() {
             <article className="entity-row" key={place.id}>
               <div><h3>{place.name}</h3><p>{[place.country, place.region].filter(Boolean).join(" · ") || "لم تُسجل الدولة أو المنطقة"}</p>
                 {place.description && <p>{place.description}</p>}
+                {place.entity && <p>الكيان المرتبط: <Link className="text-link" href={"/entities/" + place.entity.id}>{place.entity.name} ←</Link></p>}
                 {place.latitude !== null && place.longitude !== null && <small>الإحداثيات المسجلة: {place.latitude}, {place.longitude}</small>}
                 {place.source && <p><Link className="text-link" href={"/sources/" + place.source.id}>{place.source.title} ←</Link> · {place.evidencePassage?.pageLabel || place.evidencePassage?.locator || "موضع غير محدد"}</p>}
                 {!place.source && place.sourceNote && <small>{place.sourceNote}</small>}
@@ -55,7 +58,7 @@ export default async function PlacesPage() {
             </article>
           ))}</div>}
       </section>
-      {canManagePlaces && <PlaceCreateForm passages={passages} />}
+      {canManagePlaces && <PlaceCreateForm passages={passages} entities={entities} />}
       <section className="unknowns compact-unknowns"><strong>حدود السجل</strong><p>وجود اسم المكان في نص لا يثبت وحده إحداثياته أو حدوده الحديثة. تُحفظ الإحداثيات فقط إذا أدخلها الباحث من مرجع مستقل، وتبقى قابلة للمراجعة.</p></section>
     </main>
   );

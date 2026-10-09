@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   isCatalogueCurator: vi.fn(() => true),
   passageFindUnique: vi.fn(),
   placeFindFirst: vi.fn(),
+  entityFindUnique: vi.fn(),
   placeCreate: vi.fn(),
   auditCreate: vi.fn(),
   transaction: vi.fn()
@@ -37,7 +38,8 @@ const validBody = {
   description: "موضع مسجل وفق المقطع التاريخي المراجع، دون افتراض تفاصيل إضافية.",
   latitude: 24.7136,
   longitude: 46.6753,
-  passageId: "passage-a"
+  passageId: "passage-a",
+  entityId: "entity-a"
 };
 
 describe("place creation from reviewed evidence", () => {
@@ -54,11 +56,13 @@ describe("place creation from reviewed evidence", () => {
       source: { id: "source-a", title: "مرجع تاريخي", humanReviewed: true, accessStatus: "OPEN_ACCESS" }
     });
     mocks.placeFindFirst.mockResolvedValue(null);
+    mocks.entityFindUnique.mockResolvedValue({ id: "entity-a" });
     mocks.placeCreate.mockResolvedValue({ id: "place-a", name: validBody.name, country: validBody.country, region: validBody.region, sourceId: "source-a", evidencePassageId: "passage-a", createdAt: new Date() });
     mocks.auditCreate.mockResolvedValue({});
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
       evidencePassage: { findUnique: mocks.passageFindUnique },
       place: { findFirst: mocks.placeFindFirst, create: mocks.placeCreate },
+      tribalEntity: { findUnique: mocks.entityFindUnique },
       auditLog: { create: mocks.auditCreate }
     }));
   });
@@ -90,11 +94,18 @@ describe("place creation from reviewed evidence", () => {
     expect(mocks.placeCreate).not.toHaveBeenCalled();
   });
 
-  it("creates a place linked to its reviewed source passage and audits it", async () => {
+  it("rejects an unknown linked entity without creating a place", async () => {
+    mocks.entityFindUnique.mockResolvedValue(null);
+    const response = await POST(request(validBody));
+    expect(response.status).toBe(404);
+    expect(mocks.placeCreate).not.toHaveBeenCalled();
+  });
+
+  it("creates a place linked to its reviewed source passage and optional entity and audits it", async () => {
     const response = await POST(request(validBody));
     expect(response.status).toBe(201);
     expect(mocks.placeCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ name: "مدينة الرياض", sourceId: "source-a", evidencePassageId: "passage-a" })
+      data: expect.objectContaining({ name: "مدينة الرياض", sourceId: "source-a", evidencePassageId: "passage-a", entityId: "entity-a" })
     }));
     expect(mocks.auditCreate).toHaveBeenCalled();
   });

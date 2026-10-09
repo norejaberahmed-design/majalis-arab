@@ -94,6 +94,16 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
           reviewNote: true,
           source: { select: { id: true, title: true } }
         }
+      },
+      places: {
+        orderBy: { updatedAt: "desc" },
+        take: 100,
+        select: {
+          id: true, name: true, country: true, region: true, description: true,
+          latitude: true, longitude: true,
+          source: { select: { id: true, title: true } },
+          evidencePassage: { select: { pageLabel: true, locator: true, reviewedByHuman: true } }
+        }
       }
     }
   });
@@ -192,6 +202,24 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
       </section>
 
       {canManageRelationships && <RelationshipCreateForm fromEntityId={entity.id} targets={relationshipTargets} claims={relationshipClaims} />}
+
+      <section className="panel list-panel">
+        <div className="list-heading"><h2>الأماكن المرتبطة بهذا الكيان</h2><span className="count-pill">{entity.places.length}</span></div>
+        {entity.places.length === 0 ? (
+          <div className="empty-state"><strong>لا توجد أماكن مرتبطة بهذا الكيان بعد</strong><p>ستظهر هنا الأماكن التي ربطها الباحث بهذا الكيان وربطها بمقطع مصدر مراجع.</p></div>
+        ) : (
+          <div className="entity-list">{entity.places.map(place => (
+            <article className="entity-row" key={place.id}>
+              <div><h3>{place.name}</h3><p>{[place.country, place.region].filter(Boolean).join(" · ") || "لم تسجل الدولة أو المنطقة"}</p>
+                {place.description && <p>{place.description}</p>}
+                {place.latitude !== null && place.longitude !== null && <small>الإحداثيات المسجلة: {place.latitude}, {place.longitude}</small>}
+                {place.source && <p><Link className="text-link" href={`/sources/${place.source.id}`}>{place.source.title} ←</Link> · {place.evidencePassage?.pageLabel || place.evidencePassage?.locator || "موضع غير محدد"} · {place.evidencePassage?.reviewedByHuman ? "المقطع مراجع" : "المقطع غير مراجع"}</p>}
+              </div>
+              <span className="status-label">مكان مرتبط</span>
+            </article>
+          ))}</div>
+        )}
+      </section>
 
       <section className="panel list-panel">
         <div className="list-heading"><h2>الادعاءات والأدلة المرتبطة</h2><span className="count-pill">{entity.claims.length}</span></div>
