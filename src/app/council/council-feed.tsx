@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 type Person = { id: string; name: string; image: string | null };
 type Comment = { id: string; content: string; createdAt: string; author: Person };
@@ -29,7 +29,7 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  async function createPost(event: React.FormEvent<HTMLFormElement>) {
+  async function createPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!content.trim()) return;
     setBusy(true);
