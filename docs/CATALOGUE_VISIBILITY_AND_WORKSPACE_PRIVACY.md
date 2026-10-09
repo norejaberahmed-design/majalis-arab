@@ -15,6 +15,8 @@ The core research catalogue is intentionally shared across authenticated workspa
 
 A workspace cookie or membership does not make these records private. The UI must say that the catalogue is shared. Do not store private customer, member, or workspace notes in these tables.
 
+The legacy `TribalEntity.notes` column remains in the current schema for migration compatibility, but is deprecated and must not be used for workspace-private content. Private annotations belong in `WorkspaceEntityNote`; removing the legacy column requires a reviewed migration and data inventory.
+
 For Phase 1, catalogue mutations are disabled unless a future reviewed change introduces explicit curator authorization, provenance requirements, audit events, and tests. The entity creation API currently fails closed with HTTP 503. Do not remove that block merely to enable the form.
 
 ## Workspace-private records
