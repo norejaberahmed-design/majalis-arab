@@ -40,8 +40,7 @@ export default async function SourcesPage() {
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل المصادر</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
-      <WorkspaceActions />
-      </header>
+</header>
       <section className="page-intro"><p className="eyebrow">المراجع أولًا</p><h1>المصادر والأدلة</h1><p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل. نفصل بين وجود المرجع، وإمكانية الوصول إليه، واستخراج نصه، ومراجعته بشريًا.</p></section>
       <section className="panel list-panel">
         <div className="list-heading"><h2>سجل المصادر</h2><span className="count-pill">{sources.length}</span></div>
