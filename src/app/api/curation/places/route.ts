@@ -15,7 +15,8 @@ const createSchema = z.object({
   description: z.string().trim().max(2000).optional().nullable(),
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
-  passageId: z.string().min(1).max(64)
+  passageId: z.string().min(1).max(64),
+  entityId: z.string().min(1).max(64).optional().nullable()
 });
 
 function normalizedText(value: string) {
@@ -59,6 +60,11 @@ export async function POST(request: NextRequest) {
         return { error: "اسم المكان لا يظهر كنص مستقل داخل المقطع المراجع؛ لم يُنشأ أي سجل", status: 422 } as const;
       }
 
+      if (parsed.data.entityId) {
+        const entity = await tx.tribalEntity.findUnique({ where: { id: parsed.data.entityId }, select: { id: true } });
+        if (!entity) return { error: "الكيان المحدد غير موجود", status: 404 } as const;
+      }
+
       const duplicate = await tx.place.findFirst({
         where: {
           name: parsed.data.name,
@@ -80,9 +86,10 @@ export async function POST(request: NextRequest) {
           longitude: parsed.data.longitude ?? null,
           sourceNote,
           sourceId: passage.sourceId,
-          evidencePassageId: passage.id
+          evidencePassageId: passage.id,
+          entityId: parsed.data.entityId || null
         },
-        select: { id: true, name: true, country: true, region: true, sourceId: true, evidencePassageId: true, createdAt: true }
+        select: { id: true, name: true, country: true, region: true, sourceId: true, evidencePassageId: true, entityId: true, createdAt: true }
       });
       await tx.auditLog.create({
         data: {
@@ -92,14 +99,14 @@ export async function POST(request: NextRequest) {
           action: "PLACE_CREATED_FROM_REVIEWED_EVIDENCE",
           targetType: "Place",
           targetId: place.id,
-          details: JSON.stringify({ sourceId: passage.sourceId, passageId: passage.id, name: place.name })
+          details: JSON.stringify({ sourceId: passage.sourceId, passageId: passage.id, entityId: place.entityId, name: place.name })
         }
       });
       return { data: place } as const;
     });
 
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
-    return NextResponse.json({ data: result.data, message: "سُجل المكان وربط بمقطع مصدر مراجع؛ لم تُستنتج إحداثيات غير مدخلة." }, { status: 201, headers: NO_STORE });
+    return NextResponse.json({ data: result.data, message: "سُجل المكان وربط بمقطع مصدر مراجع. ربطه بالكيان اختياري، ولم تُستنتج إحداثيات غير مدخلة." }, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error("Place creation from evidence failed", error);
     return NextResponse.json({ error: "تعذر تسجيل المكان" }, { status: 503, headers: NO_STORE });
