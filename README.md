@@ -21,7 +21,7 @@
 
 1. استخدم Node.js 20 أو أحدث.
 2. انسخ `.env.example` إلى `.env`.
-3. ثبّت الاعتماديات: `npm install`.
+3. ثبّت الاعتماديات بدقة من ملف القفل: `npm ci`.
 4. تحقّق من متغيرات البيئة المطلوبة، ثم طبّق الترحيلات: `npm run db:deploy`.
 5. ولّد Prisma Client: `npm run db:generate`.
 6. شغّل التطبيق: `npm run dev`.
