@@ -114,3 +114,17 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .review-buttons button:nth-child(3){color:#873b2d}
 .review-buttons button:disabled{opacity:.55;cursor:wait}
 @media(max-width:760px){.request-row{flex-direction:column}.request-row>.status-label{align-self:flex-start}}
+
+
+/* Private workspace notes: deliberately separate from shared catalogue data */
+.entity-record-meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;min-width:180px}
+.workspace-note{width:100%;max-width:310px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fbfbf8}
+.workspace-note summary{font-size:11px;font-weight:700;color:var(--green);cursor:pointer}
+.workspace-note label{display:block;font-size:11px;font-weight:600;margin:10px 0 5px}
+.workspace-note textarea{display:block;width:100%;font:inherit;font-size:12px;padding:8px;border:1px solid #d9ddd6;border-radius:7px;resize:vertical;background:white;color:var(--ink)}
+.note-actions{display:flex;gap:7px;margin-top:7px}
+.note-actions button{font:inherit;font-size:11px;border:1px solid var(--line);border-radius:6px;padding:5px 9px;background:#fff;cursor:pointer}
+.note-actions button:first-child{background:var(--green);border-color:var(--green);color:#fff}
+.note-actions button:disabled{opacity:.55;cursor:wait}
+.workspace-note .form-message{font-size:11px;margin:6px 0 0}
+@media(max-width:760px){.entity-record-meta{align-items:stretch;min-width:0;width:100%}.workspace-note{max-width:none}.entity-row{flex-wrap:wrap}}
