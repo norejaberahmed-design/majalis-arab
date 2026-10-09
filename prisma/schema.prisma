@@ -364,3 +364,14 @@ model CouncilReaction {
   @@index([userId, createdAt])
   @@map("council_reaction")
 }
+
+
+/// Persistent Better Auth rate-limit counters shared across app instances.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rateLimit")
+}
