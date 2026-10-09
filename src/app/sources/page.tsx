@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
+import { requireWorkspace } from "@/lib/current-user";
+import SourceIntakeForm from "./source-intake-form";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +20,7 @@ const extractionLabels: Record<string, string> = {
 };
 
 export default async function SourcesPage() {
+  await requireWorkspace();
   const sources = await prisma.source.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
@@ -46,12 +49,13 @@ export default async function SourcesPage() {
         <div className="list-heading"><h2>سجل المصادر</h2><span className="count-pill">{sources.length}</span></div>
         {sources.length === 0 ? <div className="empty-state"><strong>لا توجد مصادر مسجلة بعد</strong><p>لم نضف مراجع افتراضية. يجب تسجيل بيانات المرجع والتحقق من الإتاحة قبل استخدامه دليلًا.</p></div> :
           <div className="entity-list">{sources.map(source => <article className="entity-row" key={source.id}>
-            <div><h3><Link href={`/sources/${source.id}`} className="text-link">{source.title} ←</Link></h3><p>{[source.author, source.publisher, source.publicationYear].filter(Boolean).join(" · ") || "بيانات ببليوغرافية غير مكتملة"}</p>
+            <div><h3>{source.title}</h3><p>{[source.author, source.publisher, source.publicationYear].filter(Boolean).join(" · ") || "بيانات ببليوغرافية غير مكتملة"}</p>
               {safeExternalHttpUrl(source.url) && <a className="text-link" href={safeExternalHttpUrl(source.url)!} target="_blank" rel="noopener noreferrer">فتح رابط المصدر ↗</a>}
               <small>{accessLabels[source.accessStatus]} · {extractionLabels[source.extractionStatus]} · {source._count.passages} مقطع دليل · {source._count.claims} ادعاء</small>
             </div><span className={source.humanReviewed ? "status-label" : "status-label pending"}>{source.humanReviewed ? "مراجع بشريًا" : "لم يراجع بشريًا"}</span>
           </article>)}</div>}
       </section>
+      <SourceIntakeForm />
       <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>لا يوجد حتى الآن استيراد آلي للمصادر أو OCR. حالة الإتاحة والاستخراج لا تُستنتج من رابط وحده.</p></section>
     </main>
   );
