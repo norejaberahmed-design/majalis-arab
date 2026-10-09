@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
-import { headers } from "next/headers";
-import { getWorkspaceContext, roleAtLeast } from "@/lib/workspace";
+import { requireWorkspace } from "@/lib/current-user";
+import { roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 import EvidencePassageForm from "../evidence-passage-form";
 
@@ -32,6 +32,7 @@ const claimLabels: Record<string, string> = {
 };
 
 export default async function SourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const workspace = await requireWorkspace();
   const { id } = await params;
   if (!id || id.length > 64) notFound();
 
@@ -75,7 +76,6 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
 
   if (!source) notFound();
   const safeUrl = safeExternalHttpUrl(source.url);
-  const workspace = await getWorkspaceContext(await headers());
   const canManageEvidence = !!workspace && roleAtLeast(workspace.role, "REVIEWER") &&
     isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
 
