@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import CouncilMembers from "./council-members";
 
 type Workspace = { id: string; name: string; role: string };
 
@@ -61,15 +62,17 @@ export default function WorkspaceSetupPage() {
   if (isPending || !session) return <main className="auth-shell">جارٍ التحقق من الجلسة…</main>;
   return <main className="auth-shell" dir="rtl">
     <section className="auth-card">
-      <Link href="/" className="auth-brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>مساحات العمل</small></span></Link>
-      <p className="eyebrow">تنظيم الصلاحيات</p><h1>اختر مساحة عمل</h1>
-      <p className="muted">كل مساحة لها عضويتها وصلاحياتها. لا يمكنك فتح مساحة لا تنتمي إليها.</p>
+      <Link href="/council" className="auth-brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>مجالس العرب</small></span></Link>
+      <p className="eyebrow">مجتمعك العربي</p><h1>اختر مجلسًا</h1>
+      <p className="muted">لكل مجلس أعضاؤه ونقاشاته. يمكنك الدخول إلى مجلس أنت عضو فيه أو إنشاء مجلس جديد.</p>
       {workspaces.map(w => <button className="workspace-choice" key={w.id} type="button" disabled={busy} onClick={() => openWorkspace(w.id)}><strong>{w.name}</strong><span>{w.role}</span></button>)}
       <form onSubmit={createWorkspace}>
-        <label>إنشاء مساحة جديدة<input value={name} onChange={e => setName(e.target.value)} minLength={2} maxLength={80} required placeholder="مثال: فريق البحث" /></label>
+        <label>إنشاء مجلس جديد<input value={name} onChange={e => setName(e.target.value)} minLength={2} maxLength={80} required placeholder="مثال: مجلس العائلة أو القبيلة" /></label>
         {message && <p role="alert" className="auth-error">{message}</p>}
-        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "جارٍ الحفظ…" : "إنشاء مساحة عمل"}</button>
+        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "جارٍ الإنشاء…" : "إنشاء المجلس"}</button>
       </form>
+      <div className="setup-divider" />
+      <CouncilMembers />
     </section>
   </main>;
 }
