@@ -2,7 +2,9 @@ import Link from "next/link";
 import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
-import EntityForm from "./entity-form";\nimport EntityWorkspaceNote from "./entity-workspace-note";\nimport { roleAtLeast } from "@/lib/workspace";
+import { roleAtLeast } from "@/lib/workspace";
+import EntityForm from "./entity-form";
+import EntityWorkspaceNote from "./entity-workspace-note";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +14,8 @@ const labels: Record<string, string> = {
 };
 
 export default async function EntitiesPage() {
-  await requireWorkspace();
+  const workspace = await requireWorkspace();
+  const canEditNotes = roleAtLeast(workspace.role, "EDITOR");
   const entities = await prisma.tribalEntity.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
@@ -26,18 +29,19 @@ export default async function EntitiesPage() {
     }
   });
 
-  const workspaceNotes = await prisma.workspaceEntityNote.findMany({
-    where: { workspaceId: workspace.workspaceId, entityId: { in: entities.map(entity => entity.id) } },
-    select: { entityId: true, note: true }
-  });
+  const workspaceNotes = entities.length
+    ? await prisma.workspaceEntityNote.findMany({
+        where: { workspaceId: workspace.workspaceId, entityId: { in: entities.map(entity => entity.id) } },
+        select: { entityId: true, note: true }
+      })
+    : [];
   const noteByEntity = new Map(workspaceNotes.map(item => [item.entityId, item.note]));
 
   return (
     <main className="shell">
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الكيانات</small></span></Link>
-        <Link href="/" className="secondary-button">الرئيسية</Link>
-      <WorkspaceActions />
+        <div className="workspace-actions"><Link href="/" className="secondary-button">الرئيسية</Link><WorkspaceActions /></div>
       </header>
       <section className="page-intro">
         <p className="eyebrow">السجل البحثي</p>
@@ -48,13 +52,20 @@ export default async function EntitiesPage() {
         <section className="panel list-panel">
           <div className="list-heading"><h2>السجلات الحالية</h2><span className="count-pill">{entities.length}</span></div>
           {entities.length === 0 ? (
-            <div className="empty-state"><strong>لا توجد سجلات بعد</strong><p>إضافة الكيانات متوقفة مؤقتًا حتى اعتماد صلاحيات الكتالوج المشترك والمراجعة. لم تُضف بيانات افتراضية.</p></div>
+            <div className="empty-state"><strong>لا توجد سجلات بعد</strong><p>لم نضف بيانات افتراضية. يلزم اعتماد صلاحيات الكتالوج المشترك قبل نشر سجلات جديدة.</p></div>
           ) : (
             <div className="entity-list">
               {entities.map(entity => (
                 <article className="entity-row" key={entity.id}>
-                  <div><h3>{entity.name}</h3><p>{entity.summary || "لا يوجد ملخص موثق بعد."}</p><small>{labels[entity.kind] ?? "نوع غير محدد"} · {entity.claims.length} ادعاء مرتبط</small></div>
-                  <div className="entity-record-meta"><span className="status-label">سجل أولي</span><EntityWorkspaceNote entityId={entity.id} initialNote={noteByEntity.get(entity.id) ?? null} canEdit={canEditNotes} /></div>
+                  <div className="entity-record-summary">
+                    <h3>{entity.name}</h3>
+                    <p>{entity.summary || "لا يوجد ملخص موثق بعد."}</p>
+                    <small>{labels[entity.kind] ?? "نوع غير محدد"} · {entity.claims.length} ادعاء مرتبط</small>
+                  </div>
+                  <div className="entity-record-meta">
+                    <span className="status-label">سجل أولي</span>
+                    <EntityWorkspaceNote entityId={entity.id} initialNote={noteByEntity.get(entity.id) ?? null} canEdit={canEditNotes} />
+                  </div>
                 </article>
               ))}
             </div>
