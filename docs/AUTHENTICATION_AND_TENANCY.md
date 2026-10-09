@@ -1,6 +1,6 @@
 # Authentication and workspace isolation
 
-Status: workspace-scoped API paths have database-backed negative regression tests. Authentication lifecycle end-to-end tests, abuse controls, and final release review remain blockers.
+Status: workspace isolation, SQLite migration-upgrade, authentication lifecycle, persistent rate-limit enforcement, and password-reset session revocation have passing integration/regression tests. Email failure/expiry cases, complete authorization inventory, and final independent release review remain blockers.
 
 ## Implemented foundations
 
@@ -9,6 +9,8 @@ Status: workspace-scoped API paths have database-backed negative regression test
 - Workspace and WorkspaceMember models with a unique `(workspaceId, userId)` membership pair and explicit roles.
 - Server-side workspace selection checks the authenticated user's membership before setting the HTTP-only active-workspace cookie.
 - State-changing requests validate Origin against the request's canonical origin; do not trust client-supplied `X-Forwarded-Host`.
+- Better Auth uses persistent database-backed rate limiting with stricter per-endpoint rules for sign-in, sign-up, password-reset requests, and password resets. CI verifies the sign-in limit returns HTTP 429.
+- Password-reset emails link directly to the implemented `/reset-password?token=...` page, and a successful password reset revokes existing sessions.
 - JSON request parsing enforces content type and a byte limit.
 - Entity creation remains fail-closed with HTTP 503. Source bibliographic registration is the narrow exception: it requires reviewer role plus the server-side curator allowlist, validates input and URLs, and writes an audit event.
 - Production middleware keeps the main application behind a 503 release gate.
@@ -38,10 +40,9 @@ The tests also verify denied writes do not change the foreign record, create a c
 
 ## Remaining requirements before production
 
-- Add durable shared-store rate limiting for sign-in, account creation, password reset, and state-changing endpoints.
-- Add end-to-end tests for sign-up, email verification, sign-in, sign-out, password reset, workspace creation, and workspace switching.
-- Verify that unknown or stale roles fail closed and that no endpoint trusts client-provided user IDs or role claims.
-- Validate the migration upgrade path from existing deployed databases, not only clean SQLite migrations.
+- Test SMTP delivery failures, expired verification/reset tokens, resend verification, and duplicate-account enumeration behavior.
+- Finish a route/server-action authorization inventory and add negative tests for uncovered state-changing paths; verify no endpoint trusts client-supplied user IDs or role claims.
+- Validate the migration upgrade path against a copy of any actual deployed database before a production release. CI now tests incremental migrations from the initial schema while preserving pre-existing source/workspace rows.
 - Configure real SMTP, canonical HTTPS URL, random production auth secret, backups/restore, and operational monitoring.
 - Complete independent security review before handling sensitive information.
 
