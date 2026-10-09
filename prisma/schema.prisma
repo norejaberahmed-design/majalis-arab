@@ -191,6 +191,9 @@ model User {
   additionRequests AdditionRequest[]
   auditEvents   AuditLog[]
   entityNotes   WorkspaceEntityNote[]
+  councilPosts     CouncilPost[]
+  councilComments  CouncilComment[]
+  councilReactions CouncilReaction[]
 
   @@map("user")
 }
@@ -253,6 +256,7 @@ model Workspace {
   decisions   ResearchDecision[]
   auditLogs   AuditLog[]
   entityNotes WorkspaceEntityNote[]
+  councilPosts CouncilPost[]
 }
 
 model WorkspaceMember {
