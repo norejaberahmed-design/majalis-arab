@@ -128,3 +128,6 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .note-actions button:disabled{opacity:.55;cursor:wait}
 .workspace-note .form-message{font-size:11px;margin:6px 0 0}
 @media(max-width:760px){.entity-record-meta{align-items:stretch;min-width:0;width:100%}.workspace-note{max-width:none}.entity-row{flex-wrap:wrap}}
+
+.entity-record-summary{min-width:0;flex:1}
+.entity-record-summary h3{overflow-wrap:anywhere}
