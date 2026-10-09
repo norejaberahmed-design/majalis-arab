@@ -45,7 +45,7 @@ export default async function SourcesPage() {
         <Link href="/" className="secondary-button">الرئيسية</Link>
       <WorkspaceActions />
       </header>
-      <section className="page-intro"><p className="eyebrow">المراجع أولًا</p><h1>المصادر والأدلة</h1><p className="intro">نفصل بين وجود المرجع، وإمكانية الوصول إليه، واستخراج نصه، ومراجعته بشريًا.</p></section>
+      <section className="page-intro"><p className="eyebrow">المراجع أولًا</p><h1>المصادر والأدلة</h1><p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل. نفصل بين وجود المرجع، وإمكانية الوصول إليه، واستخراج نصه، ومراجعته بشريًا.</p></section>
       <section className="panel list-panel">
         <div className="list-heading"><h2>سجل المصادر</h2><span className="count-pill">{sources.length}</span></div>
         {sources.length === 0 ? <div className="empty-state"><strong>لا توجد مصادر مسجلة بعد</strong><p>لم نضف مراجع افتراضية. يجب تسجيل بيانات المرجع والتحقق من الإتاحة قبل استخدامه دليلًا.</p></div> :
