@@ -29,8 +29,8 @@ export function parseEvidencePassageBatch(input: string): EvidencePassageBatchPa
     if (!line.trim()) continue;
 
     const columns = line.split("\t");
-    const first = columns[0]?.trim().toLocaleLowerCase("ar");
-    const second = columns[1]?.trim().toLocaleLowerCase("ar");
+    const first = columns[0].trim().toLocaleLowerCase("ar");
+    const second = (columns[1] ?? "").trim().toLocaleLowerCase("ar");
     if (passages.length === 0 && index === 0 &&
       ["الصفحة", "رقم الصفحة", "الموضع", "page", "page label"].includes(first) &&
       ["النص", "نص المقطع", "المقطع", "text", "passage text"].includes(second)) {
