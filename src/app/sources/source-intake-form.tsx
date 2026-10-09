@@ -9,6 +9,7 @@ export default function SourceIntakeForm() {
   const [author, setAuthor] = useState("");
   const [publisher, setPublisher] = useState("");
   const [publicationYear, setPublicationYear] = useState("");
+  const [edition, setEdition] = useState("");
   const [url, setUrl] = useState("");
   const [bibliographicNote, setBibliographicNote] = useState("");
   const [message, setMessage] = useState("");
@@ -27,7 +28,7 @@ export default function SourceIntakeForm() {
         body: JSON.stringify({
           title, author, publisher,
           publicationYear: publicationYear ? Number(publicationYear) : null,
-          url, bibliographicNote
+          edition, url, bibliographicNote
         })
       });
       const result = await response.json();
@@ -40,6 +41,7 @@ export default function SourceIntakeForm() {
       setAuthor("");
       setPublisher("");
       setPublicationYear("");
+      setEdition("");
       setUrl("");
       setBibliographicNote("");
       router.refresh();
@@ -63,6 +65,8 @@ export default function SourceIntakeForm() {
         <input id="source-publisher" value={publisher} onChange={event => setPublisher(event.target.value)} maxLength={200} />
         <label htmlFor="source-year">سنة النشر (إن عُرفت)</label>
         <input id="source-year" type="number" inputMode="numeric" min="1" max="2100" value={publicationYear} onChange={event => setPublicationYear(event.target.value)} />
+        <label htmlFor="source-edition">الطبعة أو الإصدار (اختياري)</label>
+        <input id="source-edition" value={edition} onChange={event => setEdition(event.target.value)} maxLength={160} placeholder="مثال: الطبعة الثانية، ١٤٤٠هـ" />
         <label htmlFor="source-url">رابط فهرس أو نسخة متاحة (اختياري)</label>
         <input id="source-url" type="url" inputMode="url" maxLength={2048} value={url} onChange={event => setUrl(event.target.value)} placeholder="https://..." />
         <label htmlFor="source-note">ملاحظة ببليوغرافية (اختياري)</label>

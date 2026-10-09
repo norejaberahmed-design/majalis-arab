@@ -52,6 +52,7 @@ model Source {
   author             String?
   publisher          String?
   publicationYear    Int?
+  edition            String?
   url                String?
   bibliographicNote  String?
   accessStatus       String          @default("NOT_CHECKED")

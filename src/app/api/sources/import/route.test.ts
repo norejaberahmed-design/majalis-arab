@@ -34,7 +34,7 @@ function request(body: unknown) {
     body: JSON.stringify(body)
   });
 }
-const sourceA = { title: "كتاب تاريخي أ", author: "مؤلف", publisher: "ناشر", publicationYear: 1950, url: "https://example.test/book", bibliographicNote: "" };
+const sourceA = { title: "كتاب تاريخي أ", author: "مؤلف", publisher: "ناشر", publicationYear: 1950, edition: "الطبعة الثانية", url: "https://example.test/book", bibliographicNote: "" };
 
 describe("bulk source import", () => {
   beforeEach(() => {

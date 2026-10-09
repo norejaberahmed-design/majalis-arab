@@ -47,6 +47,7 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
       author: true,
       publisher: true,
       publicationYear: true,
+      edition: true,
       url: true,
       bibliographicNote: true,
       accessStatus: true,
@@ -95,7 +96,7 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
       <section className="page-intro">
         <p className="eyebrow">سجل ببليوغرافي موثق</p>
         <h1>{source.title}</h1>
-        <p className="intro">{[source.author, source.publisher, source.publicationYear].filter(Boolean).join(" · ") || "بيانات المؤلف والناشر وسنة النشر غير مكتملة."}</p>
+        <p className="intro">{[source.author, source.publisher, source.edition, source.publicationYear].filter(Boolean).join(" · ") || "بيانات المؤلف والناشر وسنة النشر غير مكتملة."}</p>
         {safeUrl && <p><a className="text-link" href={safeUrl} target="_blank" rel="noopener noreferrer">فتح موقع المصدر ↗</a></p>}
       </section>
 
