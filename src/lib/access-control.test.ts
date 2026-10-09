@@ -58,3 +58,17 @@ describe("state-changing request origin checks", () => {
     }))).toBe(false);
   });
 });
+
+import { isCatalogueCurator } from "./source-intake";
+
+describe("catalogue curator allowlist", () => {
+  it("matches configured email addresses case-insensitively", () => {
+    expect(isCatalogueCurator("Curator@Example.com", "curator@example.com, editor@example.com")).toBe(true);
+  });
+
+  it("rejects missing identities, empty configuration, and non-members", () => {
+    expect(isCatalogueCurator(null, "curator@example.com")).toBe(false);
+    expect(isCatalogueCurator("curator@example.com", " ")).toBe(false);
+    expect(isCatalogueCurator("attacker@example.com", "curator@example.com")).toBe(false);
+  });
+});
