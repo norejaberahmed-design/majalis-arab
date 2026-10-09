@@ -20,9 +20,9 @@ vi.mock("@/lib/workspace", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
-import { GET as listAdditionRequests } from "./route";
-import { PATCH as reviewAdditionRequest } from "./[id]/route";
-import { GET as getEntityNote } from "../entities/[id]/note/route";
+import { GET as listAdditionRequests } from "./addition-requests/route";
+import { PATCH as reviewAdditionRequest } from "./addition-requests/[id]/route";
+import { GET as getEntityNote } from "./entities/[id]/note/route";
 
 const suffix = `tenant-test-${crypto.randomUUID()}`;
 let userA: { id: string; email: string };
