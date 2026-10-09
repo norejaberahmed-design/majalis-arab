@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
+import { readJsonBody } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
 
@@ -43,24 +44,12 @@ export async function POST(request: NextRequest) {
     const context = await getWorkspaceContext(request.headers);
     if (!context) return NextResponse.json({ error: "سجّل الدخول واختر مساحة عمل" }, { status: 401, headers: NO_STORE });
 
-    const contentType = request.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
-    if (contentType !== "application/json") {
-      return NextResponse.json({ error: "يجب إرسال البيانات بصيغة JSON" }, { status: 415, headers: NO_STORE });
-    }
-    const length = Number(request.headers.get("content-length") || 0);
-    if (Number.isFinite(length) && length > 8192) {
-      return NextResponse.json({ error: "حجم الطلب أكبر من الحد المسموح" }, { status: 413, headers: NO_STORE });
-    }
-    const raw = await request.text();
-    if (new TextEncoder().encode(raw).byteLength > 8192) {
-      return NextResponse.json({ error: "حجم الطلب أكبر من الحد المسموح" }, { status: 413, headers: NO_STORE });
+    const body = await readJsonBody(request, 8192);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
     }
 
-    let json: unknown;
-    try { json = JSON.parse(raw); } catch {
-      return NextResponse.json({ error: "صيغة JSON غير صحيحة" }, { status: 400, headers: NO_STORE });
-    }
-    const parsed = requestSchema.safeParse(json);
+    const parsed = requestSchema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json({ error: "تحقق من الاسم ونوع الكيان والتفسير (10 إلى 3000 حرف)" }, { status: 400, headers: NO_STORE });
     }
