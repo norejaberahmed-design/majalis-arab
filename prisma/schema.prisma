@@ -60,6 +60,7 @@ model Source {
   updatedAt          DateTime        @updatedAt
   passages           EvidencePassage[]
   claims             HistoricalClaim[]
+  suggestions        ResearchSuggestion[]
 }
 
 model EvidencePassage {
@@ -77,6 +78,7 @@ model EvidencePassage {
   entity          TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
   claims          HistoricalClaim[] @relation("ClaimSupportingPassages")
   contradicts     HistoricalClaim[] @relation("ClaimContradictingPassages")
+  suggestions     ResearchSuggestion[]
 
   @@index([sourceId, pageLabel])
   @@index([entityId])
@@ -117,6 +119,30 @@ model Place {
   updatedAt   DateTime @updatedAt
 
   @@index([name])
+}
+
+
+/// Workspace-scoped review queue. Drafts never become accepted historical claims automatically.
+model ResearchSuggestion {
+  id            String         @id @default(cuid())
+  workspaceId   String
+  sourceId      String
+  passageId     String
+  statement     String
+  evidenceQuote String
+  status        String         @default("PENDING")
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNote    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  source        Source          @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  passage       EvidencePassage @relation(fields: [passageId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, passageId, statement])
+  @@index([workspaceId, status, createdAt])
+  @@index([sourceId, passageId])
 }
 
 model ResearchDecision {
@@ -255,6 +281,7 @@ model Workspace {
   requests    AdditionRequest[]
   decisions   ResearchDecision[]
   auditLogs   AuditLog[]
+  suggestions ResearchSuggestion[]
   entityNotes WorkspaceEntityNote[]
   councilPosts CouncilPost[]
 }
