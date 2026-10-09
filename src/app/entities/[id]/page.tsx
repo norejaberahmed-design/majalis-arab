@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
 import { roleAtLeast } from "@/lib/workspace";
 import EntityWorkspaceNote from "../entity-workspace-note";
+import { isCatalogueCurator } from "@/lib/source-intake";
+import RelationshipCreateForm from "./relationship-create-form";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +111,14 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
     })
   ]);
   const currentCouncilIsForEntity = workspaceTribeLink?.entityId === entity.id;
+  const canManageRelationships = roleAtLeast(workspace.role, "REVIEWER") &&
+    isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
+  const relationshipClaims = entity.claims
+    .filter(claim => claim.status === "SUPPORTED" && claim.reviewedByHuman && claim.supportingPassages.some(passage => passage.reviewedByHuman))
+    .map(claim => ({ id: claim.id, statement: claim.statement }));
+  const relationshipTargets = canManageRelationships
+    ? await prisma.tribalEntity.findMany({ where: { id: { not: entity.id } }, orderBy: { name: "asc" }, take: 500, select: { id: true, name: true, kind: true } })
+    : [];
   const canEditNote = roleAtLeast(workspace.role, "EDITOR");
   const relationships = [
     ...entity.outgoing.map(item => ({
@@ -180,6 +190,8 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
           </div>
         )}
       </section>
+
+      {canManageRelationships && <RelationshipCreateForm fromEntityId={entity.id} targets={relationshipTargets} claims={relationshipClaims} />}
 
       <section className="panel list-panel">
         <div className="list-heading"><h2>الادعاءات والأدلة المرتبطة</h2><span className="count-pill">{entity.claims.length}</span></div>
