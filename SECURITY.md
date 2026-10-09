@@ -1,25 +1,28 @@
-# Security policy
+# سياسة الأمان
 
-## Current release status
+## حالة الإطلاق الحالية
 
-**Not production-ready.** Authentication, authorization, and per-user/workspace data isolation are not implemented. The production middleware intentionally returns HTTP 503 until those controls are implemented and reviewed. Do not remove that gate to make a deployment appear available.
+**المشروع غير جاهز للإطلاق العام.** توجد أساسيات للمصادقة والجلسات واستعادة الحساب، لكن التفويض على مستوى كل سجل، وعزل البيانات الخاصة بين مساحات العمل، وتحديد المعدل، واختبارات التكامل لم تكتمل أو لم تُتحقق بالكامل. بوابة الإنتاج تعيد HTTP 503 لمعظم مسارات التطبيق عمدًا. لا تُزل هذه البوابة لمجرد إتاحة النشر.
 
-## Reporting a vulnerability
+الكتالوج البحثي الأساسي (الكيانات والعلاقات والمصادر ومقاطع الأدلة والادعاءات والأماكن) مشترك للقراءة، ويجب ألا يحتوي على بيانات خاصة. طلبات الإضافة والقرارات وملاحظات مساحة العمل وسجلات التدقيق يجب أن تكون مقيدة بمساحة العمل، لكن لا تُعتبر هذه السياسة دليلًا على اكتمال العزل.
 
-Please do not publish exploit details, private records, credentials, or personal information in a public issue. Use GitHub's private vulnerability reporting / security advisory feature for this repository when available. Include the affected route or file, impact, reproduction steps, and a suggested mitigation. Do not include real user data.
+## الإبلاغ عن ثغرة
 
-## Required controls before public launch
+لا تنشر تفاصيل الاستغلال أو السجلات الخاصة أو بيانات الاعتماد أو المعلومات الشخصية في قضية عامة. استخدم الإبلاغ الخاص عن الثغرات أو ميزة Security Advisory في GitHub عند توفرها. اذكر المسار المتأثر والأثر وخطوات إعادة الإنتاج والتخفيف المقترح، دون إرفاق بيانات مستخدمين حقيقية.
 
-- Authentication with secure session handling, account recovery, and session revocation.
-- Authorization checks on every page, API route, and record operation.
-- Workspace/tenant isolation enforced in the database access layer, not only in the UI.
-- CSRF/origin protections for state-changing requests when cookie sessions are used.
-- Durable rate limiting and abuse controls.
-- Safe input validation, output minimization, and security headers.
-- Dependency and static analysis checks; passing integration tests.
-- Tested backup/restore and an incident response process.
-- Independent security review / penetration test before accepting sensitive data.
+## متطلبات ما قبل الإطلاق
 
-## Test status
+- التحقق من المصادقة والتحقق من البريد واستعادة كلمة المرور وإبطال الجلسات.
+- فحص التفويض في كل صفحة وواجهة API وعملية سجل.
+- اختبارات سلبية تثبت عزل السجلات الخاصة بين مساحات العمل.
+- قيود واضحة على بيانات الكتالوج المشترك وصلاحيات الكتابة والمراجعة.
+- تحديد معدل durable لعمليات الدخول وإنشاء الحساب واستعادة كلمة المرور وإنشاء مساحات العمل.
+- مراجعة ترحيلات قاعدة البيانات وملكية السجلات والحقول القديمة.
+- تثبيت الاعتماديات بصورة قابلة لإعادة الإنتاج عبر lockfile و`npm ci`.
+- فحص الاعتماديات وCodeQL والاختبارات والبناء على commit واحد.
+- اختبار النسخ الاحتياطي والاستعادة، وخطة استجابة للحوادث.
+- مراجعة أمنية مستقلة قبل قبول بيانات حساسة.
 
-The repository contains unit tests and GitHub Actions workflows for validation, dependency auditing, build checks, and CodeQL analysis. A workflow definition is not proof that a workflow has run or passed. Verify the latest run results in the GitHub Actions tab before treating any check as passed.
+## حالة الفحوصات
+
+قد تنجح الاختبارات والبناء وتدقيق اعتماديات الإنتاج، بينما يظل تقرير الاعتماديات الكامل يحتوي على تحذير في سلسلة أدوات التطوير. لا نعد ذلك خلوًا كاملًا من الثغرات. راجع آخر تشغيل GitHub Actions، وتقرير `npm audit` الكامل، وقضايا موانع الإطلاق قبل اعتبار أي إصدار جاهزًا.
