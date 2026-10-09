@@ -17,6 +17,8 @@ export function middleware(request: NextRequest) {
     const authSurface =
       path === "/login" ||
       path === "/setup" ||
+      path === "/forgot-password" ||
+      path === "/reset-password" ||
       path.startsWith("/api/auth/") ||
       path === "/api/workspaces" ||
       path === "/api/workspaces/active";
