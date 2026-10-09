@@ -49,14 +49,17 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
     minPasswordLength: 12,
     maxPasswordLength: 128,
     autoSignIn: true,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, token }) => {
+      const resetUrl = new URL("/reset-password", baseURL);
+      resetUrl.searchParams.set("token", token);
       if (!mailer || !mailFrom) {
         if (process.env.NODE_ENV === "development") {
-          console.info("[DEV ONLY] Password reset link for " + user.email + ": " + url);
+          console.info("[DEV ONLY] Password reset link for " + user.email + ": " + resetUrl.toString());
           return;
         }
         throw new Error("Password reset email delivery is not configured.");
@@ -65,7 +68,7 @@ export const auth = betterAuth({
         from: mailFrom,
         to: user.email,
         subject: "إعادة تعيين كلمة المرور — مجالس العرب",
-        text: "مرحبًا " + user.name + ",\n\nلإعادة تعيين كلمة المرور افتح الرابط التالي: " + url + "\n\nإذا لم تطلب إعادة التعيين فتجاهل هذه الرسالة."
+        text: "مرحبًا " + user.name + ",\n\nلإعادة تعيين كلمة المرور افتح الرابط التالي: " + resetUrl.toString() + "\n\nإذا لم تطلب إعادة التعيين فتجاهل هذه الرسالة."
       });
     }
   },
