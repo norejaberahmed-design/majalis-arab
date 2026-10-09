@@ -11,12 +11,17 @@ function cookieHeader(response: Response) {
   return values.map(value => value.split(";")[0]).filter(Boolean).join("; ");
 }
 
-function loggedLink(spy: ReturnType<typeof vi.spyOn>, label: string) {
-  const messages = spy.mock.calls.map(call => call.map(String).join(" ")).filter(message => message.includes(label));
-  const last = messages.at(-1);
-  const match = last?.match(/https?:\/\/[^\s]+/);
-  if (!match) throw new Error(`Development mail log did not contain a ${label} URL.`);
-  return match[0].replace(/[),]+$/, "");
+async function loggedLink(spy: ReturnType<typeof vi.spyOn>, label: string) {
+  // Better Auth may schedule password-reset email delivery after returning its
+  // generic response; wait briefly for the development-only captured link.
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const messages = spy.mock.calls.map(call => call.map(String).join(" ")).filter(message => message.includes(label));
+    const last = messages.at(-1);
+    const match = last?.match(/https?:\/\/[^\s]+/);
+    if (match) return match[0].replace(/[),]+$/, "");
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  throw new Error(`Development mail log did not contain a ${label} URL.`);
 }
 
 describe("authentication lifecycle against SQLite", () => {
@@ -56,7 +61,7 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ name: "Lifecycle Test", email, password: oldPassword })
     }));
     expect(signUp.status).toBeLessThan(400);
-    const verificationUrl = loggedLink(mailLog, "Verification link");
+    const verificationUrl = await loggedLink(mailLog, "Verification link");
     const verification = await auth.handler(new Request(verificationUrl, { headers: { origin: BASE_URL } }));
     expect(verification.status).toBeLessThan(400);
 
@@ -113,7 +118,7 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ email, redirectTo: "/reset-password" })
     }));
     expect(resetRequest.status).toBeLessThan(400);
-    const resetUrl = loggedLink(mailLog, "Password reset link");
+    const resetUrl = await loggedLink(mailLog, "Password reset link");
     const resetToken = new URL(resetUrl).searchParams.get("token");
     expect(resetToken).toBeTruthy();
 
