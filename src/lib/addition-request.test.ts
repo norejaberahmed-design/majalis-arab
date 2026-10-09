@@ -26,7 +26,10 @@ describe("additionRequestSchema", () => {
 
   it("allows an omitted or empty source URL", () => {
     expect(additionRequestSchema.safeParse({ ...valid, sourceUrl: "" }).success).toBe(true);
-    const { sourceUrl: _sourceUrl, ...withoutSource } = valid;
-    expect(additionRequestSchema.safeParse(withoutSource).success).toBe(true);
+    expect(additionRequestSchema.safeParse({
+      proposedName: valid.proposedName,
+      proposedKind: valid.proposedKind,
+      explanation: valid.explanation
+    }).success).toBe(true);
   });
 });
