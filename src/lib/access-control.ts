@@ -16,12 +16,20 @@ export function roleAtLeast(role: string, minimum: WorkspaceRole) {
 export function hasTrustedOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return false;
+
   try {
     const originUrl = new URL(origin);
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
-    if (!host) return false;
-    return originUrl.host.toLowerCase() === host.toLowerCase() &&
-      (originUrl.protocol === "https:" || originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1");
+    const requestUrl = new URL(request.url);
+
+    // Compare against the request's canonical origin, not a client-supplied
+    // X-Forwarded-Host value. Reverse proxies must configure Next.js with the
+    // canonical public URL instead of trusting arbitrary forwarding headers.
+    if (originUrl.origin.toLowerCase() !== requestUrl.origin.toLowerCase()) return false;
+
+    return originUrl.protocol === "https:" ||
+      originUrl.hostname === "localhost" ||
+      originUrl.hostname === "127.0.0.1" ||
+      originUrl.hostname === "[::1]";
   } catch {
     return false;
   }
