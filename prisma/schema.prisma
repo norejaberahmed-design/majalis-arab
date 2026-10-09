@@ -23,6 +23,7 @@ model TribalEntity {
   passages    EvidencePassage[]
   requests    AdditionRequest[]
   workspaceNotes WorkspaceEntityNote[]
+  councilWorkspaces WorkspaceTribe[]
 
   @@unique([normalizedName])
   @@index([kind])
@@ -284,6 +285,7 @@ model Workspace {
   suggestions ResearchSuggestion[]
   entityNotes WorkspaceEntityNote[]
   councilPosts CouncilPost[]
+  tribeLink WorkspaceTribe?
 }
 
 model WorkspaceMember {
@@ -374,4 +376,16 @@ model RateLimit {
   lastRequest BigInt
 
   @@map("rateLimit")
+}
+
+
+/// Links a workspace council to a catalogue tribe/clan. It does not assert any member's personal lineage.
+model WorkspaceTribe {
+  workspaceId String       @id
+  entityId    String
+  createdAt   DateTime     @default(now())
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entity      TribalEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
 }
