@@ -228,3 +228,12 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .claim-evidence-controls{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
 .claim-evidence-controls label{display:flex;align-items:center;gap:5px;margin:0;font-size:12px;font-weight:500}
 .claim-evidence-controls input{width:auto;margin:0;accent-color:var(--green)}
+
+
+/* Human review controls for historical claims */
+.claim-review-actions{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:8px;max-width:560px}
+.claim-review-actions label{display:block;font-size:12px;font-weight:600}
+.claim-review-actions select,.claim-review-actions textarea{display:block;width:100%;margin-top:5px;border:1px solid #d9ddd6;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px;padding:9px 10px}
+.claim-review-actions textarea{resize:vertical}
+.claim-review-actions .secondary-button{justify-self:start;cursor:pointer}
+.claim-review-actions button:disabled{opacity:.55;cursor:wait}
