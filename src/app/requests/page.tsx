@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
   const workspace = await requireWorkspace();
-  const canReview = roleAtLeast(workspace.role, "REVIEWER");
+  const canReview = roleAtLeast(workspace.role, "REVIEWER");\n  const canPublish = workspace.role === "OWNER";
   const requests = await prisma.additionRequest.findMany({
     where: canReview
       ? { workspaceId: workspace.workspaceId }
@@ -40,7 +40,7 @@ export default async function RequestsPage() {
         <p className="intro">تُحفظ الاقتراحات داخل مساحة العمل. المراجعة تسجل قرارًا وملاحظة وتاريخًا في سجل التدقيق؛ ولا تنشر الكيان في الكتالوج المشترك تلقائيًا.</p>
       </section>
       {!canReview && <p className="muted">تعرض هذه الصفحة طلباتك فقط. تتطلب مراجعة طلبات بقية أعضاء المساحة دور المراجع أو المالك.</p>}
-      <RequestList initialRequests={requests.map(item => ({ ...item, createdAt: item.createdAt.toISOString() }))} canReview={canReview} />
+      <RequestList initialRequests={requests.map(item => ({ ...item, createdAt: item.createdAt.toISOString() }))} canReview={canReview} canPublish={canPublish} />
     </main>
   );
 }
