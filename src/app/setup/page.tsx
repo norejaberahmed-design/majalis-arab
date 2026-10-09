@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import CouncilMembers from "./council-members";
+import TribeCouncilLink from "./tribe-council-link";
 
 type Workspace = { id: string; name: string; role: string };
 
@@ -73,6 +74,7 @@ export default function WorkspaceSetupPage() {
       </form>
       <div className="setup-divider" />
       <CouncilMembers />
+      <TribeCouncilLink />
     </section>
   </main>;
 }
