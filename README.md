@@ -1,72 +1,55 @@
 # مجالس العرب — المرحلة الأولى
 
-واجهة عربية RTL لبناء سجل بحثي موثق للكيانات والعلاقات والمصادر والأدلة. المبدأ الأساسي: لا تُضاف روايات أو أنساب مختلقة، ولا يُوصف أي ادعاء بأنه مثبت دون مصدر وأدلة ومراجعة بشرية.
+واجهة عربية RTL لسجل بحثي يربط الكيانات والعلاقات بالمصادر والأدلة والادعاءات التاريخية. المبدأ: لا تُختلق بيانات أو أنساب، ولا يُعامل الادعاء بوصفه حقيقة مثبتة لمجرد وجوده في النظام.
 
 ## الحالة الحالية
 
-هذه مرحلة تأسيسية وليست منصة مكتملة. تتضمن:
-- واجهة عربية متجاوبة تقرأ العدادات من قاعدة البيانات.
-- مخطط SQLite عبر Prisma للنماذج البحثية الأساسية.
-- API لإنشاء الكيانات والتحقق من المدخلات والبحث/الاستعراض.
-- حالات منفصلة للمصدر، واستخراج النص، ومراجعة الأدلة، والادعاءات المتعارضة.
-- لا توجد بيانات قبلية تجريبية أو نتائج ثابتة مزيفة.
+هذه نسخة تأسيسية قيد التطوير، وليست جاهزة للإطلاق العام.
 
-## التشغيل محليًا
+- Next.js وTypeScript وPrisma مع قاعدة SQLite.
+- تسجيل دخول بالبريد وكلمة المرور عبر Better Auth، مع أساس للتحقق من البريد واستعادة كلمة المرور. الإرسال الفعلي يتطلب إعداد SMTP صالحًا.
+- إنشاء مساحة عمل وعضويات بأدوار أولية، مع تحقق خادمي من العضوية عند اختيار المساحة.
+- كتالوج بحثي **مشترك للقراءة** بين مساحات العمل: الكيانات والعلاقات والمصادر ومقاطع الأدلة والادعاءات والأماكن. يجب أن تكون هذه السجلات عامة وغير سرية.
+- إنشاء الكيانات متوقف مؤقتًا عبر API (يرجع HTTP 503) حتى تُعتمد صلاحيات إدارة الكتالوج والمراجعة.
+- ملاحظات مساحة العمل وطلبات الإضافة والقرارات وسجلات التدقيق مصممة لتكون خاصة بمساحة العمل، لكن اختبار العزل الشامل وواجهات إدارتها لم يكتمل بعد.
+- الواجهة لا تعرض بيانات بحثية تجريبية ثابتة بوصفها بيانات حقيقية؛ الأرقام تُقرأ من قاعدة البيانات.
 
-1. ثبّت Node.js 20 أو أحدث.
+سياسة الرؤية: [الكتالوج المشترك وخصوصية مساحة العمل](docs/CATALOGUE_VISIBILITY_AND_WORKSPACE_PRIVACY.md).
+
+## التشغيل المحلي
+
+1. استخدم Node.js 20 أو أحدث.
 2. انسخ `.env.example` إلى `.env`.
 3. ثبّت الاعتماديات: `npm install`.
-4. طبّق مخطط قاعدة البيانات: `npm run db:deploy`.
+4. تحقّق من متغيرات البيئة المطلوبة، ثم طبّق الترحيلات: `npm run db:deploy`.
 5. ولّد Prisma Client: `npm run db:generate`.
-6. أنشئ `BETTER_AUTH_SECRET` عشوائيًا بطول 32 حرفًا على الأقل، واضبط `BETTER_AUTH_URL`.
-7. شغّل التطبيق: `npm run dev`.
+6. شغّل التطبيق: `npm run dev`.
 
-## نقاط لم تُنجز بعد
+في بيئة الإنتاج يلزم إعداد `BETTER_AUTH_SECRET` عشوائي بطول 32 حرفًا على الأقل، و`BETTER_AUTH_URL` بعنوان HTTPS رسمي، وإعدادات SMTP. لا تستخدم قيم CI أو بيانات تجريبية في الإنتاج.
 
-- صفحات إدارة CRUD كاملة للمصادر والمقاطع والادعاءات والأماكن وطلبات الإضافة.
-- المصادقة بالبريد وكلمة المرور والتحقق من البريد، وإنشاء مساحة عمل وصلاحية مالك أولية. إدارة الدعوات وتغيير الأدوار وإجراءات المراجعة ما زالت بحاجة إلى تنفيذ.
-- اختبارات وحدة أولية للتحقق من المدخلات وتطبيع الأسماء؛ اختبارات تكامل فعلية للقاعدة وواجهات API لم تُشغّل بعد.
-- تدقيق قانونية الوصول للمصادر وحقوق النصوص قبل استيرادها.
-- مراجعة بشرية لأي ادعاء يراد نقله إلى حالة `SUPPORTED`.
+## التحقق الآلي
 
-لا تعتبر هذه المرحلة جاهزة للإنتاج. توجد بنية أولية للمصادقة ومساحات العمل، لكن لم يكتمل بعد اختبار عزل جميع المسارات أو إدارة العضويات، وبوابة الإنتاج ما زالت تمنع الوصول إلى بيانات التطبيق.
+تشغّل GitHub Actions التحقق من مخطط Prisma، وتوليد العميل، والاختبارات، وESLint، وبناء الإنتاج، وتدقيق الاعتماديات. توجد اختبارات وحدة أولية للصلاحيات والتحقق من المدخلات وأمان الروابط وبوابة الإطلاق؛ أما اختبارات تكامل قاعدة البيانات وواجهات API والعزل بين المساحات فما زالت مطلوبة.
 
+## ما يمنع الإطلاق
 
-## Authentication and workspace-isolation plan
+- فحص الاعتماديات على أحدث commit وإغلاق أو توثيق الاستثناءات الأمنية.
+- إنشاء lockfile موثوق واستخدام تثبيت قابل لإعادة الإنتاج.
+- اختبارات سلبية تثبت أن الملاحظات والطلبات والقرارات وسجلات التدقيق لا تتسرب بين مساحات العمل.
+- مراجعة ترحيلات قاعدة البيانات، وحقول الملكية، وحالات السجلات القديمة.
+- إكمال إدارة الأعضاء والأدوار ومسارات المراجعة.
+- اختبارات تكامل للحساب والتحقق من البريد وإعادة تعيين كلمة المرور.
+- مراجعة حقوق الوصول إلى المصادر وحقوق النصوص، ثم مراجعة أمنية قبل الإطلاق.
 
-The implementation requirements and release criteria are documented in [`docs/AUTHENTICATION_AND_TENANCY.md`](docs/AUTHENTICATION_AND_TENANCY.md). This is a plan only: authentication, workspace ownership, and isolation are still not implemented. The production release gate must remain enabled.
+**بوابة الإنتاج مغلقة عمدًا.** يعيد middleware استجابة HTTP 503 لمسارات التطبيق في الإنتاج حتى تُغلق موانع الإطلاق وتُراجع الأدلة. لا تزل هذه البوابة لجعل النشر يبدو متاحًا.
 
-## Security release gate (important)
+## مستندات التنفيذ
 
-The application now has an initial authentication and workspace-membership implementation, but full authorization coverage, member administration, and end-to-end isolation tests are still incomplete. Therefore, **it is not safe to deploy as a public production application**.
+- [ميثاق التنفيذ وبوابات التسليم](docs/DELIVERY_TEAM_AND_EXECUTION_CHARTER.md)
+- [خطة المصادقة والعزل](docs/AUTHENTICATION_AND_TENANCY.md)
+- [سياسة الكتالوج المشترك وخصوصية مساحة العمل](docs/CATALOGUE_VISIBILITY_AND_WORKSPACE_PRIVACY.md)
+- [مانع الإطلاق الأمني #5](https://github.com/norejaberahmed-design/majalis-arab/issues/5)
+- [تدقيق الاعتماديات #6](https://github.com/norejaberahmed-design/majalis-arab/issues/6)
+- [حدود الكتالوج والعزل #7](https://github.com/norejaberahmed-design/majalis-arab/issues/7)
 
-A temporary production middleware gate now returns HTTP 503 for application routes until the missing security controls are implemented and reviewed. Local development remains available. Do not remove this gate just to make a deployment appear live.
-
-Security controls added in this branch:
-- Common HTTP security headers (content-type sniffing, framing, referrer policy, permissions policy, and cross-origin opener policy).
-- Production fail-closed gate while authentication and data isolation are absent.
-- Audit-log model and an audit record for entity creation only.
-
-Release blockers still open:
-- Full authentication lifecycle including password recovery and verified-email delivery configuration.
-- Authorization checks on every page and API route.
-- Workspace/tenant ownership on every private record and database query.
-- CSRF/origin protections for state-changing requests once cookie sessions are added.
-- Durable rate limiting and abuse protection.
-- Backup/restore and encryption-at-rest strategy appropriate to the hosting platform.
-- Security test coverage, dependency audit, and external penetration test before launch.
-
-No claim of being "unhackable" or production-ready is made. Remove the production gate only after the blockers are addressed and tests pass.
-
-
-## Security tests added
-
-- Bounded JSON parsing rejects non-JSON content types, malformed JSON, and bodies exceeding the configured byte limit.
-- Entity API responses are marked no-store, search input length is bounded, returned entity fields are minimized, and server errors do not expose exception details to clients.
-- External source links accept only HTTP(S) URLs and reject script schemes or embedded credentials.
-- Unit tests cover the release gate and these input-validation rules. These tests are authored but **have not yet been executed in a runtime**.
-
-
-## خطة الفريق ومعايير الإنجاز
-
-راجع [ميثاق فريق التنفيذ وبوابات التسليم](docs/DELIVERY_TEAM_AND_EXECUTION_CHARTER.md) لمعرفة مسؤوليات المسارات التخصصية، ومعايير توثيق الأدلة، ومراحل التحقق، وشروط فتح الإنتاج. وتتبع العمل الأمني في [Issue #5](https://github.com/norejaberahmed-design/majalis-arab/issues/5).
+لا ندّعي أن التطبيق غير قابل للاختراق أو جاهز للإنتاج؛ الجاهزية لا تُعلن إلا بعد نجاح الاختبارات على نفس commit وإغلاق موانع الأمان والعزل.
