@@ -13,6 +13,7 @@ model TribalEntity {
   normalizedName String
   kind        String         @default("OTHER")
   summary     String?
+  /// Legacy catalogue field; do not use for private workspace notes. Use WorkspaceEntityNote instead.
   notes       String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
