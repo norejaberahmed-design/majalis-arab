@@ -43,9 +43,13 @@ try {
   let sourceId;
   let workspaceId;
   try {
-    const source = await prisma.source.create({ data: { title: "upgrade-path-sentinel" } });
+    sourceId = "upgrade-source-sentinel";
+    await prisma.$executeRawUnsafe(
+      'INSERT INTO "Source" ("id", "title", "createdAt", "updatedAt") VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
+      sourceId,
+      "upgrade-path-sentinel"
+    );
     const workspace = await prisma.workspace.create({ data: { name: "Upgrade sentinel", slug: "upgrade-sentinel" } });
-    sourceId = source.id;
     workspaceId = workspace.id;
   } finally {
     await prisma.$disconnect();
