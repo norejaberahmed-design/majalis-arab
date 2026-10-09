@@ -97,3 +97,20 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .workspace-actions a,.workspace-actions button{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;cursor:pointer}
 .workspace-actions button{color:#873b2d}
 @media(max-width:480px){.workspace-actions{gap:5px}.workspace-actions a,.workspace-actions button{font-size:10px;padding:6px}}
+
+
+/* Workspace-scoped request review */
+.request-content{min-width:0;flex:1}
+.request-row{gap:12px}
+.request-content h3{margin:0 0 5px;font-size:15px}
+.request-content p{margin:0 0 6px;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.request-content .reviewer-note{margin-top:8px;padding:8px 10px;background:#f3f0e7;border-radius:7px;color:#5f655e}
+.review-controls{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.review-controls label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.review-controls textarea{display:block;width:100%;font:inherit;font-size:13px;border:1px solid #d9ddd6;border-radius:8px;padding:9px;background:#fff;color:var(--ink);resize:vertical}
+.review-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.review-buttons button{font:inherit;font-size:12px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer}
+.review-buttons button:nth-child(2){background:var(--green);border-color:var(--green);color:#fff}
+.review-buttons button:nth-child(3){color:#873b2d}
+.review-buttons button:disabled{opacity:.55;cursor:wait}
+@media(max-width:760px){.request-row{flex-direction:column}.request-row>.status-label{align-self:flex-start}}
