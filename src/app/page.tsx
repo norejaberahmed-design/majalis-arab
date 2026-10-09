@@ -25,12 +25,12 @@ export default async function HomePage() {
       </header>
 
       <section className="hero">
-        <p className="eyebrow">المعرفة تبدأ بالمصدر</p>
-        <h1>لا نثبت روايةً بلا دليل.</h1>
-        <p className="intro">كتالوج بحثي مشترك لتنظيم الأسماء والعلاقات والمراجع التاريخية، مع إظهار ما تدعمه الأدلة وما يزال محل بحث. أعداد الكيانات والمصادر والادعاءات عامة؛ أما طلبات الإضافة فتخص مساحة العمل الحالية.</p>
+        <p className="eyebrow">تواصل، شارك، وابنِ مجلسك</p>
+        <h1>مجالس العرب تجمعنا بالحوار.</h1>
+        <p className="intro">مساحة عربية للأحاديث والأسئلة وتبادل الخبرات بين أعضاء المجلس، مع دليل بحثي للمصادر والكيانات لمن يريد التوثيق والتعمق.</p>
         <div className="hero-actions">
-          <Link className="primary-button" href="/entities">استعراض الكيانات</Link>
-          <Link className="secondary-button" href="/sources">سجل المصادر</Link>
+          <Link className="primary-button" href="/council">دخول المجلس والتواصل</Link>
+          <Link className="secondary-button" href="/entities">استعراض الدليل البحثي</Link>
         </div>
       </section>
 
@@ -43,7 +43,11 @@ export default async function HomePage() {
 
       <section className="work-grid">
         <article className="panel">
-          <div className="panel-heading"><span className="panel-icon">01</span><div><h2>الكيانات والعلاقات</h2><p>سجّل الأسماء والفروع والعلاقات دون افتراض صحتها مسبقًا.</p></div></div>
+          <div className="panel-heading"><span className="panel-icon">01</span><div><h2>المجلس والحوار</h2><p>انشر حديثًا، علّق على الأحاديث، وتفاعل مع أعضاء مساحتك.</p></div></div>
+          <Link href="/council" className="text-link">دخول المجلس ←</Link>
+        </article>
+        <article className="panel">
+          <div className="panel-heading"><span className="panel-icon">02</span><div><h2>الكيانات والعلاقات</h2><p>دليل بحثي للأسماء والعلاقات دون افتراض صحتها مسبقًا.</p></div></div>
           <Link href="/entities" className="text-link">فتح سجل الكيانات ←</Link>
         </article>
         <article className="panel">
