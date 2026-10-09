@@ -86,7 +86,7 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
           <span className="brand-mark">م</span>
           <span><strong>مجالس العرب</strong><small>بطاقة المصدر</small></span>
         </Link>
-        <Link href="/sources" className="secondary-button">العودة إلى المصادر</Link>
+        <div className="hero-actions"><Link href="/sources" className="secondary-button">العودة إلى المصادر</Link>{canManageEvidence && <Link href="/curation" className="secondary-button">مسودات المراجعة</Link>}</div>
       </header>
 
       <section className="page-intro">
