@@ -42,7 +42,7 @@ export default async function EntitiesPage() {
         <section className="panel list-panel">
           <div className="list-heading"><h2>السجلات الحالية</h2><span className="count-pill">{entities.length}</span></div>
           {entities.length === 0 ? (
-            <div className="empty-state"><strong>لا توجد سجلات بعد</strong><p>ابدأ بإضافة كيان، ثم اربطه بمصادر وأدلة قابلة للمراجعة.</p></div>
+            <div className="empty-state"><strong>لا توجد سجلات بعد</strong><p>إضافة الكيانات متوقفة مؤقتًا حتى اعتماد صلاحيات الكتالوج المشترك والمراجعة. لم تُضف بيانات افتراضية.</p></div>
           ) : (
             <div className="entity-list">
               {entities.map(entity => (
