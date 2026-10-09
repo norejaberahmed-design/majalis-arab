@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
-import { headers } from "next/headers";
-import { getWorkspaceContext } from "@/lib/workspace";
+import { requireWorkspace } from "@/lib/current-user";
 import SourceIntakeForm from "./source-intake-form";
 import { roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
@@ -23,7 +22,7 @@ const extractionLabels: Record<string, string> = {
 };
 
 export default async function SourcesPage() {
-  const workspace = await getWorkspaceContext(await headers());
+  const workspace = await requireWorkspace();
   const canRegisterSource = !!workspace && roleAtLeast(workspace.role, "REVIEWER") &&
     isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
   const sources = await prisma.source.findMany({
