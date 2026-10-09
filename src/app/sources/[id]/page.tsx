@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
+import { headers } from "next/headers";
+import { getWorkspaceContext, roleAtLeast } from "@/lib/workspace";
+import { isCatalogueCurator } from "@/lib/source-intake";
+import EvidencePassageForm from "../evidence-passage-form";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +75,9 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
 
   if (!source) notFound();
   const safeUrl = safeExternalHttpUrl(source.url);
+  const workspace = await getWorkspaceContext(await headers());
+  const canManageEvidence = !!workspace && roleAtLeast(workspace.role, "REVIEWER") &&
+    isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
 
   return (
     <main className="shell">
@@ -133,6 +140,8 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
           ))}
         </div>}
       </section>
+
+      {canManageEvidence && <EvidencePassageForm sourceId={source.id} />}
 
       <section className="unknowns compact-unknowns">
         <strong>حدود ما نعرفه</strong>
