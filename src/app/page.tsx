@@ -27,7 +27,7 @@ export default async function HomePage() {
       <section className="hero">
         <p className="eyebrow">المعرفة تبدأ بالمصدر</p>
         <h1>لا نثبت روايةً بلا دليل.</h1>
-        <p className="intro">مساحة بحث لتنظيم الأسماء والعلاقات والمراجع التاريخية، مع إظهار ما تدعمه الأدلة وما يزال محل بحث.</p>
+        <p className="intro">كتالوج بحثي مشترك لتنظيم الأسماء والعلاقات والمراجع التاريخية، مع إظهار ما تدعمه الأدلة وما يزال محل بحث. أعداد الكيانات والمصادر والادعاءات عامة؛ أما طلبات الإضافة فتخص مساحة العمل الحالية.</p>
         <div className="hero-actions">
           <Link className="primary-button" href="/entities">استعراض الكيانات</Link>
           <Link className="secondary-button" href="/sources">سجل المصادر</Link>
