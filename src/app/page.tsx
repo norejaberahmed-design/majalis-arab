@@ -54,6 +54,10 @@ export default async function HomePage() {
           <div className="panel-heading"><span className="panel-icon">03</span><div><h2>الادعاءات المتعارضة</h2><p>احتفظ بالأدلة المؤيدة والمناقضة، ولا تجعل الادعاء مثبتًا تلقائيًا.</p></div></div>
           <Link href="/claims" className="text-link">مراجعة الادعاءات ←</Link>
         </article>
+        <article className="panel">
+          <div className="panel-heading"><span className="panel-icon">04</span><div><h2>طلبات الإضافة</h2><p>تابع اقتراحات الكيانات وملاحظات المراجعة داخل مساحة العمل.</p></div></div>
+          <Link href="/requests" className="text-link">فتح طلبات الإضافة ←</Link>
+        </article>
       </section>
 
       <section className="unknowns">
