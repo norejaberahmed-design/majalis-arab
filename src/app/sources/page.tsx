@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
 import { requireWorkspace } from "@/lib/current-user";
 import SourceIntakeForm from "./source-intake-form";
+import { roleAtLeast } from "@/lib/workspace";
+import { isCatalogueCurator } from "@/lib/source-intake";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,9 @@ const extractionLabels: Record<string, string> = {
 };
 
 export default async function SourcesPage() {
-  await requireWorkspace();
+  const workspace = await requireWorkspace();
+  const canRegisterSource = roleAtLeast(workspace.role, "REVIEWER") &&
+    isCatalogueCurator(workspace.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
   const sources = await prisma.source.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
@@ -55,7 +59,7 @@ export default async function SourcesPage() {
             </div><span className={source.humanReviewed ? "status-label" : "status-label pending"}>{source.humanReviewed ? "مراجع بشريًا" : "لم يراجع بشريًا"}</span>
           </article>)}</div>}
       </section>
-      <SourceIntakeForm />
+      {canRegisterSource && <SourceIntakeForm />}
       <section className="unknowns compact-unknowns"><strong>ما لا نعرفه بعد</strong><p>لا يوجد حتى الآن استيراد آلي للمصادر أو OCR. حالة الإتاحة والاستخراج لا تُستنتج من رابط وحده.</p></section>
     </main>
   );
