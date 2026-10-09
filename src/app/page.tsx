@@ -36,7 +36,7 @@ export default async function HomePage() {
 
       <section className="stats" aria-label="إحصاءات قاعدة البيانات">
         <article><span>الكيانات المسجلة</span><strong>{entities}</strong><small>من قاعدة البيانات</small></article>
-        <article><span>المصادر</span><strong>{sources}</strong><small>مراجع موثقة في السجل</small></article>
+        <article><span>المصادر</span><strong>{sources}</strong><small>مراجع مسجلة في قاعدة البيانات</small></article>
         <article><span>الادعاءات التاريخية</span><strong>{claims}</strong><small>مع حالات المراجعة</small></article>
         <article><span>طلبات الإضافة</span><strong>{pendingRequests}</strong><small>بانتظار الفرز الأولي</small></article>
       </section>
