@@ -190,7 +190,7 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
                   <small>أدلة مؤيدة: {claim.supportingPassages.length} · أدلة مناقضة: {claim.contradictingPassages.length}</small>
                   {[...claim.supportingPassages, ...claim.contradictingPassages].map(passage => (
                     <p key={passage.id}>
-                      <Link className="text-link" href={`/sources/${passage.source ? claim.source?.id ?? "" : ""}`}>
+                      <Link className="text-link" href={`/sources/${passage.source?.id ?? ""}`}>
                         {passage.source?.title ?? "فتح المصدر"}
                       </Link>
                       {" · "}{passage.pageLabel || passage.locator || "موضع غير محدد"}
