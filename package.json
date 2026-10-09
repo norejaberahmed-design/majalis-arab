@@ -12,7 +12,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "test": "vitest run",
-    "db:seed-bibliography": "node prisma/seed-bibliography.cjs"
+    "db:seed-bibliography": "node prisma/seed-bibliography.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
