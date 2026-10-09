@@ -35,6 +35,18 @@ describe("state-changing request origin checks", () => {
     }))).toBe(false);
   });
 
+  it("does not trust a client-controlled forwarded host", () => {
+    const request = new Request("https://majalis.example/api/workspaces", {
+      method: "POST",
+      headers: {
+        origin: "https://attacker.example",
+        host: "majalis.example",
+        "x-forwarded-host": "attacker.example"
+      }
+    });
+    expect(hasTrustedOrigin(request)).toBe(false);
+  });
+
   it("allows local development origins only on localhost", () => {
     expect(hasTrustedOrigin(new Request("http://localhost:3000/api", {
       method: "POST",
