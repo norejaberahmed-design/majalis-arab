@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { workspaceEntityNoteSchema } from "@/lib/workspace-entity-note";
 import { prisma } from "@/lib/prisma";
 import { readJsonBody } from "@/lib/http";
 import { getWorkspaceContext, hasTrustedOrigin, roleAtLeast } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
-const noteSchema = z.object({ note: z.string().trim().min(1).max(5000) });
 
 async function getContext(request: NextRequest) {
   const workspace = await getWorkspaceContext(request.headers);
@@ -43,7 +42,7 @@ export async function PUT(request: NextRequest, route: { params: Promise<{ id: s
     if (!id || id.length > 64) return NextResponse.json({ error: "معرّف الكيان غير صالح" }, { status: 400, headers: NO_STORE });
     const body = await readJsonBody(request, 8192);
     if (!body.ok) return NextResponse.json({ error: body.error }, { status: body.status, headers: NO_STORE });
-    const parsed = noteSchema.safeParse(body.data);
+    const parsed = workspaceEntityNoteSchema.safeParse(body.data);
     if (!parsed.success) return NextResponse.json({ error: "اكتب ملاحظة من حرف إلى 5000 حرف" }, { status: 400, headers: NO_STORE });
 
     const entity = await prisma.tribalEntity.findUnique({ where: { id }, select: { id: true } });
