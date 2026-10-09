@@ -18,7 +18,7 @@ describe("evidence-grounded extraction", () => {
   it("rejects malformed, short, duplicated, and unsupported suggestions", () => {
     expect(validateEvidenceDrafts({ suggestions: "not an array" }, excerpt)).toEqual([]);
     expect(validateEvidenceDrafts({ suggestions: [
-      { statement: "ادعاء قصير", evidenceQuote: "ذكر المؤرخ" },
+      { statement: "قصير", evidenceQuote: "ذكر المؤرخ" },
       { statement: "ادعاء تاريخي واضح", evidenceQuote: "هذا اقتباس مختلق تمامًا" }
     ] }, excerpt)).toEqual([]);
     expect(validateEvidenceDrafts({ suggestions: [
