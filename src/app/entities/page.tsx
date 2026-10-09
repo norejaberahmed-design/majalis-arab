@@ -36,7 +36,7 @@ export default async function EntitiesPage() {
       <section className="page-intro">
         <p className="eyebrow">السجل البحثي</p>
         <h1>الكيانات</h1>
-        <p className="intro">الأسماء المسجلة في قاعدة البيانات. وجود كيان في السجل لا يعني توثيق نسب أو رواية عنه.</p>
+        <p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل، وليس سجلًا خاصًا بمساحة واحدة. وجود كيان لا يعني توثيق نسب أو رواية عنه.</p>
       </section>
       <div className="entity-layout">
         <section className="panel list-panel">
