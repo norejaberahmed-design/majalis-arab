@@ -6,11 +6,12 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   await requireWorkspace();
-  const [entities, sources, claims, passages] = await Promise.all([
+  const [entities, sources, claims, passages, places] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
     prisma.historicalClaim.count(),
-    prisma.evidencePassage.count()
+    prisma.evidencePassage.count(),
+    prisma.place.count()
   ]);
 
   return (
@@ -37,6 +38,7 @@ export default async function HomePage() {
         <article><span>المصادر</span><strong>{sources}</strong><small>مراجع مسجلة في قاعدة البيانات</small></article>
         <article><span>الادعاءات التاريخية</span><strong>{claims}</strong><small>مع حالات المراجعة</small></article>
         <article><span>مقاطع الأدلة</span><strong>{passages}</strong><small>مقاطع مسجلة في قاعدة البيانات</small></article>
+        <article><span>الأماكن</span><strong>{places}</strong><small>أماكن لها سجلات فعلية</small></article>
       </section>
 
       <section className="work-grid">
@@ -51,6 +53,10 @@ export default async function HomePage() {
         <article className="panel">
           <div className="panel-heading"><span className="panel-icon">02</span><div><h2>المصادر والأدلة</h2><p>اربط كل مقطع بمصدره وصفحته، وميّز بين النص المستخرج والمراجع بشريًا.</p></div></div>
           <Link href="/sources" className="text-link">فتح سجل المصادر ←</Link>
+        </article>
+        <article className="panel">
+          <div className="panel-heading"><span className="panel-icon">05</span><div><h2>الأماكن التاريخية</h2><p>سجل الأماكن المرتبطة بمقاطع مصادر مراجعة، دون تخمين المواقع.</p></div></div>
+          <Link href="/places" className="text-link">فتح سجل الأماكن ←</Link>
         </article>
         <article className="panel">
           <div className="panel-heading"><span className="panel-icon">03</span><div><h2>الادعاءات المتعارضة</h2><p>احتفظ بالأدلة المؤيدة والمناقضة، ولا تجعل الادعاء مثبتًا تلقائيًا.</p></div></div>
