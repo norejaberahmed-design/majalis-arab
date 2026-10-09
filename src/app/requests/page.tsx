@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
   const workspace = await requireWorkspace();
-  const canReview = roleAtLeast(workspace.role, "REVIEWER");\n  const requests = await prisma.additionRequest.findMany({
+  const canReview = roleAtLeast(workspace.role, "REVIEWER");
+  const requests = await prisma.additionRequest.findMany({
     where: canReview
       ? { workspaceId: workspace.workspaceId }
       : { workspaceId: workspace.workspaceId, userId: workspace.user.id },
