@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { roleAtLeast } from "@/lib/access-control";
 export { roleAtLeast, hasTrustedOrigin } from "@/lib/access-control";
 
 export const ACTIVE_WORKSPACE_COOKIE = "majalis_workspace";
@@ -17,7 +18,8 @@ export async function getWorkspaceContext(headers: Headers) {
     where: { workspaceId_userId: { workspaceId, userId: session.user.id } },
     select: { workspaceId: true, role: true, workspace: { select: { id: true, name: true } } }
   });
-  if (!membership) return null;
+  // Treat stale, corrupted, or future role values as no membership until explicitly supported.
+  if (!membership || !roleAtLeast(membership.role, "VIEWER")) return null;
   return {
     user: session.user,
     workspaceId: membership.workspaceId,
