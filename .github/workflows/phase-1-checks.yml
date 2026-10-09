@@ -1,0 +1,77 @@
+name: Phase 1 checks
+
+concurrency:
+  group: phase-1-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["phase-1/evidence-foundation"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - name: Apply migrations to a clean SQLite database
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - name: Verify bibliography import is idempotent and adds no historical claims
+        run: |
+          npm run db:seed-bibliography
+          npm run db:seed-bibliography
+          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count()]).then(([sources,entities,passages,claims])=>{console.log({sources,entities,passages,claims}); if(sources!==4||entities!==0||passages!==0||claims!==0) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - name: Verify attributed public-domain passage import is idempotent
+        run: |
+          npm run db:seed-public-domain-passage
+          npm run db:seed-public-domain-passage
+          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count()]).then(([sources,entities,passages,claims])=>{console.log({sources,entities,passages,claims}); if(sources!==5||entities!==0||passages!==1||claims!==0) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
+        env:
+          DATABASE_URL: "file:./dev.db"
+      - run: npm test
+      - run: npm run lint
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: "file:./dev.db"
+          BETTER_AUTH_SECRET: "ci-only-secret-with-at-least-32-characters"
+          BETTER_AUTH_URL: "https://majalis-ci.example.invalid"
+          SMTP_HOST: "smtp.example.invalid"
+          SMTP_PORT: "587"
+          SMTP_USER: "ci-user"
+          SMTP_PASS: "ci-password-not-used"
+          MAIL_FROM: "Majalis CI <ci@example.invalid>"
+      # Runtime dependencies are a release-blocking security gate.
+      - name: Audit production dependencies
+        if: always()
+        run: npm audit --omit=dev --audit-level=high
+      # Full-tree audit is informational because the current high advisory
+      # GHSA-vfj7-8cjw-p6xm affects braces in the ESLint-only development chain
+      # and has no upstream patched release. Production dependencies remain
+      # blocking above. Recheck the advisory on every run and remove this
+      # exception as soon as an upstream fix is available.
+      - name: Report development dependency vulnerabilities
+        if: always()
+        continue-on-error: true
+        run: npm audit --audit-level=high

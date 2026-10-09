@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model TribalEntity {
+  id          String         @id @default(cuid())
+  name        String
+  normalizedName String
+  kind        String         @default("OTHER")
+  summary     String?
+  /// Legacy catalogue field; do not use for private workspace notes. Use WorkspaceEntityNote instead.
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  outgoing    Relationship[] @relation("RelationshipFrom")
+  incoming    Relationship[] @relation("RelationshipTo")
+  claims      HistoricalClaim[]
+  passages    EvidencePassage[]
+  requests    AdditionRequest[]
+  workspaceNotes WorkspaceEntityNote[]
+
+  @@unique([normalizedName])
+  @@index([kind])
+}
+
+model Relationship {
+  id             String       @id @default(cuid())
+  fromEntityId   String
+  toEntityId     String
+  relationshipType String
+  description    String?
+  claimId        String?
+  createdAt      DateTime     @default(now())
+  fromEntity     TribalEntity @relation("RelationshipFrom", fields: [fromEntityId], references: [id], onDelete: Cascade)
+  toEntity       TribalEntity @relation("RelationshipTo", fields: [toEntityId], references: [id], onDelete: Cascade)
+  claim          HistoricalClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([fromEntityId, relationshipType])
+  @@index([toEntityId, relationshipType])
+}
+
+model Source {
+  id                 String          @id @default(cuid())
+  title              String
+  author             String?
+  publisher          String?
+  publicationYear    Int?
+  url                String?
+  bibliographicNote  String?
+  accessStatus       String          @default("NOT_CHECKED")
+  accessCheckedAt    DateTime?
+  extractionStatus   String          @default("NOT_ATTEMPTED")
+  humanReviewed      Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  passages           EvidencePassage[]
+  claims             HistoricalClaim[]
+  suggestions        ResearchSuggestion[]
+}
+
+model EvidencePassage {
+  id              String       @id @default(cuid())
+  sourceId        String
+  entityId        String?
+  pageLabel       String?
+  passageText     String
+  locator         String?
+  extractedAt     DateTime?
+  reviewedByHuman Boolean      @default(false)
+  reviewNote      String?
+  createdAt       DateTime     @default(now())
+  source          Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  entity          TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  claims          HistoricalClaim[] @relation("ClaimSupportingPassages")
+  contradicts     HistoricalClaim[] @relation("ClaimContradictingPassages")
+  suggestions     ResearchSuggestion[]
+
+  @@index([sourceId, pageLabel])
+  @@index([entityId])
+}
+
+model HistoricalClaim {
+  id                 String           @id @default(cuid())
+  statement          String
+  status             String           @default("UNREVIEWED")
+  confidenceNote     String?
+  reviewerNote       String?
+  reviewedByHuman    Boolean          @default(false)
+  reviewedAt         DateTime?
+  sourceId           String?
+  entityId           String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  source             Source?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  entity             TribalEntity?    @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  supportingPassages EvidencePassage[] @relation("ClaimSupportingPassages")
+  contradictingPassages EvidencePassage[] @relation("ClaimContradictingPassages")
+  relationships      Relationship[]
+
+  @@index([status, updatedAt])
+  @@index([entityId])
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  country     String?
+  region      String?
+  description String?
+  latitude    Float?
+  longitude   Float?
+  sourceNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+
+/// Workspace-scoped review queue. Drafts never become accepted historical claims automatically.
+model ResearchSuggestion {
+  id            String         @id @default(cuid())
+  workspaceId   String
+  sourceId      String
+  passageId     String
+  statement     String
+  evidenceQuote String
+  status        String         @default("PENDING")
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNote    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  source        Source          @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  passage       EvidencePassage @relation(fields: [passageId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, passageId, statement])
+  @@index([workspaceId, status, createdAt])
+  @@index([sourceId, passageId])
+}
+
+model ResearchDecision {
+  id            String       @id @default(cuid())
+  workspaceId   String
+  decisionType  String
+  targetId      String
+  decision      String
+  rationale     String
+  reviewer      String?
+  createdAt     DateTime     @default(now())
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, decisionType, targetId])
+  @@index([decisionType, targetId])
+}
+
+model AdditionRequest {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String?
+  entityId    String?
+  proposedName String
+  proposedKind String        @default("OTHER")
+  explanation String
+  sourceUrl   String?
+  submitter   String?
+  status        String        @default("SUBMITTED")
+  reviewerNote String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entity      TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, status, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  workspaceId String
+  actorUserId String?
+  actor      String?
+  action     String
+  targetType String
+  targetId   String
+  details    String?
+  createdAt  DateTime @default(now())
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actorUser  User?      @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([createdAt])
+}
+
+
+model User {
+  id            String            @id @default(cuid())
+  name          String
+  email         String            @unique
+  emailVerified Boolean           @default(false)
+  image         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  memberships   WorkspaceMember[]
+  additionRequests AdditionRequest[]
+  auditEvents   AuditLog[]
+  entityNotes   WorkspaceEntityNote[]
+  councilPosts     CouncilPost[]
+  councilComments  CouncilComment[]
+  councilReactions CouncilReaction[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Workspace {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  members     WorkspaceMember[]
+  requests    AdditionRequest[]
+  decisions   ResearchDecision[]
+  auditLogs   AuditLog[]
+  suggestions ResearchSuggestion[]
+  entityNotes WorkspaceEntityNote[]
+  councilPosts CouncilPost[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String    @default("VIEWER")
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId, role])
+  @@map("workspace_member")
+}
+
+
+model WorkspaceEntityNote {
+  id          String       @id @default(cuid())
+  workspaceId String
+  entityId    String
+  userId      String
+  note        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entity      TribalEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, entityId])
+  @@index([workspaceId, updatedAt])
+  @@index([userId, createdAt])
+  @@map("workspace_entity_note")
+}
+
+
+model CouncilPost {
+  id          String           @id @default(cuid())
+  workspaceId String
+  authorId    String
+  content     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    CouncilComment[]
+  reactions   CouncilReaction[]
+
+  @@index([workspaceId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("council_post")
+}
+
+model CouncilComment {
+  id        String      @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  post      CouncilPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("council_comment")
+}
+
+model CouncilReaction {
+  id        String      @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime    @default(now())
+  post      CouncilPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@map("council_reaction")
+}
