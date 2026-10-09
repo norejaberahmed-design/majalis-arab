@@ -100,7 +100,8 @@ let foreignSuggestion: { id: string; statement: string };
 let originalCuratorAllowlist: string | undefined;
 
 describe("SQLite tenant-isolation integration", () => {
-  beforeAll(async () => {\n    originalCuratorAllowlist = process.env.CATALOGUE_CURATOR_EMAILS;
+  beforeAll(async () => {
+    originalCuratorAllowlist = process.env.CATALOGUE_CURATOR_EMAILS;
     userA = await prisma.user.create({
       data: { name: "Tenant A", email: `${suffix}-a@example.test` },
       select: { id: true, email: true }
