@@ -47,6 +47,19 @@ export async function PATCH(request: NextRequest, route: { params: Promise<{ id:
     }
 
     const result = await prisma.$transaction(async tx => {
+      // Compare-and-set the pending state so two simultaneous review requests
+      // cannot create two claims from the same draft.
+      const updatedCount = await tx.researchSuggestion.updateMany({
+        where: { id: suggestion.id, workspaceId: context.workspaceId, status: "PENDING" },
+        data: {
+          status: parsed.data.decision === "APPROVE_DRAFT" ? "ACCEPTED_AS_CLAIM" : "REJECTED",
+          reviewedAt: new Date(),
+          reviewedBy: context.user.email,
+          reviewNote: parsed.data.reviewNote || null
+        }
+      });
+      if (updatedCount.count !== 1) throw new Error("DRAFT_ALREADY_REVIEWED");
+
       let claimId: string | null = null;
       if (parsed.data.decision === "APPROVE_DRAFT") {
         const claim = await tx.historicalClaim.create({
@@ -62,14 +75,8 @@ export async function PATCH(request: NextRequest, route: { params: Promise<{ id:
         });
         claimId = claim.id;
       }
-      const updated = await tx.researchSuggestion.update({
+      const updated = await tx.researchSuggestion.findUniqueOrThrow({
         where: { id: suggestion.id },
-        data: {
-          status: parsed.data.decision === "APPROVE_DRAFT" ? "ACCEPTED_AS_CLAIM" : "REJECTED",
-          reviewedAt: new Date(),
-          reviewedBy: context.user.email,
-          reviewNote: parsed.data.reviewNote || null
-        },
         select: { id: true, status: true, reviewedAt: true }
       });
       await tx.auditLog.create({
@@ -93,6 +100,9 @@ export async function PATCH(request: NextRequest, route: { params: Promise<{ id:
         : "رُفضت المسودة وسُجل قرار المراجعة."
     }, { headers: NO_STORE });
   } catch (error) {
+    if (error instanceof Error && error.message === "DRAFT_ALREADY_REVIEWED") {
+      return NextResponse.json({ error: "تمت مراجعة هذه المسودة بواسطة طلب آخر؛ حدّث الصفحة." }, { status: 409, headers: NO_STORE });
+    }
     console.error("Catalogue draft review failed", error);
     return NextResponse.json({ error: "تعذرت معالجة قرار المراجعة حاليًا." }, { status: 503, headers: NO_STORE });
   }
