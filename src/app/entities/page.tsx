@@ -62,7 +62,7 @@ export default async function EntitiesPage({ searchParams }: { searchParams: Pro
             {entities.map(entity => (
               <article className="entity-row" key={entity.id}>
                 <div className="entity-record-summary">
-                  <h3>{entity.name}</h3>
+                  <h3><Link href={`/entities/${entity.id}`} className="text-link">{entity.name} ←</Link></h3>
                   <p>{entity.summary || "لا يوجد ملخص موثق مسجل لهذا الكيان."}</p>
                   <small>{labels[entity.kind] ?? "نوع غير محدد"} · {entity.claims.length} ادعاء · {entity.passages.length} مقطع دليل · {entity.outgoing.length + entity.incoming.length} علاقة مسجلة</small>
                   <p><Link className="text-link" href="/claims">فحص الادعاءات ←</Link>　<Link className="text-link" href="/sources">تصفح المصادر ←</Link></p>
