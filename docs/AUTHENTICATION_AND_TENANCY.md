@@ -1,57 +1,43 @@
-# Authentication and workspace-isolation implementation plan
+# Authentication and workspace isolation
 
-Status: design gate for Phase 1. This document is not evidence that authentication or isolation has been implemented.
+Status: authentication and workspace-membership foundations are implemented; complete record-level authorization, abuse controls, and end-to-end isolation verification remain release blockers.
 
-## Security boundary
+## Implemented foundations
 
-- Keep the production release gate enabled until all release criteria below are met.
-- Research catalogue records (tribal entities, relationships, sources, evidence passages, claims, and places) are shared reference data only if the product owner explicitly confirms that this is the intended visibility model. Until then, do not add sensitive/private material.
-- User submissions, reviewer decisions/notes, and audit events must not become globally readable by default.
-- Never treat a hidden UI control, client-provided user/workspace ID, or a URL identifier as authorization.
+- Better Auth with Prisma-backed user, session, account, and verification records.
+- Email/password sign-up and sign-in, required email verification, password reset, secure production cookie settings, and server-side session lookup.
+- Workspace and WorkspaceMember models with a unique `(workspaceId, userId)` membership pair and explicit roles.
+- Server-side workspace selection checks the authenticated user's membership before setting the HTTP-only active-workspace cookie.
+- State-changing workspace/entity requests validate Origin against the request's canonical origin; do not trust `X-Forwarded-Host` supplied by the client.
+- JSON request parsing enforces content type and a byte limit.
+- The entity-create API fails closed with HTTP 503 until shared-catalogue curator authorization is implemented.
+- Production middleware keeps the main application behind a 503 release gate.
 
-## Current enforced interim rule
+These foundations are not equivalent to a completed security review.
 
-Until catalogue visibility and curator permissions are formally implemented, the global entity-creation API fails closed with HTTP 503 for every workspace role. This prevents a workspace editor from silently writing a record into a catalogue that is currently read globally by every workspace. Existing catalogue reads are still shared and must contain no private workspace content. This temporary guard is not a substitute for the final authorization model or cross-workspace tests.
+## Catalogue visibility policy
 
-## Intended identity and tenancy model
+The core research catalogue is deliberately shared and read-only across authenticated workspaces: `TribalEntity`, `Relationship`, `Source`, `EvidencePassage`, `HistoricalClaim`, and `Place`. It must contain only public, non-confidential research records. Catalogue writes remain disabled until curator permissions, provenance requirements, and audit review are implemented.
 
-1. Use a maintained authentication library with Prisma support and secure server-managed sessions. Do not implement password hashing or session tokens from scratch.
-2. Add User, Session, Account, and Verification models exactly as required by the chosen library version. Pin the library version and validate its generated schema before migration.
-3. Add Workspace and WorkspaceMember. Membership has a unique (workspaceId, userId) pair and an explicit role (OWNER, EDITOR, REVIEWER, VIEWER).
-4. Resolve the authenticated user from the verified server session. Resolve the workspace from a trusted membership lookup; never trust a submitted userId, role, or workspaceId without checking membership.
-5. Put authorization in shared server-side helpers and call them in every private page and route handler. Use deny-by-default and least privilege.
-6. Keep canonical research records shared only if that is a deliberate product decision. Workspace-private notes, review decisions, requests, drafts, and audit data must carry workspace ownership and be queried with that scope in the database.
-7. Any mutation must validate input, authorize the action, perform the change and audit event in one transaction, and avoid returning private fields unnecessarily.
+See [Catalogue visibility and workspace privacy](CATALOGUE_VISIBILITY_AND_WORKSPACE_PRIVACY.md).
 
-## Required abuse protections
+## Workspace-private records
 
-- Rate-limit sign-in, password reset, account creation, and write APIs using a durable shared store in deployed environments; an in-memory counter is not sufficient for multi-instance hosting.
-- Enforce same-origin/CSRF protections for cookie-authenticated state-changing requests.
-- Set secure cookie attributes in production and define session expiration/revocation behavior.
-- Avoid public user enumeration in authentication responses. Do not log passwords, session tokens, reset tokens, or submitted sensitive research text.
-- Configure secrets outside source control. Production startup must fail safely if required secrets are missing or weak.
-- Define backups, restore drills, retention/deletion, and hosting/database encryption controls.
+`WorkspaceEntityNote`, `AdditionRequest`, `ResearchDecision`, and `AuditLog` are intended to be workspace-scoped. The schema and initial SQLite migration now require a workspace owner for the latter three models; workspace entity notes also require workspace, entity, and user IDs.
 
-## Required isolation tests
+There are not yet complete CRUD interfaces for all private models, and cross-workspace negative integration tests are still required. Do not assume all future query paths are automatically safe because the schema contains a workspace ID. Every route/server action must authorize membership and scope each database read/write at the point of access.
 
-Create at least two independent users in two workspaces and test both pages and direct API calls:
-- User A cannot list, read, update, or delete User B's private records by changing IDs, query parameters, request bodies, or headers.
-- A viewer cannot mutate records; an editor cannot perform reviewer/owner-only actions; a reviewer cannot manage membership.
-- Missing, expired, revoked, and malformed sessions are denied.
-- Cross-workspace relation IDs are rejected, including nested relations and audit lookups.
-- Unauthorized requests do not leak whether a private record exists.
-- Invalid JSON, oversized bodies, and wrong content types remain rejected.
-- Audit entries are written for successful privileged mutations and are not user-editable.
-- Tests run against a temporary SQLite database with migrations applied, not mocked Prisma calls alone.
+## Remaining requirements before production
 
-## Release criteria
+- Add durable shared-store rate limiting for sign-in, account creation, password reset, and state-changing endpoints.
+- Add end-to-end tests for sign-up, email verification, sign-in, sign-out, password reset, workspace creation, and workspace switching.
+- Add two-workspace integration tests for private records, guessed IDs, nested relation traversal, and role restrictions.
+- Verify that unknown or stale roles fail closed and that no endpoint trusts client-provided user IDs or role claims.
+- Commit a lockfile and use `npm ci` for reproducible installs.
+- Review the full dependency audit; the current `braces` development-tool advisory has no upstream patched version listed.
+- Configure real SMTP, canonical HTTPS URL, random production auth secret, backups/restore, and operational monitoring.
+- Complete independent security review before handling sensitive information.
 
-Do not remove the production 503 gate until all are true:
-- Auth/session configuration and migrations are committed.
-- Every page and API route has a documented public/private boundary and server-side authorization.
-- Workspace ownership is enforced in schema constraints and database query paths for all private records.
-- The isolation/role tests above pass.
-- CI reports successful Prisma validation, tests, lint, and production build on the exact PR head.
-- Dependency/security checks are reviewed, deployment secrets and backups are configured, and an independent security review is complete.
+## Release gate
 
-No implementation is complete merely because these requirements are documented.
+Keep production closed until all release criteria are implemented and verified on the exact candidate commit. Do not merge to `main` or deploy publicly based solely on unit tests, CodeQL, or a successful build.
