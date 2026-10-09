@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getWorkspaceContext, roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 import ClaimCreateForm from "./claim-create-form";
+import ClaimReviewActions from "./claim-review-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,7 @@ export default async function ClaimsPage() {
             return <article className="entity-row" key={claim.id}>
               <div><h3>{claim.statement}</h3><p>{claim.entity?.name ? "الكيان: " + claim.entity.name : "لم يُربط بكيان"}{claim.source ? " · المصدر: " + claim.source.title : " · لا يوجد مصدر مباشر مرتبط"}</p>
                 <small>أدلة مؤيدة: {claim.supportingPassages.length} (مراجع بشريًا: {supportingReviewed}) · أدلة مناقضة: {claim.contradictingPassages.length} (مراجع بشريًا: {contradictingReviewed})</small>
+                {canCreateClaims && <ClaimReviewActions claimId={claim.id} currentStatus={claim.status} />}
                 {!canLabelSupported && claim.status === "SUPPORTED" && <p className="warning-note">تنبيه: حالة الدعم تحتاج مراجعة السجل والأدلة قبل اعتمادها في العرض العام.</p>}
               </div><span className={claim.status === "DISPUTED" ? "status-label pending" : "status-label"}>{labels[claim.status] ?? claim.status}</span>
             </article>;
