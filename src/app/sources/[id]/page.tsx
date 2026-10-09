@@ -6,6 +6,9 @@ import { requireWorkspace } from "@/lib/current-user";
 import { roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 import EvidencePassageForm from "../evidence-passage-form";
+import SourceReviewActions from "@/app/curation/source-review-actions";
+import PassageReviewActions from "@/app/curation/passage-review-actions";
+import EntityFromPassageForm from "@/app/curation/entity-from-passage-form";
 
 export const dynamic = "force-dynamic";
 
@@ -117,10 +120,12 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
                   <h3>المقطع {index + 1} · {passage.pageLabel ? `الصفحة/الموضع: ${passage.pageLabel}` : "لم يُحدد رقم الصفحة"}</h3>
                   <blockquote>{passage.passageText}</blockquote>
                   {passage.locator && <p><small>محدد إضافي: {passage.locator}</small></p>}
-                  {passage.entity && <p><small>الكيان المرتبط: {passage.entity.name}</small></p>}
+                  {passage.entity && <p><small>الكيان المرتبط: <Link className="text-link" href={`/entities/${passage.entity.id}`}>{passage.entity.name}</Link></small></p>}
                   {passage.claims.length > 0 && <p><small>ادعاءات مؤيدة مرتبطة: {passage.claims.map(c => c.statement).join("؛ ")}</small></p>}
                   {passage.contradicts.length > 0 && <p><small>ادعاءات يناقضها هذا المقطع: {passage.contradicts.map(c => c.statement).join("؛ ")}</small></p>}
                   {passage.reviewNote && <p><small>ملاحظة المراجعة: {passage.reviewNote}</small></p>}
+                  {canManageEvidence && !passage.reviewedByHuman && <PassageReviewActions passageId={passage.id} />}
+                  {canManageEvidence && passage.reviewedByHuman && source.humanReviewed && !passage.entity && <EntityFromPassageForm passageId={passage.id} />}
                 </div>
                 <span className={passage.reviewedByHuman ? "status-label" : "status-label pending"}>{passage.reviewedByHuman ? "راجع المقطع بشريًا" : "لم يراجع المقطع بشريًا"}</span>
               </article>
@@ -141,6 +146,7 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
         </div>}
       </section>
 
+      {canManageEvidence && <SourceReviewActions sourceId={source.id} accessStatus={source.accessStatus as "NOT_CHECKED" | "OPEN_ACCESS" | "RESTRICTED" | "UNAVAILABLE"} extractionStatus={source.extractionStatus as "NOT_ATTEMPTED" | "EXTRACTED" | "OCR_REQUIRED" | "FAILED"} humanReviewed={source.humanReviewed} />}
       {canManageEvidence && <EvidencePassageForm sourceId={source.id} />}
 
       <section className="unknowns compact-unknowns">
