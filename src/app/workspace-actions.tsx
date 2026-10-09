@@ -20,6 +20,7 @@ export default function WorkspaceActions() {
   }
   return <div className="workspace-actions">
     <Link href="/council">المجلس</Link>
+    <Link href="/research">الدليل</Link>
     <Link href="/setup">مساحة العمل</Link>
     <button type="button" onClick={signOut} disabled={busy}>{busy ? "جارٍ الخروج…" : "تسجيل الخروج"}</button>
   </div>;
