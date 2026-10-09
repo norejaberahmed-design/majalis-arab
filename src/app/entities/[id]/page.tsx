@@ -98,12 +98,17 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
 
   if (!entity) notFound();
 
-  const [workspaceNote] = await Promise.all([
+  const [workspaceNote, workspaceTribeLink] = await Promise.all([
     prisma.workspaceEntityNote.findUnique({
       where: { workspaceId_entityId: { workspaceId: workspace.workspaceId, entityId: entity.id } },
       select: { note: true }
+    }),
+    prisma.workspaceTribe.findUnique({
+      where: { workspaceId: workspace.workspaceId },
+      select: { entityId: true }
     })
   ]);
+  const currentCouncilIsForEntity = workspaceTribeLink?.entityId === entity.id;
   const canEditNote = roleAtLeast(workspace.role, "EDITOR");
   const relationships = [
     ...entity.outgoing.map(item => ({
@@ -134,6 +139,7 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
         <div className="hero-actions">
           <Link href="/entities" className="secondary-button">كل الكيانات</Link>
           <Link href="/sources" className="secondary-button">المصادر</Link>
+          {currentCouncilIsForEntity && <Link href="/council" className="primary-button">مجلس هذه القبيلة</Link>}
         </div>
       </header>
 
