@@ -35,6 +35,18 @@ export const auth = betterAuth({
   trustedOrigins: [baseURL],
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
+  rateLimit: {
+    enabled: true,
+    storage: "database",
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 3600, max: 3 },
+      "/request-password-reset": { window: 3600, max: 3 },
+      "/reset-password": { window: 60, max: 5 }
+    }
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 12,
