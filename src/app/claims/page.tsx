@@ -16,7 +16,13 @@ const labels: Record<string, string> = {
   REJECTED: "مرفوض"
 };
 
-export default async function ClaimsPage() {
+export default async function ClaimsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[]; status?: string | string[] }> }) {
+  const params = await searchParams;
+  const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
+  const query = rawQuery?.trim().slice(0, 100) ?? "";
+  const rawStatus = Array.isArray(params.status) ? params.status[0] : params.status;
+  const allowedStatuses = ["UNREVIEWED", "UNDER_REVIEW", "SUPPORTED", "DISPUTED", "REJECTED"];
+  const status = rawStatus && allowedStatuses.includes(rawStatus) ? rawStatus : "";
   const context = await getWorkspaceContext(await headers());
   if (!context) {
     return <main className="shell"><section className="panel"><h1>سجّل الدخول لعرض سجل الادعاءات</h1><Link className="text-link" href="/login">تسجيل الدخول ←</Link></section></main>;
@@ -26,6 +32,14 @@ export default async function ClaimsPage() {
 
   const [claims, sources, entities, passages] = await Promise.all([
     prisma.historicalClaim.findMany({
+      where: {
+        ...(query ? { OR: [
+          { statement: { contains: query } },
+          { entity: { is: { name: { contains: query } } } },
+          { source: { is: { title: { contains: query } } } }
+        ] } : {}),
+        ...(status ? { status } : {})
+      },
       orderBy: { updatedAt: "desc" },
       take: 100,
       select: {
@@ -59,9 +73,26 @@ export default async function ClaimsPage() {
       </header>
       <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">كل ادعاء مرتبط بمصدر ومقاطع دليل. نعرض الأدلة المؤيدة والمناقضة معًا؛ ووجود الادعاء لا يجعله حقيقة مثبتة.</p></section>
       {canCreateClaims && <ClaimCreateForm sources={sources} entities={entities} passages={passages} />}
+      <section className="entity-form">
+        <h2>البحث والتصفية</h2>
+        <form method="get" action="/claims">
+          <label htmlFor="claim-query">نص الادعاء أو اسم الكيان أو عنوان المصدر</label>
+          <input id="claim-query" name="q" type="search" maxLength={100} defaultValue={query} placeholder="ابحث في سجل الادعاءات" />
+          <label htmlFor="claim-status">حالة المراجعة</label>
+          <select id="claim-status" name="status" defaultValue={status}>
+            <option value="">كل الحالات</option>
+            <option value="UNREVIEWED">غير مراجع</option>
+            <option value="UNDER_REVIEW">قيد المراجعة</option>
+            <option value="SUPPORTED">مدعوم بعد المراجعة</option>
+            <option value="DISPUTED">متعارض</option>
+            <option value="REJECTED">مرفوض</option>
+          </select>
+          <div className="hero-actions"><button className="primary-button" type="submit">تطبيق البحث</button><Link className="secondary-button" href="/claims">مسح التصفية</Link></div>
+        </form>
+      </section>
       <section className="panel list-panel">
-        <div className="list-heading"><h2>الادعاءات المسجلة</h2><span className="count-pill">{claims.length}</span></div>
-        {claims.length === 0 ? <div className="empty-state"><strong>لا توجد ادعاءات مسجلة بعد</strong><p>أنشئ ادعاءً من مقطع مراجع بشريًا، أو سجّل المصادر والأدلة أولًا.</p></div> :
+        <div className="list-heading"><h2>{query || status ? "نتائج البحث" : "الادعاءات المسجلة"}</h2><span className="count-pill">{claims.length}</span></div>
+        {claims.length === 0 ? <div className="empty-state"><strong>{query || status ? "لا توجد ادعاءات مطابقة" : "لا توجد ادعاءات مسجلة بعد"}</strong><p>{query || status ? "جرّب عبارة أخرى أو امسح التصفية." : "أنشئ ادعاءً من مقطع مراجع بشريًا، أو سجّل المصادر والأدلة أولًا."}</p></div> :
           <div className="entity-list">{claims.map(claim => {
             const supportingReviewed = claim.supportingPassages.filter(p => p.reviewedByHuman).length;
             const contradictingReviewed = claim.contradictingPassages.filter(p => p.reviewedByHuman).length;
