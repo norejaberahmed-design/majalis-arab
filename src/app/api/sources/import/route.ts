@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             author: input.author || null,
             publisher: input.publisher || null,
             publicationYear: input.publicationYear ?? null,
-            edition: input.edition || null
+            edition: input.edition || null,
           },
           select: { id: true }
         });
