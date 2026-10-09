@@ -18,6 +18,7 @@ import { PATCH } from "./route";
 describe("catalogue source review", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.roleAtLeast.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue({ workspaceId: "workspace-a", user: { id: "curator-a", email: "curator@example.test" }, role: "REVIEWER" });
     mocks.findUnique.mockResolvedValue({ id: "source-a" });
     mocks.update.mockResolvedValue({ id: "source-a", title: "Source", accessStatus: "OPEN_ACCESS", accessCheckedAt: new Date(), extractionStatus: "EXTRACTED", humanReviewed: true });
