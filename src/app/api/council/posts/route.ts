@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         id: true, content: true, createdAt: true, updatedAt: true,
         author: { select: { id: true, name: true, image: true } },
         comments: {
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
           take: 10,
           select: { id: true, content: true, createdAt: true, author: { select: { id: true, name: true, image: true } } }
         },
