@@ -121,14 +121,14 @@ model Place {
 
 model ResearchDecision {
   id            String       @id @default(cuid())
-  workspaceId   String?
+  workspaceId   String
   decisionType  String
   targetId      String
   decision      String
   rationale     String
   reviewer      String?
   createdAt     DateTime     @default(now())
-  workspace     Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, decisionType, targetId])
   @@index([decisionType, targetId])
@@ -136,7 +136,7 @@ model ResearchDecision {
 
 model AdditionRequest {
   id          String        @id @default(cuid())
-  workspaceId String?
+  workspaceId String
   userId      String?
   entityId    String?
   proposedName String
@@ -149,7 +149,7 @@ model AdditionRequest {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   entity      TribalEntity? @relation(fields: [entityId], references: [id], onDelete: SetNull)
-  workspace   Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, status, createdAt])
@@ -159,7 +159,7 @@ model AdditionRequest {
 
 model AuditLog {
   id         String   @id @default(cuid())
-  workspaceId String?
+  workspaceId String
   actorUserId String?
   actor      String?
   action     String
@@ -167,7 +167,7 @@ model AuditLog {
   targetId   String
   details    String?
   createdAt  DateTime @default(now())
-  workspace  Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   actorUser  User?      @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, createdAt])
