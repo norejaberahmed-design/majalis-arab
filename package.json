@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "test": "vitest run",
     "db:seed-bibliography": "node prisma/seed-bibliography.mjs",
-    "db:seed-public-domain-passage": "node prisma/seed-public-domain-passage.mjs"
+    "db:seed-public-domain-passage": "node prisma/seed-public-domain-passage.mjs",
+    "db:test-upgrade": "node scripts/test-migration-upgrade.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
