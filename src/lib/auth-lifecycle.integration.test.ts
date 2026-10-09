@@ -112,6 +112,14 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(await afterSignOut.json()).toBeNull();
 
+    const preResetSignIn = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: BASE_URL },
+      body: JSON.stringify({ email, password: oldPassword })
+    }));
+    expect(preResetSignIn.status).toBe(200);
+    const preResetCookies = cookieHeader(preResetSignIn);
+
     const resetRequest = await auth.handler(new Request(`${BASE_URL}/api/auth/request-password-reset`, {
       method: "POST",
       headers: { "content-type": "application/json", origin: BASE_URL },
@@ -128,6 +136,10 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ newPassword, token: resetToken })
     }));
     expect(reset.status).toBeLessThan(400);
+    const revokedSession = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
+      headers: { cookie: preResetCookies }
+    }));
+    expect(await revokedSession.json()).toBeNull();
 
     const newSignIn = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
       method: "POST",
@@ -143,4 +155,26 @@ describe("authentication lifecycle against SQLite", () => {
     expect(finalSignOut.status).toBeLessThan(400);
     mailLog.mockRestore();
   }, 30000);
+  it("enforces the persistent sign-in attempt limit", async () => {
+    const ip = `198.51.100.${(process.pid % 200) + 1}`;
+    let lastResponse: Response | undefined;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      lastResponse = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: BASE_URL,
+          "x-forwarded-for": ip
+        },
+        body: JSON.stringify({
+          email: `rate-limit-${process.pid}@example.test`,
+          password: "incorrect-password-123!"
+        })
+      }));
+      if (attempt < 5) expect(lastResponse.status).not.toBe(429);
+    }
+    expect(lastResponse?.status).toBe(429);
+    expect(lastResponse?.headers.get("x-retry-after")).toBeTruthy();
+  }, 30000);
+
 });
