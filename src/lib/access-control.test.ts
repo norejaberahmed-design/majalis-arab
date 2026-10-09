@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hasTrustedOrigin, roleAtLeast } from "./access-control";
+import { isCatalogueCurator } from "./source-intake";
 
 describe("workspace role hierarchy", () => {
   it("allows roles at or above the required level", () => {
@@ -58,8 +59,6 @@ describe("state-changing request origin checks", () => {
     }))).toBe(false);
   });
 });
-
-import { isCatalogueCurator } from "./source-intake";
 
 describe("catalogue curator allowlist", () => {
   it("matches configured email addresses case-insensitively", () => {
