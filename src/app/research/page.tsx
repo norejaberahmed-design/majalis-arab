@@ -1,17 +1,14 @@
 import Link from "next/link";
-import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
-import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const workspace = await requireWorkspace();
   const [entities, sources, claims, pendingRequests] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
     prisma.historicalClaim.count(),
-    prisma.additionRequest.count({ where: { workspaceId: workspace.workspaceId, status: "SUBMITTED" } })
+    prisma.evidencePassage.count()
   ]);
 
   return (
@@ -21,7 +18,6 @@ export default async function HomePage() {
           <span className="brand-mark">م</span>
           <span><strong>مجالس العرب</strong><small>البحث الموثق</small></span>
         </Link>
-        <WorkspaceActions />
       </header>
 
       <section className="hero">
@@ -38,7 +34,7 @@ export default async function HomePage() {
         <article><span>الكيانات المسجلة</span><strong>{entities}</strong><small>من قاعدة البيانات</small></article>
         <article><span>المصادر</span><strong>{sources}</strong><small>مراجع مسجلة في قاعدة البيانات</small></article>
         <article><span>الادعاءات التاريخية</span><strong>{claims}</strong><small>مع حالات المراجعة</small></article>
-        <article><span>طلبات الإضافة</span><strong>{pendingRequests}</strong><small>بانتظار الفرز الأولي</small></article>
+        <article><span>مقاطع الأدلة</span><strong>{pendingRequests}</strong><small>مقاطع مسجلة في قاعدة البيانات</small></article>
       </section>
 
       <section className="work-grid">
