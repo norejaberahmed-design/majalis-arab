@@ -82,6 +82,7 @@ describe("addition request workspace isolation", () => {
   });
 
   it("does not review a guessed request ID from another workspace", async () => {
+    mocks.getWorkspaceContext.mockResolvedValue({ ...viewer, role: "REVIEWER" });
     const request = new NextRequest("https://majalis.example/api/addition-requests/foreign-id", {
       method: "PATCH",
       headers: {
