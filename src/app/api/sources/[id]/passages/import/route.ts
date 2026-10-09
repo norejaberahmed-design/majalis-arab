@@ -73,7 +73,7 @@ export async function POST(request: NextRequest, route: { params: Promise<{ id: 
           },
           select: { id: true, pageLabel: true, passageText: true }
         });
-        created.push(item);
+        created.push({ id: item.id, pageLabel: passage.pageLabel, passageText: item.passageText });
         await tx.auditLog.create({
           data: {
             workspaceId: context.workspaceId,
