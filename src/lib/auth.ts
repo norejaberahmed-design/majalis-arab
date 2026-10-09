@@ -49,11 +49,14 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
     minPasswordLength: 12,
     maxPasswordLength: 128,
     autoSignIn: true,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, token }) => {
+      const resetUrl = new URL("/reset-password", baseURL);
+      resetUrl.searchParams.set("token", token);
       if (!mailer || !mailFrom) {
         if (process.env.NODE_ENV === "development") {
           console.info("[DEV ONLY] Password reset link for " + user.email + ": " + url);
