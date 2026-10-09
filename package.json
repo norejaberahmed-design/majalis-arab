@@ -29,12 +29,13 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "eslint": "^9.36.0",
-    "eslint-config-next": "15.5.27",
     "prisma": "^6.16.2",
     "typescript": "^5.9.2",
     "vitest": "^4.1.11",
-    "@eslint/eslintrc": "^3.3.1",
-    "@types/nodemailer": "^7.0.4"
+    "@types/nodemailer": "^7.0.4",
+    "@eslint/js": "^9.36.0",
+    "globals": "^16.4.0",
+    "typescript-eslint": "^8.46.1"
   },
   "overrides": {
     "deepmerge-ts": "^8.0.0",
