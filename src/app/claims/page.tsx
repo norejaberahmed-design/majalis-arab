@@ -44,7 +44,7 @@ export default async function ClaimsPage() {
       orderBy: { name: "asc" }, take: 500, select: { id: true, name: true }
     }) : Promise.resolve([]),
     canCreateClaims ? prisma.evidencePassage.findMany({
-      where: { reviewedByHuman: true, source: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } } },
+      where: { reviewedByHuman: true, source: { is: { humanReviewed: true, accessStatus: { not: "NOT_CHECKED" } } } },
       orderBy: [{ sourceId: "asc" }, { pageLabel: "asc" }], take: 500,
       select: { id: true, sourceId: true, pageLabel: true, locator: true, passageText: true }
     }) : Promise.resolve([])

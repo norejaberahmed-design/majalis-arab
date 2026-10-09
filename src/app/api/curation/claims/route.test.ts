@@ -97,6 +97,7 @@ describe("evidence-backed historical claim creation", () => {
   });
 
   it("creates an unreviewed claim with supporting and contradicting evidence and an audit record", async () => {
+    mocks.passageFindMany.mockResolvedValue([{ id: "passage-a", sourceId: "source-a", reviewedByHuman: true }, { id: "passage-b", sourceId: "source-a", reviewedByHuman: true }]);
     const response = await POST(request({ ...validBody, contradictingPassageIds: ["passage-b"] }));
     expect(response.status).toBe(201);
     expect(mocks.claimCreate).toHaveBeenCalledWith(expect.objectContaining({
