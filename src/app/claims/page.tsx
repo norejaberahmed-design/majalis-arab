@@ -1,7 +1,5 @@
 import Link from "next/link";
-import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
-import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +12,6 @@ const labels: Record<string, string> = {
 };
 
 export default async function ClaimsPage() {
-  await requireWorkspace();
   const claims = await prisma.historicalClaim.findMany({
     orderBy: { updatedAt: "desc" },
     take: 100,
@@ -35,7 +32,6 @@ export default async function ClaimsPage() {
       <header className="topbar">
         <Link href="/" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>سجل الادعاءات</small></span></Link>
         <Link href="/" className="secondary-button">الرئيسية</Link>
-      <WorkspaceActions />
       </header>
       <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل. نعرض حالة كل ادعاء والأدلة المؤيدة والمناقضة؛ ووجود ادعاء لا يجعله حقيقة مثبتة.</p></section>
       <section className="panel list-panel">
