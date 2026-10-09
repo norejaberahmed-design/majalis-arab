@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/validation";
+import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ const labels: Record<string, string> = {
 };
 
 export default async function EntitiesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  await requireWorkspace();
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const normalizedQuery = normalizeName(query);
