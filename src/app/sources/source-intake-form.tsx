@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SourceIntakeForm() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [publisher, setPublisher] = useState("");
@@ -40,6 +42,7 @@ export default function SourceIntakeForm() {
       setPublicationYear("");
       setUrl("");
       setBibliographicNote("");
+      router.refresh();
     } catch {
       setError("تعذر الاتصال بالخدمة؛ لم نتمكن من تأكيد حفظ المصدر.");
     } finally {
