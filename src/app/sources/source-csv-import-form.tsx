@@ -8,6 +8,7 @@ type SourceRow = {
   author: string;
   publisher: string;
   publicationYear: number | null;
+  edition: string;
   url: string;
   bibliographicNote: string;
 };
@@ -52,6 +53,7 @@ function parseCsv(text: string): { rows: SourceRow[]; error?: string } {
   const authorIndex = indexOf("author", "المؤلف");
   const publisherIndex = indexOf("publisher", "الناشر");
   const yearIndex = indexOf("publicationyear", "year", "سنة النشر");
+  const editionIndex = indexOf("edition", "الطبعة", "رقم الطبعة", "الإصدار");
   const urlIndex = indexOf("url", "الرابط");
   const noteIndex = indexOf("bibliographicnote", "note", "ملاحظات");
 
@@ -71,6 +73,7 @@ function parseCsv(text: string): { rows: SourceRow[]; error?: string } {
       author: valueAt(authorIndex),
       publisher: valueAt(publisherIndex),
       publicationYear: year,
+      edition: valueAt(editionIndex),
       url: valueAt(urlIndex),
       bibliographicNote: valueAt(noteIndex)
     });
@@ -140,7 +143,7 @@ export default function SourceCsvImportForm() {
   return (
     <section className="entity-form">
       <h2>استيراد قائمة مراجع من CSV</h2>
-      <p className="muted">الأعمدة: title, author, publisher, publicationYear, url, bibliographicNote. يدعم العناوين العربية. الاستيراد يسجل المراجع فقط ولا يثبت إتاحتها أو محتواها.</p>
+      <p className="muted">الأعمدة: title, author, publisher, publicationYear, edition (الطبعة), url, bibliographicNote. يدعم العناوين العربية. الاستيراد يسجل المراجع فقط ولا يثبت إتاحتها أو محتواها.</p>
       <label htmlFor="source-csv">ملف CSV (حتى 100 مصدر، 1 ميغابايت)</label>
       <input id="source-csv" type="file" accept=".csv,text/csv" onChange={chooseFile} />
       {fileName && <p className="muted">الملف: {fileName} · عدد الصفوف: {rows.length}</p>}
@@ -148,7 +151,7 @@ export default function SourceCsvImportForm() {
         <div className="list-heading"><h3>معاينة قبل الاستيراد</h3><span className="count-pill">{rows.length}</span></div>
         <div className="entity-list">{rows.slice(0, 5).map((row, index) => (
           <article className="entity-row" key={index}>
-            <div><strong>{row.title}</strong><small>{[row.author, row.publisher, row.publicationYear].filter(Boolean).join(" · ") || "بيانات إضافية غير مدخلة"}</small></div>
+            <div><strong>{row.title}</strong><small>{[row.author, row.publisher, row.edition, row.publicationYear].filter(Boolean).join(" · ") || "بيانات إضافية غير مدخلة"}</small></div>
           </article>
         ))}</div>
         {rows.length > 5 && <p className="muted">تظهر أول خمسة صفوف للمعاينة فقط.</p>}

@@ -45,13 +45,14 @@ export async function POST(request: NextRequest) {
           author: input.author || null,
           publisher: input.publisher || null,
           publicationYear: input.publicationYear ?? null,
+          edition: input.edition || null,
           url,
           bibliographicNote: input.bibliographicNote || null,
           accessStatus: "NOT_CHECKED",
           extractionStatus: "NOT_ATTEMPTED",
           humanReviewed: false
         },
-        select: { id: true, title: true, author: true, publisher: true, publicationYear: true, url: true, createdAt: true }
+        select: { id: true, title: true, author: true, publisher: true, publicationYear: true, edition: true, url: true, createdAt: true }
       });
       await tx.auditLog.create({
         data: {

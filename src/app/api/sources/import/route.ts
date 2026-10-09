@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const inputs: Array<{
       title: string; author?: string | null; publisher?: string | null; publicationYear?: number | null;
-      url?: string | null; bibliographicNote?: string | null;
+      edition?: string | null; url?: string | null; bibliographicNote?: string | null;
     }> = [];
     for (let index = 0; index < parsed.data.sources.length; index++) {
       const item = sourceInputSchema.safeParse(parsed.data.sources[index]);
@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
             title: input.title,
             author: input.author || null,
             publisher: input.publisher || null,
-            publicationYear: input.publicationYear ?? null
+            publicationYear: input.publicationYear ?? null,
+            edition: input.edition || null,
           },
           select: { id: true }
         });
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
             author: input.author || null,
             publisher: input.publisher || null,
             publicationYear: input.publicationYear ?? null,
+            edition: input.edition || null,
             url: input.url || null,
             bibliographicNote: input.bibliographicNote || null,
             accessStatus: "NOT_CHECKED",

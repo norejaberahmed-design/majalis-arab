@@ -5,6 +5,7 @@ export const sourceInputSchema = z.object({
   author: z.string().trim().max(200).optional().or(z.literal("")),
   publisher: z.string().trim().max(200).optional().or(z.literal("")),
   publicationYear: z.number().int().min(1).max(2100).optional().nullable(),
+  edition: z.string().trim().max(160).optional().or(z.literal("")),
   url: z.string().trim().max(2048).optional().or(z.literal("")),
   bibliographicNote: z.string().trim().max(3000).optional().or(z.literal(""))
 });
