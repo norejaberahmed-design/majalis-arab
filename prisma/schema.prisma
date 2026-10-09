@@ -287,3 +287,49 @@ model WorkspaceEntityNote {
   @@index([userId, createdAt])
   @@map("workspace_entity_note")
 }
+
+
+model CouncilPost {
+  id          String           @id @default(cuid())
+  workspaceId String
+  authorId    String
+  content     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    CouncilComment[]
+  reactions   CouncilReaction[]
+
+  @@index([workspaceId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("council_post")
+}
+
+model CouncilComment {
+  id        String      @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  post      CouncilPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("council_comment")
+}
+
+model CouncilReaction {
+  id        String      @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime    @default(now())
+  post      CouncilPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@map("council_reaction")
+}
