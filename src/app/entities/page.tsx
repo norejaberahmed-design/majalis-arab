@@ -2,7 +2,7 @@ import Link from "next/link";
 import WorkspaceActions from "@/app/workspace-actions";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
-import EntityForm from "./entity-form";
+import EntityForm from "./entity-form";\nimport EntityWorkspaceNote from "./entity-workspace-note";\nimport { roleAtLeast } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,12 @@ export default async function EntitiesPage() {
     }
   });
 
+  const workspaceNotes = await prisma.workspaceEntityNote.findMany({
+    where: { workspaceId: workspace.workspaceId, entityId: { in: entities.map(entity => entity.id) } },
+    select: { entityId: true, note: true }
+  });
+  const noteByEntity = new Map(workspaceNotes.map(item => [item.entityId, item.note]));
+
   return (
     <main className="shell">
       <header className="topbar">
@@ -48,7 +54,7 @@ export default async function EntitiesPage() {
               {entities.map(entity => (
                 <article className="entity-row" key={entity.id}>
                   <div><h3>{entity.name}</h3><p>{entity.summary || "لا يوجد ملخص موثق بعد."}</p><small>{labels[entity.kind] ?? "نوع غير محدد"} · {entity.claims.length} ادعاء مرتبط</small></div>
-                  <span className="status-label">سجل أولي</span>
+                  <div className="entity-record-meta"><span className="status-label">سجل أولي</span><EntityWorkspaceNote entityId={entity.id} initialNote={noteByEntity.get(entity.id) ?? null} canEdit={canEditNotes} /></div>
                 </article>
               ))}
             </div>
