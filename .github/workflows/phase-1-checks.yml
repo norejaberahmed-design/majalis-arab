@@ -35,6 +35,8 @@ jobs:
         run: npx prisma generate
         env:
           DATABASE_URL: "file:./dev.db"
+      - name: Test migration upgrade over existing data
+        run: npm run db:test-upgrade
       - name: Verify bibliography import is idempotent and adds no historical claims
         run: |
           npm run db:seed-bibliography
