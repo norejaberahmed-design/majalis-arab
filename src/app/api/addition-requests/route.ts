@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { additionRequestSchema } from "@/lib/addition-request";
-import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
+import { getWorkspaceContext, hasTrustedOrigin, roleAtLeast } from "@/lib/workspace";
 import { readJsonBody } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
     const context = await getWorkspaceContext(request.headers);
     if (!context) return NextResponse.json({ error: "سجّل الدخول واختر مساحة عمل" }, { status: 401, headers: NO_STORE });
     const requests = await prisma.additionRequest.findMany({
-      where: { workspaceId: context.workspaceId, userId: context.user.id },
+      where: roleAtLeast(context.role, "REVIEWER")
+        ? { workspaceId: context.workspaceId }
+        : { workspaceId: context.workspaceId, userId: context.user.id },
       orderBy: { createdAt: "desc" },
       take: 50,
       select: {
