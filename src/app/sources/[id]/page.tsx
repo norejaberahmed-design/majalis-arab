@@ -6,6 +6,7 @@ import { requireWorkspace } from "@/lib/current-user";
 import { roleAtLeast } from "@/lib/workspace";
 import { isCatalogueCurator } from "@/lib/source-intake";
 import EvidencePassageForm from "../evidence-passage-form";
+import BulkEvidencePassageForm from "../bulk-evidence-passage-form";
 import SourceReviewActions from "@/app/curation/source-review-actions";
 import PassageReviewActions from "@/app/curation/passage-review-actions";
 import EntityFromPassageForm from "@/app/curation/entity-from-passage-form";
@@ -149,6 +150,7 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
 
       {canManageEvidence && <SourceReviewActions sourceId={source.id} accessStatus={source.accessStatus as "NOT_CHECKED" | "OPEN_ACCESS" | "RESTRICTED" | "UNAVAILABLE"} extractionStatus={source.extractionStatus as "NOT_ATTEMPTED" | "EXTRACTED" | "OCR_REQUIRED" | "FAILED"} humanReviewed={source.humanReviewed} />}
       {canManageEvidence && <EvidencePassageForm sourceId={source.id} />}
+      {canManageEvidence && <BulkEvidencePassageForm sourceId={source.id} />}
 
       <section className="unknowns compact-unknowns">
         <strong>حدود ما نعرفه</strong>
