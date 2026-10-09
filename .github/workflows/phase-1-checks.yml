@@ -49,7 +49,10 @@ jobs:
           node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count()]).then(([sources,entities,passages,claims])=>{console.log({sources,entities,passages,claims}); if(sources!==5||entities!==0||passages!==1||claims!==0) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
         env:
           DATABASE_URL: "file:./dev.db"
-      - run: npm test
+      - name: Run unit and SQLite tenant-isolation tests
+        run: npm test
+        env:
+          DATABASE_URL: "file:./dev.db"
       - run: npm run lint
       - name: Build
         run: npm run build
