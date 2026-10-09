@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { shouldBlockProduction } from "@/lib/release-gate";
+import { isAllowedDuringReleaseGate, shouldBlockProduction } from "@/lib/release-gate";
 
 /**
  * Temporary release safety gate.
@@ -14,15 +14,7 @@ import { shouldBlockProduction } from "@/lib/release-gate";
 export function middleware(request: NextRequest) {
   if (shouldBlockProduction(process.env.NODE_ENV)) {
     const path = request.nextUrl.pathname;
-    const authSurface =
-      path === "/login" ||
-      path === "/setup" ||
-      path === "/forgot-password" ||
-      path === "/reset-password" ||
-      path.startsWith("/api/auth/") ||
-      path === "/api/workspaces" ||
-      path === "/api/workspaces/active";
-    if (!authSurface) {
+    if (!isAllowedDuringReleaseGate(path)) {
       return new NextResponse(
         "مجالس العرب غير متاح للإنتاج بعد. ما زالت مراجعة الحماية والاختبارات مطلوبة.",
         {
