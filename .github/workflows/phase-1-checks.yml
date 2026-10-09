@@ -35,6 +35,13 @@ jobs:
         run: npx prisma generate
         env:
           DATABASE_URL: "file:./dev.db"
+      - name: Verify bibliography import is idempotent and adds no historical claims
+        run: |
+          npm run db:seed-bibliography
+          npm run db:seed-bibliography
+          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count()]).then(([sources,entities,passages,claims])=>{console.log({sources,entities,passages,claims}); if(sources!==4||entities!==0||passages!==0||claims!==0) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
+        env:
+          DATABASE_URL: "file:./dev.db"
       - run: npm test
       - run: npm run lint
       - name: Build
