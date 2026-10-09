@@ -25,6 +25,7 @@ model TribalEntity {
   workspaceNotes WorkspaceEntityNote[]
   councilWorkspaces WorkspaceTribe[]
   places       Place[]
+  knowledgeEntries TribeKnowledgeEntry[]
 
   @@unique([normalizedName])
   @@index([kind])
@@ -230,6 +231,7 @@ model User {
   memberships   WorkspaceMember[]
   additionRequests AdditionRequest[]
   auditEvents   AuditLog[]
+  authoredTribeKnowledgeEntries TribeKnowledgeEntry[]
   entityNotes   WorkspaceEntityNote[]
   councilPosts     CouncilPost[]
   councilComments  CouncilComment[]
@@ -401,4 +403,22 @@ model WorkspaceTribe {
   entity      TribalEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([entityId])
+}
+
+
+/// Shared, user-contributed tribal information. Entries remain unreviewed until reviewed separately.
+model TribeKnowledgeEntry {
+  id              String       @id @default(cuid())
+  entityId        String
+  content         String
+  sourceUrl       String?
+  status          String       @default("UNREVIEWED")
+  createdByUserId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  entity          TribalEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityId, status, createdAt])
+  @@index([createdByUserId, createdAt])
 }
