@@ -37,7 +37,7 @@ export default async function ClaimsPage() {
         <Link href="/" className="secondary-button">الرئيسية</Link>
       <WorkspaceActions />
       </header>
-      <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">نعرض حالة كل ادعاء والأدلة المؤيدة والمناقضة. وجود ادعاء في النظام لا يجعله حقيقة مثبتة.</p></section>
+      <section className="page-intro"><p className="eyebrow">المراجعة والتعارض</p><h1>الادعاءات التاريخية</h1><p className="intro">هذا كتالوج بحثي مشترك للقراءة عبر مساحات العمل. نعرض حالة كل ادعاء والأدلة المؤيدة والمناقضة؛ ووجود ادعاء لا يجعله حقيقة مثبتة.</p></section>
       <section className="panel list-panel">
         <div className="list-heading"><h2>الادعاءات المسجلة</h2><span className="count-pill">{claims.length}</span></div>
         {claims.length === 0 ? <div className="empty-state"><strong>لا توجد ادعاءات مسجلة بعد</strong><p>لن تُنشأ ادعاءات تلقائيًا. كل ادعاء مستقبلي يجب أن يرتبط بمصدر ومقاطع دليل ومراجعة واضحة.</p></div> :
