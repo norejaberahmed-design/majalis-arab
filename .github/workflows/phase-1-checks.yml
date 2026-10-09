@@ -52,11 +52,12 @@ jobs:
       - name: Audit production dependencies
         if: always()
         run: npm audit --omit=dev --audit-level=high
-      # Keep reporting the complete tree. GHSA-vfj7-8cjw-p6xm currently has
-      # no upstream patched braces release; it is in the ESLint-only dev chain.
-      # Track and revisit this exception rather than hiding it or forcing a
-      # breaking downgrade of eslint-config-next.
-      - name: Report all dependency vulnerabilities
+      # Full-tree audit is informational because the current high advisory
+      # GHSA-vfj7-8cjw-p6xm affects braces in the ESLint-only development chain
+      # and has no upstream patched release. Production dependencies remain
+      # blocking above. Recheck the advisory on every run and remove this
+      # exception as soon as an upstream fix is available.
+      - name: Report development dependency vulnerabilities
         if: always()
         continue-on-error: true
         run: npm audit --audit-level=high
