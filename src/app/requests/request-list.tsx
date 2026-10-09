@@ -20,13 +20,13 @@ const statuses: Record<string, string> = {
   REJECTED: "مرفوض"
 };
 
-export default function RequestList({ initialRequests, canReview }: { initialRequests: AdditionRequest[]; canReview: boolean }) {
+export default function RequestList({ initialRequests, canReview, canPublish }: { initialRequests: AdditionRequest[]; canReview: boolean; canPublish: boolean }) {
   const [requests, setRequests] = useState(initialRequests);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  async function review(id: string, status: "UNDER_REVIEW" | "APPROVED" | "REJECTED") {
+  async function publish(id: string) {\n    setBusyId(id);\n    setMessage("");\n    try {\n      const response = await fetch(`/api/addition-requests/${encodeURIComponent(id)}/publish`, { method: "POST" });\n      const result = await response.json();\n      if (!response.ok) { setMessage(result.error || "تعذر نشر الكيان."); return; }\n      setRequests(current => current.map(item => item.id === id ? { ...item, reviewerNote: item.reviewerNote ? `${item.reviewerNote}\\nتم النشر في الكتالوج المشترك.` : "تم النشر في الكتالوج المشترك." } : item));\n      setMessage(result.message || "تم النشر.");\n    } catch { setMessage("تعذر الاتصال بالخدمة."); } finally { setBusyId(null); }\n  }\n\n  async function review(id: string, status: "UNDER_REVIEW" | "APPROVED" | "REJECTED") {
     setBusyId(id);
     setMessage("");
     try {
@@ -70,6 +70,7 @@ export default function RequestList({ initialRequests, canReview }: { initialReq
                   <button type="button" disabled={busyId === item.id} onClick={() => review(item.id, "UNDER_REVIEW")}>بدء المراجعة</button>
                   <button type="button" disabled={busyId === item.id} onClick={() => review(item.id, "APPROVED")}>الموافقة على الطلب</button>
                   <button type="button" disabled={busyId === item.id} onClick={() => review(item.id, "REJECTED")}>رفض الطلب</button>
+                  {canPublish && item.status === "APPROVED" && <button type="button" disabled={busyId === item.id} onClick={() => publish(item.id)}>نشر في الكتالوج المشترك</button>}
                 </div>
               </div>}
             </div>
