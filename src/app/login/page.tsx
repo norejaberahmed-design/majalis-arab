@@ -86,12 +86,32 @@ export default function LoginPage() {
           return;
         }
         const session = await authClient.getSession();
-        if (!session.error && session.data?.session) {
-          router.replace("/");
-          router.refresh();
+        if (session.error || !session.data?.session) {
+          setNotice({ kind: "error", text: "تم إرسال طلب إنشاء الحساب لكن لم تُنشأ جلسة دخول. حاول تسجيل الدخول بالبريد وكلمة المرور." });
           return;
         }
-        setNotice({ kind: "success", text: "تم إنشاء طلب الحساب. افتح رسالة التحقق التي أرسلناها إلى بريدك لإكمال التسجيل." });
+
+        // Give every new account a personal default workspace so the first
+        // successful signup can enter the application without a setup loop.
+        const workspaceResponse = await fetch("/api/workspaces", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "مجلسي" }),
+          cache: "no-store",
+        });
+        if (!workspaceResponse.ok) {
+          const workspaceResult = await workspaceResponse.json().catch(() => ({}));
+          setNotice({
+            kind: "error",
+            text: typeof workspaceResult.error === "string"
+              ? `تم إنشاء الحساب، لكن تعذر تجهيز المجلس: ${workspaceResult.error}. سجّل الدخول مجددًا أو أعد المحاولة.`
+              : "تم إنشاء الحساب، لكن تعذر تجهيز المجلس. أعد المحاولة.",
+          });
+          return;
+        }
+
+        router.replace("/");
+        router.refresh();
         return;
       }
 
