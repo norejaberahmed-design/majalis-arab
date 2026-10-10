@@ -49,7 +49,7 @@ describe("authentication lifecycle against SQLite", () => {
     else process.env.NODE_ENV = originalNodeEnv;
   });
 
-  it("signs up, verifies email, signs in/out, resets password, and manages workspace membership", async () => {
+  it("creates an immediately usable account, signs in/out, resets password, and manages workspace membership", async () => {
     const email = `lifecycle-${process.pid}-${Date.now()}@example.test`;
     const oldPassword = "Old-test-password-123!";
     const newPassword = "New-test-password-456!";
@@ -61,9 +61,12 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ name: "Lifecycle Test", email, password: oldPassword })
     }));
     expect(signUp.status).toBeLessThan(400);
-    const verificationUrl = await loggedLink(mailLog, "Verification link");
-    const verification = await auth.handler(new Request(verificationUrl, { headers: { origin: BASE_URL } }));
-    expect(verification.status).toBeLessThan(400);
+    const signupCookies = cookieHeader(signUp);
+    expect(signupCookies).toContain("better-auth");
+    const signupSession = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
+      headers: { cookie: signupCookies }
+    }));
+    expect((await signupSession.json()).user.email).toBe(email);
 
     const signIn = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
       method: "POST",

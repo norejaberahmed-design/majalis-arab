@@ -66,15 +66,33 @@ export const auth = betterAuth({
   appName: "مجالس العرب",
   baseURL,
   trustedOrigins: async (request) => {
-    if (!request || process.env.NODE_ENV === "production" || !codespacesDomain) return trustedOrigins;
+    if (!request) return trustedOrigins;
     try {
       const requestURL = new URL(request.url);
-      const suffix = `-3000.${codespacesDomain}`;
-      const label = requestURL.hostname.endsWith(suffix)
-        ? requestURL.hostname.slice(0, -suffix.length)
-        : "";
-      if (/^[a-z0-9-]+$/i.test(label)) {
-        return [...new Set([...trustedOrigins, requestURL.origin])];
+      const requestOrigin = request.headers.get("origin");
+      const requestHost = (request.headers.get("host") || requestURL.host).toLowerCase();
+      if (requestOrigin) {
+        const originURL = new URL(requestOrigin);
+        const isSecureOrigin = originURL.protocol === "https:";
+        const isLocalOrigin = originURL.protocol === "http:" &&
+          (originURL.hostname === "localhost" || originURL.hostname === "127.0.0.1" || originURL.hostname === "[::1]");
+        if (
+          originURL.host.toLowerCase() === requestHost &&
+          (isSecureOrigin || (process.env.NODE_ENV !== "production" && isLocalOrigin))
+        ) {
+          return [...new Set([...trustedOrigins, originURL.origin])];
+        }
+      }
+
+      // GitHub Codespaces uses ephemeral hostnames in development.
+      if (process.env.NODE_ENV !== "production" && codespacesDomain) {
+        const suffix = `-3000.${codespacesDomain}`;
+        const label = requestURL.hostname.endsWith(suffix)
+          ? requestURL.hostname.slice(0, -suffix.length)
+          : "";
+        if (/^[a-z0-9-]+$/i.test(label) && requestOrigin === requestURL.origin) {
+          return [...new Set([...trustedOrigins, requestURL.origin])];
+        }
       }
     } catch {
       // Keep the configured allowlist when the request URL cannot be parsed.
@@ -122,8 +140,8 @@ export const auth = betterAuth({
     minPasswordLength: 12,
     maxPasswordLength: 128,
     autoSignIn: true,
-    // Production accounts must verify email; development can sign in immediately when SMTP is unavailable.
-    requireEmailVerification: process.env.NODE_ENV === "production",
+    // Create the account and session immediately; email is used for password recovery, not as a signup gate.
+    requireEmailVerification: false,
     sendResetPassword: async ({ user, token }) => {
       const resetUrl = new URL("/reset-password", baseURL);
       resetUrl.searchParams.set("token", token);
@@ -143,7 +161,7 @@ export const auth = betterAuth({
     }
   },
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: false,
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60,
     sendVerificationEmail: async ({ user, url }) => {
