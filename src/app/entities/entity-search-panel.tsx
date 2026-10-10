@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type Entity = {
   id: string;
@@ -27,9 +27,43 @@ export default function EntitySearchPanel({
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [entities, setEntities] = useState<Entity[]>(initialEntities);
+  const [suggestions, setSuggestions] = useState<Entity[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+
+  // Suggestions come only from saved tribe records; no generated names.
+  useEffect(() => {
+    const value = query.trim();
+    if (value.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ q: value, kind: "TRIBE" });
+        const response = await fetch(`/api/entities?${params.toString()}`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (Array.isArray(payload.data)) {
+          setSuggestions(payload.data.filter((item: Entity) => item.kind === "TRIBE"));
+        }
+      } catch (cause) {
+        if (cause instanceof Error && cause.name !== "AbortError") {
+          setSuggestions([]);
+        }
+      }
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,14 +100,28 @@ export default function EntitySearchPanel({
     <>
       <section className="page-intro">
         <p className="eyebrow">قاعدة المعرفة القبلية</p>
-        <h1>البحث في الكيانات</h1>
-        <p className="intro">تصفح السجلات البحثية المشتركة. وجود اسم في الدليل لا يثبت النسب أو صحة الروايات المرتبطة به؛ افتح الادعاءات والمصادر لفحص الأدلة.</p>
+        <h1>البحث في القبائل والكيانات</h1>
+        <p className="intro">اكتب اسم القبيلة لتظهر الأسماء المسجلة في قاعدة المعرفة. اختر الاسم الصحيح ثم ابحث لفتح سجله ومصادره؛ الاقتراحات تعرض سجلات موجودة فقط.</p>
         <form onSubmit={submit} className="search-form">
           <label htmlFor="entity-query">اسم القبيلة أو الفرع أو المكان</label>
           <div className="search-row">
-            <input id="entity-query" type="search" maxLength={100} value={query} onChange={event => setQuery(event.target.value)} placeholder="اكتب الاسم بالعربية…" />
+            <input
+              id="entity-query"
+              list="tribe-name-suggestions"
+              type="search"
+              maxLength={100}
+              value={query}
+              onChange={event => setQuery(event.target.value)}
+              placeholder="ابدأ بكتابة اسم القبيلة…"
+              autoComplete="off"
+              aria-describedby="tribe-suggestion-help"
+            />
+            <datalist id="tribe-name-suggestions">
+              {suggestions.map(entity => <option key={entity.id} value={entity.name} />)}
+            </datalist>
             <button type="submit" className="primary-button" disabled={busy}>{busy ? "جارٍ البحث…" : "بحث"}</button>
           </div>
+          <small id="tribe-suggestion-help">تظهر اقتراحات من أسماء القبائل المحفوظة فقط. إذا لم يظهر الاسم، فهذا لا يعني أنه غير موجود تاريخيًا؛ قد لا يكون أُضيف إلى القاعدة بعد.</small>
           {error && <p className="form-message" role="alert">{error}</p>}
         </form>
       </section>
@@ -84,8 +132,8 @@ export default function EntitySearchPanel({
         </div>
         {entities.length === 0 ? (
           <div className="empty-state">
-            <strong>{searched || initialQuery ? "لا توجد نتائج مطابقة" : "لا توجد سجلات بعد"}</strong>
-            <p>{searched || initialQuery ? "لا نستنتج معلومات عن الاسم عند غياب سجل موثق. يمكنك تقديم اقتراح إضافة مع مصدر قابل للتحقق بعد تسجيل الدخول." : "لم نضف بيانات قبلية افتراضية. ستظهر السجلات بعد إدخالها ومراجعة مصادرها."}</p>
+            <strong>{searched || initialQuery ? "لا توجد نتائج مطابقة في السجلات الحالية" : "لا توجد سجلات بعد"}</strong>
+            <p>{searched || initialQuery ? "يمكن إضافة الاسم مع مرجع موثوق. لا ننشئ أسماء أو معلومات تاريخية من التخمين." : "ستظهر السجلات بعد إدخالها وربطها بالمصادر."}</p>
           </div>
         ) : (
           <div className="entity-list">
