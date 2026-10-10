@@ -49,7 +49,7 @@ describe("shared tribe knowledge intake", () => {
 
   it("requires trusted origin and an authenticated workspace", async () => {
     mocks.hasTrustedOrigin.mockReturnValue(false);
-    expect((await POST(request(input)).catch(() => ({ status: -1 }))).status).toBe(403);
+    expect((await POST(request(input))).status).toBe(403);
     mocks.hasTrustedOrigin.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue(null);
     expect((await POST(request(input))).status).toBe(401);
