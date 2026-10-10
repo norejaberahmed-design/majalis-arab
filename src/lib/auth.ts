@@ -63,7 +63,22 @@ if (process.env.NODE_ENV === "production" && (!secret || secret.length < 32)) {
 export const auth = betterAuth({
   appName: "مجالس العرب",
   baseURL,
-  trustedOrigins,
+  trustedOrigins: async (request) => {
+    if (!request || process.env.NODE_ENV === "production" || !codespacesDomain) return trustedOrigins;
+    try {
+      const requestURL = new URL(request.url);
+      const suffix = `-3000.${codespacesDomain}`;
+      const label = requestURL.hostname.endsWith(suffix)
+        ? requestURL.hostname.slice(0, -suffix.length)
+        : "";
+      if (/^[a-z0-9-]+$/i.test(label)) {
+        return [...new Set([...trustedOrigins, requestURL.origin])];
+      }
+    } catch {
+      // Keep the configured allowlist when the request URL cannot be parsed.
+    }
+    return trustedOrigins;
+  },
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
   rateLimit: {
