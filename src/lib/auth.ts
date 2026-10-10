@@ -19,10 +19,10 @@ const mailer = smtpConfigured ? nodemailer.createTransport({
   secure: smtpPort === 465,
   auth: { user: smtpUser, pass: smtpPass }
 }) : null;
-const baseURL = (process.env.BETTER_AUTH_URL || "http://localhost:3000").replace(/\\/+$/, "");
+const baseURL = (process.env.BETTER_AUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
 const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "")
   .split(",")
-  .map(origin => origin.trim().replace(/\\/+$/, ""))
+  .map(origin => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 const trustedOrigins = [...new Set([baseURL, ...additionalTrustedOrigins])];
 
