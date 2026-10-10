@@ -33,7 +33,7 @@ describe("source batch import validation", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("rejects passages without a locator label or source context", () => {
+  it("rejects passages without a usable page label", () => {
     const result = validateManifest({
       sources: [{
         ...validManifest.sources[0],
