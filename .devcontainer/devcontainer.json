@@ -10,7 +10,7 @@
     }
   },
   "postCreateCommand": "npm ci && node scripts/setup-codespaces.mjs && npm run db:deploy && npm run db:generate",
-  "postStartCommand": "npm run dev",
+  "postStartCommand": "nohup npm run dev -- --hostname 0.0.0.0 > /tmp/majalis-dev.log 2>&1 &",
   "customizations": {
     "vscode": {
       "extensions": [
