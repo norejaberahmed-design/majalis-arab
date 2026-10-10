@@ -24,7 +24,7 @@ export default function LoginPage() {
     authClient.getSession()
       .then(({ data, error }) => {
         if (active && !error && data?.session) {
-          router.replace("/setup");
+          router.replace("/");
           router.refresh();
         }
       })
@@ -66,20 +66,20 @@ export default function LoginPage() {
     try {
       if (mode === "signin") {
         const result = await authClient.signIn.email({
-          email: cleanEmail, password, callbackURL: "/setup",
+          email: cleanEmail, password, callbackURL: "/",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "لم نتمكن من تسجيل الدخول. راجع البريد وكلمة المرور، أو أكّد بريدك إذا كان الحساب جديدًا." });
           return;
         }
-        router.replace("/setup");
+        router.replace("/");
         router.refresh();
         return;
       }
 
       if (mode === "signup") {
         const result = await authClient.signUp.email({
-          name: name.trim(), email: cleanEmail, password, callbackURL: "/setup",
+          name: name.trim(), email: cleanEmail, password, callbackURL: "/",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "تعذر إنشاء الحساب. قد يكون البريد مستخدمًا بالفعل أو أن البيانات تحتاج إلى مراجعة." });
@@ -87,7 +87,7 @@ export default function LoginPage() {
         }
         const session = await authClient.getSession();
         if (!session.error && session.data?.session) {
-          router.replace("/setup");
+          router.replace("/");
           router.refresh();
           return;
         }
@@ -97,7 +97,7 @@ export default function LoginPage() {
 
       if (mode === "magic") {
         const result = await authClient.signIn.magicLink({
-          email: cleanEmail, callbackURL: "/setup",
+          email: cleanEmail, callbackURL: "/",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "تعذر إرسال رابط الدخول. حاول مرة أخرى بعد قليل." });
