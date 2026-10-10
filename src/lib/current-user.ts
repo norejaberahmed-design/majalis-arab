@@ -16,6 +16,6 @@ export async function requireWorkspace() {
 
 export async function requireUser() {
   const session = await getCurrentUser();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect("/");
   return session;
 }
