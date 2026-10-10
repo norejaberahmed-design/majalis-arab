@@ -20,10 +20,11 @@ const mailer = smtpConfigured ? nodemailer.createTransport({
   auth: { user: smtpUser, pass: smtpPass }
 }) : null;
 const configuredBaseURL = process.env.BETTER_AUTH_URL;
+const codespacesDomain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
 const codespacesOrigin = process.env.NODE_ENV !== "production"
   && process.env.CODESPACE_NAME
-  && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
-  ? `https://${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
+  && codespacesDomain
+  ? `https://${process.env.CODESPACE_NAME}-3000.${codespacesDomain}`
   : undefined;
 // Codespaces hostnames are ephemeral. When running inside Codespaces, prefer
 // the origin derived from its runtime-provided forwarding variables over any
