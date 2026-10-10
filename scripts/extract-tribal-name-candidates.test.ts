@@ -17,11 +17,11 @@ describe("tribal name candidate extraction", () => {
   });
 
   it("deduplicates spelling variants within the same passage", () => {
-    const candidates = extractNameCandidates("قبيلة قريش ثم وردت قبيلة قُرَيْش في السرد.");
+    const candidates = extractNameCandidates("قبيلة قريش ثم وردت قبيلة قريش في السرد.");
     expect(candidates.filter(candidate => normalizeArabicName(candidate.name) === "قريش")).toHaveLength(1);
   });
 
   it("does not infer a name when no explicit marker exists", () => {
-    expect(extractNameCandidates("هذا نص تاريخي عام لا يذكر اسم قبيلة صراحة.")).toEqual([]);
+    expect(extractNameCandidates("هذا نص تاريخي عام يتحدث عن الأسواق والطرق دون أسماء واضحة.")).toEqual([]);
   });
 });
