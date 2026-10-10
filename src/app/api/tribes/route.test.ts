@@ -5,9 +5,6 @@ const mocks = vi.hoisted(() => ({
   hasTrustedOrigin: vi.fn(() => true),
   getWorkspaceContext: vi.fn(),
   entityFindUnique: vi.fn(),
-  entityCreate: vi.fn(),
-  entryFindFirst: vi.fn(),
-  entryCreate: vi.fn(),
   additionRequestFindFirst: vi.fn(),
   additionRequestCreate: vi.fn(),
   auditCreate: vi.fn(),
@@ -38,15 +35,11 @@ describe("tribe contribution intake", () => {
     mocks.hasTrustedOrigin.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue({ workspaceId: "workspace-a", user: { id: "user-a", email: "user@example.test" }, role: "VIEWER" });
     mocks.entityFindUnique.mockResolvedValue(null);
-    mocks.entityCreate.mockResolvedValue({ id: "tribe-a", name: input.name, kind: "TRIBE" });
-    mocks.entryFindFirst.mockResolvedValue(null);
-    mocks.entryCreate.mockResolvedValue({ id: "entry-a" });
     mocks.additionRequestFindFirst.mockResolvedValue(null);
     mocks.additionRequestCreate.mockResolvedValue({ id: "request-a" });
     mocks.auditCreate.mockResolvedValue({});
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
-      tribalEntity: { findUnique: mocks.entityFindUnique, create: mocks.entityCreate },
-      tribeKnowledgeEntry: { findFirst: mocks.entryFindFirst, create: mocks.entryCreate },
+      tribalEntity: { findUnique: mocks.entityFindUnique },
       additionRequest: { findFirst: mocks.additionRequestFindFirst, create: mocks.additionRequestCreate },
       auditLog: { create: mocks.auditCreate }
     }));
@@ -60,16 +53,16 @@ describe("tribe contribution intake", () => {
     expect((await POST(request(input))).status).toBe(401);
   });
 
-  it("queues a new tribe name for review instead of creating a shared entity", async () => {
+  it("queues a new tribe name instead of creating a shared catalogue entity", async () => {
     const response = await POST(request(input));
     const body = await response.json();
     expect(response.status).toBe(201);
     expect(body.data).toMatchObject({ requestId: "request-a", submittedForReview: true, created: true });
-    expect(mocks.entityCreate).not.toHaveBeenCalled();
     expect(mocks.additionRequestCreate).toHaveBeenCalledWith(expect.objectContaining({
       data: {
         workspaceId: "workspace-a",
         userId: "user-a",
+        entityId: null,
         proposedName: input.name,
         proposedKind: "TRIBE",
         explanation: input.content,
@@ -83,6 +76,17 @@ describe("tribe contribution intake", () => {
     }));
   });
 
+  it("keeps contributions to existing tribes in the private review queue", async () => {
+    mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
+    const response = await POST(request({ ...input, content: "معلومة إضافية مختلفة عن القبيلة وتحتاج إلى مراجعة المصدر." }));
+    const body = await response.json();
+    expect(response.status).toBe(201);
+    expect(body.data).toMatchObject({ submittedForReview: true, existingEntity: { id: "tribe-existing" } });
+    expect(mocks.additionRequestCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ workspaceId: "workspace-a", entityId: "tribe-existing", status: "SUBMITTED" })
+    }));
+  });
+
   it("does not duplicate a pending request for the same name and content", async () => {
     mocks.additionRequestFindFirst.mockResolvedValue({ id: "request-existing" });
     const response = await POST(request(input));
@@ -90,29 +94,12 @@ describe("tribe contribution intake", () => {
     expect(response.status).toBe(200);
     expect(body.data).toMatchObject({ requestId: "request-existing", submittedForReview: true, created: false });
     expect(mocks.additionRequestCreate).not.toHaveBeenCalled();
-    expect(mocks.entityCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
-  it("reuses an existing tribe and avoids duplicate knowledge entries", async () => {
-    mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
-    mocks.entryFindFirst.mockResolvedValue({ id: "entry-existing" });
-    const response = await POST(request(input));
-    const body = await response.json();
-    expect(response.status).toBe(200);
-    expect(body.data).toMatchObject({ id: "tribe-existing", created: false, entryCreated: false, submittedForReview: false });
-    expect(mocks.entityCreate).not.toHaveBeenCalled();
-    expect(mocks.entryCreate).not.toHaveBeenCalled();
-  });
-
-  it("adds new information to an existing shared tribe without duplicating the tribe", async () => {
-    mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
-    const response = await POST(request({ ...input, content: "معلومة إضافية مختلفة عن القبيلة وتحتاج إلى مراجعة المصدر." }));
-    const body = await response.json();
-    expect(response.status).toBe(200);
-    expect(body.data).toMatchObject({ id: "tribe-existing", created: false, entryCreated: true, submittedForReview: false });
-    expect(mocks.entityCreate).not.toHaveBeenCalled();
-    expect(mocks.entryCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ entityId: "tribe-existing", status: "UNREVIEWED", createdByUserId: "user-a" })
-    }));
+  it("rejects unsafe source URLs", async () => {
+    const response = await POST(request({ ...input, sourceUrl: "javascript:alert(1)" }));
+    expect(response.status).toBe(400);
+    expect(mocks.additionRequestCreate).not.toHaveBeenCalled();
   });
 });
