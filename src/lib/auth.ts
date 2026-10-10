@@ -25,14 +25,6 @@ const codespacesOrigin = process.env.NODE_ENV !== "production"
   && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
   ? `https://${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
   : undefined;
-function isLoopbackURL(value: string | undefined): boolean {
-  if (!value) return true;
-  try {
-    return ["localhost", "127.0.0.1", "[::1]"].includes(new URL(value).hostname);
-  } catch {
-    return false;
-  }
-}
 // Codespaces hostnames are ephemeral. When running inside Codespaces, prefer
 // the origin derived from its runtime-provided forwarding variables over any
 // stale BETTER_AUTH_URL left in a local .env file.
