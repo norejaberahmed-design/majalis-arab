@@ -88,4 +88,15 @@ describe("shared tribe knowledge intake", () => {
     expect(mocks.entityCreate).not.toHaveBeenCalled();
     expect(mocks.entryCreate).toHaveBeenCalled();
   });
+
+  it("rejects a same-name record that is not classified as a tribe", async () => {
+    mocks.entityFindUnique.mockResolvedValue({ id: "person-existing", name: input.name, kind: "PERSON" });
+    const response = await POST(request(input));
+    const body = await response.json();
+    expect(response.status).toBe(409);
+    expect(body.error).toContain("ليس مصنفًا كقبيلة");
+    expect(mocks.entityCreate).not.toHaveBeenCalled();
+    expect(mocks.entryCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
 });

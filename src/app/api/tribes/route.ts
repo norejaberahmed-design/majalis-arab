@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
         where: { normalizedName },
         select: { id: true, name: true, kind: true }
       });
+
+      // Never attach tribal-history content to a person, place, or other record
+      // just because its normalized name happens to match.
+      if (entity && entity.kind !== "TRIBE") {
+        return { conflict: true as const, existingName: entity.name, existingKind: entity.kind };
+      }
+
       let created = false;
       if (!entity) {
         entity = await tx.tribalEntity.create({
@@ -83,8 +90,14 @@ export async function POST(request: NextRequest) {
           details: JSON.stringify({ entityId: entity.id, status: "UNREVIEWED", sourceUrl: sourceUrl ? "provided" : "not_provided" })
         }
       });
-      return { entity, created, entryId: entry.id, entryCreated };
+      return { conflict: false as const, entity, created, entryId: entry.id, entryCreated };
     });
+
+    if (result.conflict) {
+      return NextResponse.json({
+        error: "يوجد سجل بالاسم نفسه لكنه ليس مصنفًا كقبيلة. لم نربط المعلومات به لتجنب خلط أنواع السجلات؛ يلزم تصحيح السجل الموجود أولًا."
+      }, { status: 409, headers: NO_STORE });
+    }
 
     return NextResponse.json({
       data: { ...result.entity, entryId: result.entryId, created: result.created, entryCreated: result.entryCreated },
