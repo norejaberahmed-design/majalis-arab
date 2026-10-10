@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireWorkspace } from "@/lib/current-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await requireWorkspace();
   const [entities, sources, claims, passages, places] = await Promise.all([
     prisma.tribalEntity.count(),
     prisma.source.count(),
@@ -28,7 +26,7 @@ export default async function HomePage() {
         <h1>الدليل البحثي لمجالس العرب.</h1>
         <p className="intro">سجل الكيانات والمصادر والادعاءات التاريخية. نعرض ما هو مسجل فعليًا ونفصل بين وجود الرواية وبين ثبوتها بالدليل.</p>
         <div className="hero-actions">
-          <Link className="primary-button" href="/council">العودة إلى المجلس</Link>
+          <Link className="primary-button" href="/council">دخول المجلس</Link>
           <Link className="secondary-button" href="/tribe">ملف قبيلتي</Link>
           <Link className="secondary-button" href="/search">البحث الموحد</Link>
           <Link className="secondary-button" href="/entities">استعراض الكيانات</Link>
