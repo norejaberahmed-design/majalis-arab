@@ -94,7 +94,8 @@ export default function LoginPage() {
           setNotice({ type: "error", text: "تعذر إنشاء الحساب بهذه البيانات. تحقق من البريد وحاول مجددًا." });
           return;
         }
-        if (result.data?.session) {
+        const sessionResult = await authClient.getSession();
+        if (!sessionResult.error && sessionResult.data?.session) {
           router.replace("/setup");
           router.refresh();
           return;
