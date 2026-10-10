@@ -8,6 +8,10 @@ if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL is missing. Add the local SQLite URL from .env.example to .env, then retry.");
   process.exit(1);
 }
+if (!process.env.DATABASE_URL.startsWith("file:")) {
+  console.error("Refusing to alter rate limits unless DATABASE_URL points to a local SQLite file.");
+  process.exit(1);
+}
 
 const prisma = new PrismaClient();
 
