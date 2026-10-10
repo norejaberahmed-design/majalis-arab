@@ -17,7 +17,8 @@
     "db:test-upgrade": "node scripts/test-migration-upgrade.mjs",
     "db:import-source-batch": "node scripts/import-source-batch.mjs",
     "db:extract-tribal-candidates": "node scripts/extract-tribal-name-candidates.mjs",
-    "db:fetch-wikisource": "node scripts/fetch-wikisource-text.mjs"
+    "db:fetch-wikisource": "node scripts/fetch-wikisource-text.mjs",
+    "db:fetch-wikisource-batch": "node scripts/fetch-wikisource-batch.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
