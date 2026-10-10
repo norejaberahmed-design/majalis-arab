@@ -19,7 +19,27 @@ const mailer = smtpConfigured ? nodemailer.createTransport({
   secure: smtpPort === 465,
   auth: { user: smtpUser, pass: smtpPass }
 }) : null;
-const baseURL = (process.env.BETTER_AUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
+const configuredBaseURL = process.env.BETTER_AUTH_URL;
+const codespacesOrigin = process.env.NODE_ENV !== "production"
+  && process.env.CODESPACE_NAME
+  && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
+  ? `https://${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
+  : undefined;
+function isLoopbackURL(value: string | undefined): boolean {
+  if (!value) return true;
+  try {
+    return ["localhost", "127.0.0.1", "[::1]"].includes(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+// Codespaces may inherit BETTER_AUTH_URL=http://localhost:3000 from .env.example.
+// In development, prefer the exact forwarded HTTPS origin so Better Auth trusts the browser origin.
+const baseURL = (
+  codespacesOrigin && isLoopbackURL(configuredBaseURL)
+    ? codespacesOrigin
+    : configuredBaseURL || "http://localhost:3000"
+).replace(/\/+$/, "");
 const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "")
   .split(",")
   .map(origin => origin.trim().replace(/\/+$/, ""))
