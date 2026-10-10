@@ -11,8 +11,9 @@ describe("production release gate", () => {
     expect(shouldBlockProduction("test")).toBe(false);
   });
 
-  it("allows only the authentication and workspace setup surface while production is gated", () => {
+  it("allows authentication, setup, and the read-only research homepage while production is gated", () => {
     expect(isAllowedDuringReleaseGate("/")).toBe(true);
+    expect(isAllowedDuringReleaseGate("/research")).toBe(true);
     expect(isAllowedDuringReleaseGate("/login")).toBe(true);
     expect(isAllowedDuringReleaseGate("/setup")).toBe(true);
     expect(isAllowedDuringReleaseGate("/forgot-password")).toBe(true);
