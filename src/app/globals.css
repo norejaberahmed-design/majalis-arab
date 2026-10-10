@@ -237,3 +237,12 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .claim-review-actions textarea{resize:vertical}
 .claim-review-actions .secondary-button{justify-self:start;cursor:pointer}
 .claim-review-actions button:disabled{opacity:.55;cursor:wait}
+
+
+/* Accessible password visibility control on the authentication form */
+.auth-password-row{display:flex;align-items:stretch;gap:7px;margin-top:7px}
+.auth-card .auth-password-row input{min-width:0;flex:1;margin-top:0}
+.auth-password-toggle{flex:0 0 auto;min-width:58px;padding:0 10px;border:1px solid #d9ddd6;border-radius:8px;background:#fff;color:var(--green);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.auth-password-toggle:focus-visible,.auth-switch:focus-visible,.auth-submit:focus-visible{outline:3px solid #a6c8b5;outline-offset:3px}
+.auth-password-toggle:disabled,.auth-switch:disabled{opacity:.55;cursor:wait}
+.auth-switch:disabled{cursor:wait}

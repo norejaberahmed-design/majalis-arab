@@ -16,7 +16,8 @@
     "db:seed-public-domain-passage": "node prisma/seed-public-domain-passage.mjs",
     "db:test-upgrade": "node scripts/test-migration-upgrade.mjs",
     "db:import-source-batch": "node scripts/import-source-batch.mjs",
-    "db:extract-tribal-candidates": "node scripts/extract-tribal-name-candidates.mjs"
+    "db:extract-tribal-candidates": "node scripts/extract-tribal-name-candidates.mjs",
+    "auth:dev-reset-signup-limit": "node --env-file=.env scripts/reset-dev-signup-rate-limit.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
