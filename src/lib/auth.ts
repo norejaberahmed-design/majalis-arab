@@ -19,6 +19,7 @@ const codespacesPort = Number(process.env.PORT || 3000);
 const codespacesOrigin = process.env.NODE_ENV !== "production" && process.env.CODESPACE_NAME && codespacesDomain && Number.isInteger(codespacesPort) && codespacesPort > 0
   ? `https://${process.env.CODESPACE_NAME}-${codespacesPort}.${codespacesDomain}`
   : undefined;
+const useCodespacesAutoOrigin = process.env.NODE_ENV !== "production" && Boolean(process.env.CODESPACE_NAME && codespacesDomain) && !process.env.PORT && (!configuredBaseURL || configuredBaseURL.startsWith("http://localhost"));
 const baseURL = (codespacesOrigin || configuredBaseURL || "http://localhost:3000").replace(/\/+$/, "");
 const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "").split(",").map(origin => origin.trim().replace(/\/+$/, "")).filter(Boolean);
 const trustedOrigins = [...new Set([baseURL, ...additionalTrustedOrigins])];
@@ -38,7 +39,8 @@ if (Boolean(googleClientId) !== Boolean(googleClientSecret)) throw new Error("Se
 
 export const auth = betterAuth({
   appName: "مجالس العرب",
-  baseURL,
+  // Let Better Auth infer the active forwarded Codespaces port when Next.js auto-selects 3001+.
+  baseURL: useCodespacesAutoOrigin ? undefined : baseURL,
   trustedOrigins: async (request) => {
     if (!request) return trustedOrigins;
     try {
