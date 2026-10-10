@@ -157,7 +157,7 @@ async function importManifest(manifest, workspaceId) {
       if (input.passages.length > 0) {
         await prisma.source.update({
           where: { id: source.id },
-          data: { extractionStatus: "EXTRACTED", humanReviewed: false }
+          data: { extractionStatus: "EXTRACTED" }
         });
       }
     } catch (error) {
