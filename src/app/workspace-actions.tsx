@@ -12,7 +12,7 @@ export default function WorkspaceActions() {
     setBusy(true);
     try {
       await authClient.signOut();
-      router.replace("/login");
+      router.replace("/");
       router.refresh();
     } finally {
       setBusy(false);
