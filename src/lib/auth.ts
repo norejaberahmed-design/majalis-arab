@@ -70,20 +70,18 @@ export const auth = betterAuth({
     try {
       const requestURL = new URL(request.url);
       const requestOrigin = request.headers.get("origin");
-      const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-      const host = forwardedHost || request.headers.get("host") || requestURL.host;
-      const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-      const protocol = forwardedProto || requestURL.protocol.replace(/:$/, "");
-      const canonicalOrigin = `${protocol}://${host}`;
-
-      // Trust only an exact origin match to the host serving this request.
-      // This supports reverse proxies whose internal request URL differs from
-      // the public hostname, without allowing arbitrary cross-origin requests.
-      if (requestOrigin && requestOrigin === canonicalOrigin) {
-        return [...new Set([...trustedOrigins, canonicalOrigin])];
-      }
-      if (requestOrigin && requestOrigin === requestURL.origin) {
-        return [...new Set([...trustedOrigins, requestURL.origin])];
+      const requestHost = (request.headers.get("host") || requestURL.host).toLowerCase();
+      if (requestOrigin) {
+        const originURL = new URL(requestOrigin);
+        const isSecureOrigin = originURL.protocol === "https:";
+        const isLocalOrigin = originURL.protocol === "http:" &&
+          (originURL.hostname === "localhost" || originURL.hostname === "127.0.0.1" || originURL.hostname === "[::1]");
+        if (
+          originURL.host.toLowerCase() === requestHost &&
+          (isSecureOrigin || (process.env.NODE_ENV !== "production" && isLocalOrigin))
+        ) {
+          return [...new Set([...trustedOrigins, originURL.origin])];
+        }
       }
 
       // GitHub Codespaces uses ephemeral hostnames in development.
