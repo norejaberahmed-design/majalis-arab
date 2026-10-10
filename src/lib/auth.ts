@@ -33,12 +33,11 @@ function isLoopbackURL(value: string | undefined): boolean {
     return false;
   }
 }
-// Codespaces may inherit BETTER_AUTH_URL=http://localhost:3000 from .env.example.
-// In development, prefer the exact forwarded HTTPS origin so Better Auth trusts the browser origin.
+// Codespaces hostnames are ephemeral. When running inside Codespaces, prefer
+// the origin derived from its runtime-provided forwarding variables over any
+// stale BETTER_AUTH_URL left in a local .env file.
 const baseURL = (
-  codespacesOrigin && isLoopbackURL(configuredBaseURL)
-    ? codespacesOrigin
-    : configuredBaseURL || "http://localhost:3000"
+  codespacesOrigin || configuredBaseURL || "http://localhost:3000"
 ).replace(/\/+$/, "");
 const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "")
   .split(",")
