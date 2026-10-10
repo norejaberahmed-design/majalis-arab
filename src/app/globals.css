@@ -310,3 +310,10 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 @media(max-width:680px){.signin-v2-page{display:flex;flex-direction:column;min-height:100svh}.signin-v2-aside{display:none}.signin-v2-main{flex:1;justify-content:flex-start;padding:25px 20px 30px}.signin-v2-mobile-brand{display:flex;align-items:center;gap:10px;width:min(100%,410px);margin-bottom:35px;color:#1d3e30}.signin-v2-mobile-brand .signin-v2-mark{width:39px;height:39px;flex-basis:39px;border-color:#b5c7b8;background:#173e31;font-size:22px}.signin-v2-mobile-brand strong{font-size:14px}.signin-v2-card{width:min(100%,410px)}.signin-v2-heading h2{font-size:27px}.signin-v2-legal{margin-top:24px}}
 @media(max-width:380px){.signin-v2-main{padding-right:16px;padding-left:16px}.signin-v2-heading h2{font-size:25px}.signin-v2-heading p{font-size:11px}.signin-v2-field>input,.signin-v2-password input{height:46px}}
 @media(prefers-reduced-motion:reduce){.signin-v2-submit,.signin-v2-field>input,.signin-v2-password input{transition:none}.signin-v2-submit i{animation:none}}
+
+/* Google OAuth button */
+.signin-v2-google{margin-top:18px}
+.signin-v2-google button{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;min-height:47px;padding:10px 14px;border:1px solid #d8ded7;border-radius:9px;background:#fff;color:#28372e;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.signin-v2-google button:hover:not(:disabled){background:#f7f9f7;border-color:#b8c7ba}
+.signin-v2-google button:disabled{opacity:.7;cursor:wait}
+.signin-v2-google-g{display:grid;place-items:center;width:22px;height:22px;border:1px solid #e4e8e4;border-radius:50%;background:#fff;color:#4285f4;font-family:Arial,sans-serif;font-size:16px;font-weight:800}
