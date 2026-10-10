@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة خامسة من أسماء المداخل القبلية في معجم قبائل العرب القديمة والحديثة. الأسماء قد تدل على بطن أو فرع أو عشيرة أو قبيلة؛ جميعها تحتاج مراجعة قبل الاعتماد النهائي.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م"
+  },
+  "extraction_method": "استخراج من النص الرقمي المنشور للمداخل؛ معرّفات صفحات الويب ليست أرقام صفحات مطبوعة.",
+  "entities": [
+    {
+      "name": "الفياض",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل الفياض بأنه بطن من الخماس، من الجدادة، من قبيلة الشعار الملحقة بزوبع من شمر الطائية.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل الفياض",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الفيافي",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكر المدخل الفيافي بوصفهم فرقة من بني خالد، إحدى عشائر سورية.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل الفيافي",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الغييثات",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفهم المدخل بأنهم بطن من الدواسر، ويذكر تنقلهم في نجد ودخولهم العراق.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل الغييثات",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "فيصل",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل فيصل بأنه بطن من الدرة، من آل محمد، رؤساء شمر الجربة.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل فيصل",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم شخصي شائع؛ لا يدمج مع أشخاص أو كيانات أخرى تحمل الاسم نفسه."
+    },
+    {
+      "name": "فيض",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل فيض بأنه بطن من بني صخر عرب الكرك، ويذكر أن مساكنهم كانت بالقدس الشريف.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل فيض",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "فيض بن كليب",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من لخم، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل فيض بن كليب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الفيناث",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكر المدخل الفيناث بوصفهم عشيرة من القبوفة، من بني مالك، من جهينة، إحدى قبائل الحجاز.",
+      "source_url": "https://islamport.com/l/nsb/5055/928.htm",
+      "source_locator": "مدخل الفيناث",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "عمرو بن قاسط",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من العدنانية، ويذكر بني عمرو المعروفين بغفيلة بن قاسط.",
+      "source_url": "https://islamport.com/l/nsb/5055/830.htm",
+      "source_locator": "مدخل عمرو بن قاسط",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "عمرو بن قريظ",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من بني أبي بكر بن كلاب.",
+      "source_url": "https://islamport.com/l/nsb/5055/830.htm",
+      "source_locator": "مدخل عمرو بن قريظ",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "عمرو بن قعين",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من أسد بن خزيمة، من العدنانية، ويذكر ماءً لهم بنجد.",
+      "source_url": "https://islamport.com/l/nsb/5055/830.htm",
+      "source_locator": "مدخل عمرو بن قعين",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    }
+  ]
+}
