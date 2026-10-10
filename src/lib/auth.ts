@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { magicLink } from "better-auth/plugins";
 
 const secret = process.env.BETTER_AUTH_SECRET;
 const smtpHost = process.env.SMTP_HOST;
@@ -82,6 +83,27 @@ export const auth = betterAuth({
   },
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
+  plugins: [
+    magicLink({
+      expiresIn: 10 * 60,
+      disableSignUp: false,
+      sendMagicLink: async ({ email, url }) => {
+        if (!mailer || !mailFrom) {
+          if (process.env.NODE_ENV === "development") {
+            console.info("[DEV ONLY] Magic sign-in link for " + email + ": " + url);
+            return;
+          }
+          throw new Error("Email delivery is not configured.");
+        }
+        await mailer.sendMail({
+          from: mailFrom,
+          to: email,
+          subject: "رابط الدخول إلى مجالس العرب",
+          text: "مرحبًا،\\n\\nاستخدم الرابط التالي لتسجيل الدخول إلى مجالس العرب. الرابط صالح لمدة 10 دقائق ويُستخدم مرة واحدة:\\n" + url + "\\n\\nإذا لم تطلب هذا الرابط، فتجاهل الرسالة."
+        });
+      }
+    })
+  ],
   rateLimit: {
     enabled: true,
     storage: "database",
