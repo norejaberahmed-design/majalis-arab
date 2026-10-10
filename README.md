@@ -28,7 +28,7 @@
 
 ### استكشاف أخطاء التسجيل محليًا
 
-- إذا ظهر `Invalid origin`، اجعل `BETTER_AUTH_URL` مطابقًا لأصل الصفحة المفتوحة، أو أضف الأصل الدقيق إلى `BETTER_AUTH_TRUSTED_ORIGINS` مفصولًا بفواصل. لا تستخدم wildcard.
+- إذا ظهر `Invalid origin` في Codespaces، يتحقق التطبيق في وضع التطوير من أصل HTTPS المحوّل تلقائيًا عند توفر `CODESPACE_NAME` و`GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`، حتى لو كان `.env` يحتوي عنوان localhost الافتراضي. خارج Codespaces، اجعل `BETTER_AUTH_URL` مطابقًا لأصل الصفحة المفتوحة، أو أضف الأصل الدقيق إلى `BETTER_AUTH_TRUSTED_ORIGINS` مفصولًا بفواصل. لا تستخدم wildcard.
 - إذا ظهر `Too many requests`، توقف عن تكرار المحاولات؛ حد التسجيل الافتراضي 3 محاولات في الساعة. بعد التأكد من أنك في بيئة تطوير محلية، استخدم `npm run auth:dev-reset-signup-limit` لمسح عدادات التسجيل فقط. يرفض الأمر العمل في الإنتاج ولا يمس المستخدمين أو الجلسات أو عدادات تسجيل الدخول.
 - يتطلب أمر الاستعادة وجود `DATABASE_URL` في `.env`. لا تشارك ملف `.env` أو أي أسرار.
 
