@@ -28,7 +28,15 @@ export default function LoginPage() {
       }
       if (mode === "signup") {
         if (process.env.NODE_ENV !== "production") {
-          // Local development has no guaranteed SMTP delivery; create the account and continue.
+          // Do not navigate into a protected setup flow until the server confirms
+          // that auto-sign-in actually created a session.
+          const sessionCheck = await authClient.getSession();
+          if (sessionCheck.error || !sessionCheck.data?.session) {
+            setMessage("تم إنشاء الحساب، لكن تعذر إنشاء جلسة دخول تلقائية. سجّل الدخول باستخدام بياناتك.");
+            setMode("signin");
+            setPassword("");
+            return;
+          }
           router.replace("/setup");
           router.refresh();
           return;
