@@ -93,7 +93,8 @@ export const auth = betterAuth({
     minPasswordLength: 12,
     maxPasswordLength: 128,
     autoSignIn: true,
-    requireEmailVerification: true,
+    // Production accounts must verify email; development can sign in immediately when SMTP is unavailable.
+    requireEmailVerification: process.env.NODE_ENV === "production",
     sendResetPassword: async ({ user, token }) => {
       const resetUrl = new URL("/reset-password", baseURL);
       resetUrl.searchParams.set("token", token);
