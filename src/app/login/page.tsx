@@ -24,7 +24,7 @@ export default function LoginPage() {
     authClient.getSession()
       .then(({ data, error }) => {
         if (active && !error && data?.session) {
-          router.replace("/");
+          router.replace("/research");
           router.refresh();
         }
       })
@@ -66,20 +66,20 @@ export default function LoginPage() {
     try {
       if (mode === "signin") {
         const result = await authClient.signIn.email({
-          email: cleanEmail, password, callbackURL: "/",
+          email: cleanEmail, password, callbackURL: "/research",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "لم نتمكن من تسجيل الدخول. راجع البريد وكلمة المرور، أو أكّد بريدك إذا كان الحساب جديدًا." });
           return;
         }
-        router.replace("/");
+        router.replace("/research");
         router.refresh();
         return;
       }
 
       if (mode === "signup") {
         const result = await authClient.signUp.email({
-          name: name.trim(), email: cleanEmail, password, callbackURL: "/",
+          name: name.trim(), email: cleanEmail, password, callbackURL: "/research",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "تعذر إنشاء الحساب. قد يكون البريد مستخدمًا بالفعل أو أن البيانات تحتاج إلى مراجعة." });
@@ -91,33 +91,20 @@ export default function LoginPage() {
           return;
         }
 
-        // Give every new account a personal default workspace so the first
-        // successful signup can enter the application without a setup loop.
-        const workspaceResponse = await fetch("/api/workspaces", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "مجلسي" }),
-          cache: "no-store",
-        });
-        if (!workspaceResponse.ok) {
-          const workspaceResult = await workspaceResponse.json().catch(() => ({}));
-          setNotice({
-            kind: "error",
-            text: typeof workspaceResult.error === "string"
-              ? `تم إنشاء الحساب، لكن تعذر تجهيز المجلس: ${workspaceResult.error}. سجّل الدخول مجددًا أو أعد المحاولة.`
-              : "تم إنشاء الحساب، لكن تعذر تجهيز المجلس. أعد المحاولة.",
-          });
+        const session = await authClient.getSession();
+        if (session.error || !session.data?.session) {
+          setNotice({ kind: "error", text: "تعذر إنشاء جلسة الدخول بعد التسجيل. حاول تسجيل الدخول بالبريد وكلمة المرور." });
           return;
         }
 
-        router.replace("/");
+        router.replace("/research");
         router.refresh();
         return;
       }
 
       if (mode === "magic") {
         const result = await authClient.signIn.magicLink({
-          email: cleanEmail, callbackURL: "/",
+          email: cleanEmail, callbackURL: "/research",
         });
         if (result.error) {
           setNotice({ kind: "error", text: "تعذر إرسال رابط الدخول. حاول مرة أخرى بعد قليل." });
