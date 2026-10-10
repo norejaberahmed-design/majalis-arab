@@ -16,12 +16,12 @@ import sys
 import tempfile
 from pathlib import Path
 
-ARABIC = re.compile(r"[\\u0600-\\u06ff]")
-SPACE = re.compile(r"\\s+")
-DIACRITICS = re.compile(r"[\\u064b-\\u065f\\u0670ـ]")
-EXPLICIT_TRIBE = re.compile(r"(?:قبيلة|قبائل)\\s+([^،؛:.()]{2,70})")
+ARABIC = re.compile(r"[\u0600-\u06ff]")
+SPACE = re.compile(r"\s+")
+DIACRITICS = re.compile(r"[\u064b-\u065f\u0670ـ]")
+EXPLICIT_TRIBE = re.compile(r"(?:قبيلة|قبائل)\s+([^،؛:.()]{2,70})")
 # Conservative dictionary-entry headings such as "بنو فلان:" or "الفلانيّة:"
-HEADING = re.compile(r"^([\\u0621-\\u064a][\\u0621-\\u064a\\sـًٌٍَُِّْٰ()«»\\-]{1,70}?)\\s*[:：]")
+HEADING = re.compile(r"^([\u0621-\u064a][\u0621-\u064a\sـًٌٍَُِّْٰ()«»\-]{1,70}?)\s*[:：]")
 
 def run(args: list[str]) -> str:
     proc = subprocess.run(args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -33,7 +33,7 @@ def normalize(text: str) -> str:
 
 def pdf_pages(pdf: Path) -> list[str]:
     raw = run(["pdftotext", "-layout", str(pdf), "-"])
-    pages = [p.strip() for p in raw.split("\\f")]
+    pages = [p.strip() for p in raw.split("\f")]
     arabic_count = sum(len(ARABIC.findall(p)) for p in pages)
     pages = [p for p in pages if p]
     if len(pages) >= 2 and arabic_count >= 500:
@@ -42,7 +42,7 @@ def pdf_pages(pdf: Path) -> list[str]:
     missing = [tool for tool in ("pdfinfo", "pdftoppm", "tesseract") if not shutil.which(tool)]
     if missing:
         raise RuntimeError("Scanned PDF detected; missing tools: " + ", ".join(missing))
-    match = re.search(r"^Pages:\\s+(\\d+)", run(["pdfinfo", str(pdf)]), re.M)
+    match = re.search(r"^Pages:\s+(\d+)", run(["pdfinfo", str(pdf)]), re.M)
     if not match:
         raise RuntimeError("Could not read the PDF page count.")
     page_count = int(match.group(1))
@@ -53,7 +53,7 @@ def pdf_pages(pdf: Path) -> list[str]:
         # Natural numeric sort: page-2.jpg must precede page-10.jpg.
         images = sorted(
             Path(temp).glob("page-*.jpg"),
-            key=lambda p: int(re.search(r"-(\\d+)\\.jpg$", p.name).group(1))
+            key=lambda p: int(re.search(r"-(\d+)\.jpg$", p.name).group(1))
         )
         if len(images) != page_count:
             raise RuntimeError(f"Rendered {len(images)} pages, expected {page_count}.")
@@ -104,7 +104,7 @@ def main() -> int:
     seen = set()
     for pdf_page, text in enumerate(pages, start=1):
         clean_lines = [normalize(line) for line in text.splitlines() if normalize(line)]
-        page_text = "\\n".join(clean_lines)
+        page_text = "\n".join(clean_lines)
         if page_text:
             # Keep the app's maximum passage size (5,000 chars) with margin.
             for chunk_no, start in enumerate(range(0, len(page_text), 4800), start=1):
@@ -135,7 +135,7 @@ def main() -> int:
 
     def write_tsv(path: Path, rows: list[dict], fields: list[str]) -> None:
         with path.open("w", encoding="utf-8-sig", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\\t", extrasaction="ignore")
+            writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t", extrasaction="ignore")
             writer.writeheader()
             writer.writerows(rows)
 
