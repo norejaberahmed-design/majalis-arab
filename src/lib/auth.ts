@@ -15,7 +15,10 @@ if (process.env.NODE_ENV === "production" && !smtpConfigured) throw new Error("S
 const mailer = smtpConfigured ? nodemailer.createTransport({ host: smtpHost, port: smtpPort, secure: smtpPort === 465, auth: { user: smtpUser, pass: smtpPass } }) : null;
 const configuredBaseURL = process.env.BETTER_AUTH_URL;
 const codespacesDomain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
-const codespacesOrigin = process.env.NODE_ENV !== "production" && process.env.CODESPACE_NAME && codespacesDomain ? `https://${process.env.CODESPACE_NAME}-3000.${codespacesDomain}` : undefined;
+const codespacesPort = Number(process.env.PORT || 3000);
+const codespacesOrigin = process.env.NODE_ENV !== "production" && process.env.CODESPACE_NAME && codespacesDomain && Number.isInteger(codespacesPort) && codespacesPort > 0
+  ? `https://${process.env.CODESPACE_NAME}-${codespacesPort}.${codespacesDomain}`
+  : undefined;
 const baseURL = (codespacesOrigin || configuredBaseURL || "http://localhost:3000").replace(/\/+$/, "");
 const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "").split(",").map(origin => origin.trim().replace(/\/+$/, "")).filter(Boolean);
 const trustedOrigins = [...new Set([baseURL, ...additionalTrustedOrigins])];
@@ -52,10 +55,18 @@ export const auth = betterAuth({
         const proxyProtocolMatches = !forwardedProto || forwardedProto === originURL.protocol.replace(":", "");
         if (originURL.host.toLowerCase() === requestHost && proxyProtocolMatches && (secure || (process.env.NODE_ENV !== "production" && local))) return [...new Set([...trustedOrigins, originURL.origin])];
       }
-      if (process.env.NODE_ENV !== "production" && codespacesDomain) {
-        const suffix = `-3000.${codespacesDomain}`;
-        const label = requestURL.hostname.endsWith(suffix) ? requestURL.hostname.slice(0, -suffix.length) : "";
-        if (/^[a-z0-9-]+$/i.test(label) && requestOrigin === requestURL.origin) return [...new Set([...trustedOrigins, requestURL.origin])];
+      if (process.env.NODE_ENV !== "production" && codespacesDomain && process.env.CODESPACE_NAME) {
+        // Codespaces may expose the app on 3000, 3001, or another forwarded port.
+        // Accept only this Codespace name, a numeric port, and the configured forwarding domain.
+        const prefix = `${process.env.CODESPACE_NAME}-`;
+        const suffix = `.${codespacesDomain}`;
+        const hostLabel = requestURL.hostname.startsWith(prefix) && requestURL.hostname.endsWith(suffix)
+          ? requestURL.hostname.slice(prefix.length, -suffix.length)
+          : "";
+        const numericPort = hostLabel.length > 0 && [...hostLabel].every(char => char >= "0" && char <= "9");
+        if (numericPort && requestOrigin === requestURL.origin) {
+          return [...new Set([...trustedOrigins, requestURL.origin])];
+        }
       }
     } catch { /* Keep the explicit allowlist if request metadata is malformed. */ }
     return trustedOrigins;
