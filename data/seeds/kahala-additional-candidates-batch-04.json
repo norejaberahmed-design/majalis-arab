@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة رابعة من أسماء كيانات قبلية من مداخل معجم قبائل العرب القديمة والحديثة. الاسم الواحد قد يتكرر لأكثر من بطن أو نسب في الكتاب؛ لذلك وُثقت المداخل المتشابهة كلٌ على حدة مع التنبيه إلى عدم دمجها آليًا.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م"
+  },
+  "extraction_method": "استخراج من النص الرقمي المنشور؛ أرقام الروابط معرّفات صفحات ويب وليست أرقام صفحات مطبوعة.",
+  "entities": [
+    {
+      "name": "أمان",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل أمان بأنه بطن من لخم، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل أمان",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أَمَة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكر المدخل أمة بوصفها بطنًا من بني نصر بن معاوية، مع إشارة هامشية إلى اختلاف في مصدر آخر.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل أمة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أمة بن بجالة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من ذبيان، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل أمة بن بجالة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "امرؤ القيس",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يذكر المدخل بطنًا بهذا الاسم من كندة، من كهلان، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل امرؤ القيس",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم متعدد الاستعمال؛ لا يدمج مع المداخل الأخرى المتشابهة."
+    },
+    {
+      "name": "امرؤ القيس بن بهثة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من سليم، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل امرؤ القيس بن بهثة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "امرؤ القيس بن زيد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكره المدخل بأنه بطن من عبد الأشهل.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل امرؤ القيس بن زيد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "امرؤ القيس بن زيد مناة",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يصفه المدخل بأنه من قبائل تميم، من العدنانية، ويذكر له ثلاث عشائر.",
+      "source_url": "https://islamport.com/l/nsb/5055/41.htm",
+      "source_locator": "مدخل امرؤ القيس بن زيد مناة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "ثعلبة بن جدعاء",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من طيء، من كهلان، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/144.htm",
+      "source_locator": "مدخل ثعلبة بن جدعاء",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "ثعلبة بن حبيب",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من تغلب بن وائل، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/144.htm",
+      "source_locator": "مدخل ثعلبة بن حبيب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "ثعلبة بن دودان",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من أسد بن خزيمة، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/144.htm",
+      "source_locator": "مدخل ثعلبة بن دودان",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "ثعلبة بن ذهل",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من طيء، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/144.htm",
+      "source_locator": "مدخل ثعلبة بن ذهل",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "ثعلبة بن سعد",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "تورد الصفحة الاسم نفسه في أكثر من مدخل قبلي، منها بطن من ذبيان وبطن من ضبة وبطن من غطفان.",
+      "source_url": "https://islamport.com/l/nsb/5055/144.htm",
+      "source_locator": "مداخل متعددة باسم ثعلبة بن سعد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "لا يُعامل ككيان واحد؛ يلزم فصل كل مدخل بحسب نسبه وشاهده."
+    },
+    {
+      "name": "تيم الله بن النمر",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من جديلة ربيعة، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/139.htm",
+      "source_locator": "مدخل تيم الله بن النمر",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "تيم اللات بن أسد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من تنوخ، من قضاعة.",
+      "source_url": "https://islamport.com/l/nsb/5055/139.htm",
+      "source_locator": "مدخل تيم اللات بن أسد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "تيم اللات بن ثعلبة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من الخزرج، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/139.htm",
+      "source_locator": "مدخل تيم اللات بن ثعلبة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "تيم اللات بن رفيدة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من كلب، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/139.htm",
+      "source_locator": "مدخل تيم اللات بن رفيدة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "تينان",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يذكر المدخل تينان بوصفها قبيلة من بجيلة، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/139.htm",
+      "source_locator": "مدخل تينان",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مالك بن جشم",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من حاشد، إحدى قبائل اليمن.",
+      "source_url": "https://islamport.com/l/nsb/5055/1021.htm",
+      "source_locator": "مدخل مالك بن جشم",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مالك بن جندب",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من العنبر، من تميم، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1021.htm",
+      "source_locator": "مدخل مالك بن جندب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مالك بن الحارث",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "تورد الصفحة مدخلين بهذا الاسم: أحدهما بطن من الأزد، والآخر بطن من مرة بن أدد من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/1021.htm",
+      "source_locator": "مدخلان باسم مالك بن الحارث",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "يجب إنشاء كيانين مستقلين بعد المراجعة، وعدم الدمج بالاسم وحده."
+    },
+    {
+      "name": "مالك بن حنظلة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من تميم بن مر بن أد، ويورد خبرًا تاريخيًا متعلقًا به.",
+      "source_url": "https://islamport.com/l/nsb/5055/1021.htm",
+      "source_locator": "مدخل مالك بن حنظلة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مالك بن ذؤال",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من شبوة، من القحطانية، ويذكر أن منهم بني الصريد وأنهم كانوا يقطنون اليمن.",
+      "source_url": "https://islamport.com/l/nsb/5055/1021.htm",
+      "source_locator": "مدخل مالك بن ذؤال",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    }
+  ]
+}

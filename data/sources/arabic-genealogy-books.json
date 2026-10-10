@@ -1,0 +1,75 @@
+[
+  {
+    "id": "sabaik-al-dhahab",
+    "title": "سبائك الذهب في معرفة قبائل العرب",
+    "author": "محمد أمين السويدي",
+    "source_url": "https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar",
+    "catalogue_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "digitized_book",
+    "geographic_scope": "القبائل العربية",
+    "status": "REGISTERED_NOT_EXTRACTED",
+    "notes": "نسخة رقمية مفهرسة لدى Arabic Collections Online؛ يجب تسجيل الطبعة وترقيم صفحات PDF عند المعالجة."
+  },
+  {
+    "id": "muajam-qabail-arab-v1",
+    "title": "معجم قبائل العرب القديمة والحديثة — الجزء الأول",
+    "author": "عمر رضا كحالة",
+    "source_url": "https://sites.dlib.nyu.edu/viewer/books/aub_aco003047/display?lang=ar",
+    "catalogue_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "digitized_book",
+    "geographic_scope": "القبائل العربية القديمة والحديثة",
+    "status": "REGISTERED_NOT_EXTRACTED",
+    "notes": "توجد نسخة رقمية في Arabic Collections Online؛ تحقق من شروط الاستخدام والترخيص قبل إعادة نشر نصوص مطولة."
+  },
+  {
+    "id": "muajam-qabail-arab-v2",
+    "title": "معجم قبائل العرب القديمة والحديثة — الجزء الثاني",
+    "author": "عمر رضا كحالة",
+    "source_url": "https://sites.dlib.nyu.edu/viewer/books/aub_aco003048/display?lang=ar",
+    "catalogue_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "digitized_book",
+    "geographic_scope": "القبائل العربية القديمة والحديثة",
+    "status": "REGISTERED_NOT_EXTRACTED",
+    "notes": "سجل مصدر مستقل؛ لا تفترض أن كل نسخة أو جزء له نفس ترقيم الصفحات."
+  },
+  {
+    "id": "jamharat-ansab-al-arab",
+    "title": "جمهرة أنساب العرب",
+    "author": "علي بن أحمد ابن حزم",
+    "source_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "bibliographic_catalogue",
+    "geographic_scope": "أنساب العرب",
+    "status": "REGISTERED_NEEDS_EDITION_URL",
+    "notes": "مصدر تراثي؛ يلزم اختيار نسخة رقمية محددة وتوثيق طبعتها قبل الاستخراج."
+  },
+  {
+    "id": "nihayat-al-arab",
+    "title": "نهاية الأرب في معرفة أنساب العرب",
+    "author": "أحمد بن عبد الله القلقشندي",
+    "source_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "bibliographic_catalogue",
+    "geographic_scope": "أنساب العرب",
+    "status": "REGISTERED_NEEDS_EDITION_URL",
+    "notes": "مصدر تراثي؛ يلزم اختيار نسخة رقمية محددة وتوثيق طبعتها قبل الاستخراج."
+  },
+  {
+    "id": "mukhtalaf-al-qabail",
+    "title": "مختلف القبائل ومؤتلفها",
+    "author": "محمد بن حبيب",
+    "source_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "bibliographic_catalogue",
+    "geographic_scope": "أسماء القبائل والائتلاف والاختلاف",
+    "status": "REGISTERED_NEEDS_EDITION_URL",
+    "notes": "مصدر تراثي مفهرس؛ يلزم تثبيت النسخة الرقمية قبل الاستخراج."
+  },
+  {
+    "id": "muajam-qabail-saudi",
+    "title": "معجم قبائل المملكة العربية السعودية",
+    "author": "حمد الجاسر",
+    "source_url": "https://books.islamway.net/1/525_aljasir_mejmqabyil.pdf",
+    "source_type": "digitized_book",
+    "geographic_scope": "قبائل المملكة العربية السعودية",
+    "status": "REGISTERED_NOT_EXTRACTED",
+    "notes": "مرجع مخصص لقبائل السعودية؛ سجّل بيانات الطبعة ورقم الصفحة المطبوعة منفصلًا عن رقم صفحة PDF."
+  }
+]

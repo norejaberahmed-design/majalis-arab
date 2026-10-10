@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_INITIAL_TRIBAL_ENTITIES",
+  "description_ar": "دفعة أولية لأسماء قبائل ومجموعات قبلية مذكورة صراحة في صفحات رقمية من معجم قبائل العرب القديمة والحديثة. هذا ملف بيانات مرجعي داخل المستودع وليس إدخالًا مباشرًا في قاعدة بيانات التطبيق. التصنيف يميز بين مجموعة قبلية كبرى وقبيلة مسماة، ولا يستنتج نسبًا خارج نص المصدر.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م",
+    "source_home": "https://islamport.com/l/nsb/5055/996.htm"
+  },
+  "entities": [
+    {
+      "name": "الأزد",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر الأزد ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "طيء",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر طيء ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مذحج",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر مذحج ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "همدان",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر همدان ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "كندة",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر كندة ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مراد",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر مراد ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أنمار",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يسرد المصدر أنمار ضمن الشعوب المشهورة من كهلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/996.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "بنو هاجر",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يذكر المصدر بني هاجر بصيغة قبيلة، في مدخل شهوان.",
+      "source_url": "https://islamport.com/l/nsb/5055/615.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "بلحارث",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "تصف الصفحة الشواحطة بأنها فخذ من بني الأوس من قبيلة بلحارث.",
+      "source_url": "https://islamport.com/l/nsb/5055/615.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "عنزة",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يذكر المصدر عنزة ضمن سياق الهازمين/اللازمين مع اختلاف الروايات، كما ترد في مواضع أخرى من المعجم.",
+      "source_url": "https://islamport.com/l/nsb/5055/1008.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "يجب فتح المدخل الكامل وتحديد الشاهد المباشر قبل اعتماد التصنيف النهائي."
+    },
+    {
+      "name": "حرب",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "ترد حرب في سياق وصف فروع قبلية بالسعودية ضمن المعجم.",
+      "source_url": "https://islamport.com/l/nsb/5055/1737.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "المصدر يشير إلى فروع منتسبة إلى حرب؛ يلزم فتح المدخل الكامل للتحقق من الشاهد المباشر."
+    },
+    {
+      "name": "شمر",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "ترد شمر في سياق تعريف بعض البطون والفروع في المعجم.",
+      "source_url": "https://islamport.com/l/nsb/5055/245.htm",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "يلزم فتح المدخل الكامل والتحقق من النص المباشر قبل الاعتماد النهائي."
+    }
+  ]
+}
