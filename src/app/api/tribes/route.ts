@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { readJsonBody } from "@/lib/http";
 import { normalizeName } from "@/lib/validation";
 import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
@@ -30,7 +29,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "أدخل اسم القبيلة ومعلومات لا تقل عن 10 أحرف، ويمكن إضافة رابط مصدر." }, { status: 400, headers: NO_STORE });
   }
 
-  const name = parsed.data.name.replace(/\s+/g, " ");
+  const name = parsed.data.name.replace(/\\s+/g, " ");
   const normalizedName = normalizeName(name);
   const sourceUrl = parsed.data.sourceUrl ? safeExternalHttpUrl(parsed.data.sourceUrl) : null;
   if (parsed.data.sourceUrl && !sourceUrl) {
@@ -44,98 +43,65 @@ export async function POST(request: NextRequest) {
         select: { id: true, name: true, kind: true }
       });
 
-      // A user-submitted name must never create a shared catalogue entity by itself.
-      // New names enter the workspace-scoped review queue instead.
-      if (!entity) {
-        const duplicateRequest = await tx.additionRequest.findFirst({
-          where: {
-            workspaceId: context.workspaceId,
-            proposedName: name,
-            explanation: parsed.data.content,
-            status: "SUBMITTED"
-          },
-          select: { id: true }
-        });
-        if (duplicateRequest) {
-          return { kind: "request" as const, requestId: duplicateRequest.id, created: false };
-        }
-
-        const additionRequest = await tx.additionRequest.create({
-          data: {
-            workspaceId: context.workspaceId,
-            userId: context.user.id,
-            proposedName: name,
-            proposedKind: "TRIBE",
-            explanation: parsed.data.content,
-            sourceUrl,
-            submitter: context.user.email,
-            status: "SUBMITTED"
-          },
-          select: { id: true }
-        });
-        await tx.auditLog.create({
-          data: {
-            workspaceId: context.workspaceId,
-            actorUserId: context.user.id,
-            actor: context.user.email,
-            action: "TRIBE_ADDITION_REQUEST_SUBMITTED",
-            targetType: "AdditionRequest",
-            targetId: additionRequest.id,
-            details: JSON.stringify({ proposedName: name, status: "SUBMITTED", sourceUrl: sourceUrl ? "provided" : "not_provided" })
-          }
-        });
-        return { kind: "request" as const, requestId: additionRequest.id, created: true };
-      }
-
-      const duplicate = await tx.tribeKnowledgeEntry.findFirst({
-        where: { entityId: entity.id, content: parsed.data.content },
+      // All user contributions remain workspace-private until a curator verifies them.
+      // Do not write unreviewed user content into the shared research catalogue.
+      const duplicateRequest = await tx.additionRequest.findFirst({
+        where: {
+          workspaceId: context.workspaceId,
+          proposedName: name,
+          explanation: parsed.data.content,
+          status: "SUBMITTED"
+        },
         select: { id: true }
       });
-      let entry = duplicate;
-      let entryCreated = false;
-      if (!entry) {
-        entry = await tx.tribeKnowledgeEntry.create({
-          data: {
-            entityId: entity.id,
-            content: parsed.data.content,
-            sourceUrl,
-            createdByUserId: context.user.id,
-            status: "UNREVIEWED"
-          },
-          select: { id: true }
-        });
-        entryCreated = true;
+      if (duplicateRequest) {
+        return { requestId: duplicateRequest.id, created: false, existingEntity: entity };
       }
 
+      const additionRequest = await tx.additionRequest.create({
+        data: {
+          workspaceId: context.workspaceId,
+          userId: context.user.id,
+          entityId: entity?.id ?? null,
+          proposedName: name,
+          proposedKind: "TRIBE",
+          explanation: parsed.data.content,
+          sourceUrl,
+          submitter: context.user.email,
+          status: "SUBMITTED"
+        },
+        select: { id: true }
+      });
       await tx.auditLog.create({
         data: {
           workspaceId: context.workspaceId,
           actorUserId: context.user.id,
           actor: context.user.email,
-          action: entryCreated ? "SHARED_TRIBE_KNOWLEDGE_ADDED" : "SHARED_TRIBE_KNOWLEDGE_DUPLICATE",
-          targetType: "TribeKnowledgeEntry",
-          targetId: entry.id,
-          details: JSON.stringify({ entityId: entity.id, status: "UNREVIEWED", sourceUrl: sourceUrl ? "provided" : "not_provided" })
+          action: "TRIBE_ADDITION_REQUEST_SUBMITTED",
+          targetType: "AdditionRequest",
+          targetId: additionRequest.id,
+          details: JSON.stringify({
+            proposedName: name,
+            existingEntityId: entity?.id ?? null,
+            status: "SUBMITTED",
+            sourceUrl: sourceUrl ? "provided" : "not_provided"
+          })
         }
       });
-      return { kind: "knowledge" as const, entity, entryId: entry.id, entryCreated };
+      return { requestId: additionRequest.id, created: true, existingEntity: entity };
     });
 
-    if (result.kind === "request") {
-      return NextResponse.json({
-        data: { requestId: result.requestId, submittedForReview: true, created: result.created },
-        message: result.created
-          ? "أُرسل اسم القبيلة ومعلوماتها إلى قائمة المراجعة. لن يظهر سجل قبلي مشترك حتى تتم مراجعته واعتماده."
-          : "هذا الطلب موجود بالفعل في قائمة المراجعة؛ لم ننشئ نسخة مكررة."
-      }, { status: result.created ? 201 : 200, headers: NO_STORE });
-    }
-
     return NextResponse.json({
-      data: { ...result.entity, entryId: result.entryId, created: false, entryCreated: result.entryCreated, submittedForReview: false },
-      message: result.entryCreated
-        ? "القبيلة موجودة بالفعل؛ أضفنا مساهمتك إلى سجلها المشترك، وهي بانتظار المراجعة."
-        : "القبيلة وهذه المعلومة مسجلتان بالفعل؛ لم ننشئ نسخة مكررة."
-    }, { status: 200, headers: NO_STORE });
+      data: {
+        requestId: result.requestId,
+        submittedForReview: true,
+        created: result.created,
+        existingEntity: result.existingEntity
+      },
+      message: result.created
+        ? "أُرسلت المساهمة إلى قائمة المراجعة الخاصة بمجلسك. لن تظهر في الكتالوج المشترك حتى تُراجع وتُعتمد."
+        : "هذه المساهمة موجودة بالفعل في قائمة المراجعة؛ لم ننشئ نسخة مكررة."
+    }, { status: result.created ? 201 : 200, headers: NO_STORE });
   } catch (error) {
     console.error("Tribe contribution submission failed", error);
     return NextResponse.json({ error: "تعذر حفظ الطلب أو المعلومة حاليًا." }, { status: 503, headers: NO_STORE });
