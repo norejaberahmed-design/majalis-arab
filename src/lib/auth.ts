@@ -66,15 +66,26 @@ export const auth = betterAuth({
   appName: "مجالس العرب",
   baseURL,
   trustedOrigins: async (request) => {
-    if (!request || process.env.NODE_ENV === "production" || !codespacesDomain) return trustedOrigins;
+    if (!request) return trustedOrigins;
     try {
       const requestURL = new URL(request.url);
-      const suffix = `-3000.${codespacesDomain}`;
-      const label = requestURL.hostname.endsWith(suffix)
-        ? requestURL.hostname.slice(0, -suffix.length)
-        : "";
-      if (/^[a-z0-9-]+$/i.test(label)) {
+      const requestOrigin = request.headers.get("origin");
+      // Trust the app's own exact origin even when the hosting provider assigns
+      // a deployment hostname that differs from BETTER_AUTH_URL. Never trust
+      // an arbitrary cross-origin Origin header.
+      if (requestOrigin === requestURL.origin) {
         return [...new Set([...trustedOrigins, requestURL.origin])];
+      }
+
+      // GitHub Codespaces uses ephemeral hostnames in development.
+      if (process.env.NODE_ENV !== "production" && codespacesDomain) {
+        const suffix = `-3000.${codespacesDomain}`;
+        const label = requestURL.hostname.endsWith(suffix)
+          ? requestURL.hostname.slice(0, -suffix.length)
+          : "";
+        if (/^[a-z0-9-]+$/i.test(label)) {
+          return [...new Set([...trustedOrigins, requestURL.origin])];
+        }
       }
     } catch {
       // Keep the configured allowlist when the request URL cannot be parsed.
