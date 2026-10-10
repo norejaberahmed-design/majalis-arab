@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -19,15 +20,30 @@ export default function LoginPage() {
     event.preventDefault();
     if (busy) return;
     setMessage("");
-    setBusy(true);
 
-    // Email addresses are trimmed and normalized consistently before submission.
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedName = name.trim();
 
+    if (mode === "signup") {
+      if (normalizedName.length < 2) {
+        setMessage("اكتب اسمًا لا يقل عن حرفين.");
+        return;
+      }
+      if (password.length < 12) {
+        setMessage("كلمة المرور يجب أن تتكون من 12 حرفًا على الأقل.");
+        return;
+      }
+      if (password !== confirmation) {
+        setMessage("كلمتا المرور غير متطابقتين. تحقق منهما ثم حاول مجددًا.");
+        return;
+      }
+    }
+
+    setBusy(true);
     try {
       if (mode === "signup") {
         const result = await authClient.signUp.email({
-          name: name.trim(),
+          name: normalizedName,
           email: normalizedEmail,
           password
         });
@@ -44,6 +60,7 @@ export default function LoginPage() {
             setMessage("تم إرسال طلب إنشاء الحساب، لكن لم يتم تأكيد جلسة الدخول. سجّل الدخول باستخدام بياناتك.");
             setMode("signin");
             setPassword("");
+            setConfirmation("");
             return;
           }
           router.replace("/setup");
@@ -54,6 +71,7 @@ export default function LoginPage() {
         setMessage("إذا اكتملت بيانات الحساب، فتحقق من بريدك الإلكتروني لتفعيل الحساب، ثم سجّل الدخول.");
         setMode("signin");
         setPassword("");
+        setConfirmation("");
         return;
       }
 
@@ -88,6 +106,8 @@ export default function LoginPage() {
     if (busy) return;
     setMode(mode === "signin" ? "signup" : "signin");
     setMessage("");
+    setPassword("");
+    setConfirmation("");
     setShowPassword(false);
   }
 
@@ -98,7 +118,7 @@ export default function LoginPage() {
         <p className="eyebrow">دخول آمن إلى مساحة البحث</p>
         <h1 id="auth-title">{mode === "signin" ? "مرحبًا بعودتك" : "إنشاء حساب جديد"}</h1>
         <p className="muted">استخدم بريدك الإلكتروني وكلمة مرورك. لا تشارك كلمة المرور مع أي شخص.</p>
-        <form onSubmit={submit}>
+        <form onSubmit={submit} aria-busy={busy}>
           {mode === "signup" && (
             <label>
               الاسم
@@ -135,11 +155,12 @@ export default function LoginPage() {
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 value={password}
                 onChange={event => setPassword(event.target.value)}
-                minLength={12}
+                minLength={mode === "signup" ? 12 : undefined}
                 maxLength={128}
                 required
                 disabled={busy}
                 dir="ltr"
+                aria-describedby={mode === "signup" ? "password-help" : undefined}
               />
               <button
                 className="auth-password-toggle"
@@ -153,8 +174,24 @@ export default function LoginPage() {
               </button>
             </span>
           </label>
+          {mode === "signup" && (
+            <label>
+              تأكيد كلمة المرور
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={confirmation}
+                onChange={event => setConfirmation(event.target.value)}
+                minLength={12}
+                maxLength={128}
+                required
+                disabled={busy}
+                dir="ltr"
+              />
+            </label>
+          )}
           {mode === "signin" && <p className="auth-hint"><Link href="/forgot-password">نسيت كلمة المرور؟</Link></p>}
-          {mode === "signup" && <p className="auth-hint">استخدم 12 حرفًا على الأقل، وتجنب إعادة استخدام كلمة مرور من خدمة أخرى.</p>}
+          {mode === "signup" && <p id="password-help" className="auth-hint">استخدم 12 حرفًا على الأقل، وأكد كلمة المرور نفسها قبل إنشاء الحساب.</p>}
           {message && <p role="alert" aria-live="polite" className="auth-error">{message}</p>}
           <button className="primary-button auth-submit" type="submit" disabled={busy}>
             {busy ? "جارٍ التحقق…" : mode === "signin" ? "تسجيل الدخول" : "إنشاء الحساب"}
