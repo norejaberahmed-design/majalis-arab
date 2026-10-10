@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+process.env.DATABASE_URL ??= "file:./dev.db";
+
 const BASE_URL = "http://localhost:3000";
 const email = `dev-signin-${crypto.randomUUID()}@example.test`;
 const password = "Dev-only-password-123!";
@@ -8,6 +10,7 @@ describe("development sign-up and sign-in without email verification", () => {
   let auth: (typeof import("./auth"))["auth"];
   let prisma: (typeof import("./prisma"))["prisma"];
   let originalNodeEnv: string | undefined;
+  let mailLog: ReturnType<typeof vi.spyOn> | undefined;
 
   beforeAll(async () => {
     originalNodeEnv = process.env.NODE_ENV;
@@ -23,6 +26,7 @@ describe("development sign-up and sign-in without email verification", () => {
   });
 
   afterAll(async () => {
+    mailLog?.mockRestore();
     if (prisma) {
       const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
       if (user) await prisma.user.deleteMany({ where: { id: user.id } });
@@ -32,7 +36,7 @@ describe("development sign-up and sign-in without email verification", () => {
   });
 
   it("allows a newly registered development user to sign in before opening the verification link", async () => {
-    const mailLog = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    mailLog = vi.spyOn(console, "info").mockImplementation(() => undefined);
     const signUp = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-up/email`, {
       method: "POST",
       headers: { "content-type": "application/json", origin: BASE_URL },
@@ -50,6 +54,7 @@ describe("development sign-up and sign-in without email verification", () => {
       ? signIn.headers.getSetCookie()
       : [signIn.headers.get("set-cookie") ?? ""];
     expect(cookies.join("; ")).toContain("better-auth");
-    mailLog.mockRestore();
+    mailLog?.mockRestore();
+    mailLog = undefined;
   });
 });
