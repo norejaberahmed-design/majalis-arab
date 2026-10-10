@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة استخراج إضافية من مداخل رقمية منشورة لمعجم قبائل العرب القديمة والحديثة لعمر رضا كحالة. الأسماء منقولة كمرشحات موثقة بالشاهد؛ بعضها بطن أو فخذ أو فرع وليس قبيلة مستقلة. لا تعتمد هذه السجلات نهائيًا قبل المراجعة البشرية.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م",
+    "source_home": "https://islamport.com/l/nsb/5055/"
+  },
+  "extraction_method": "استخراج يدوي من النصوص الرقمية للمداخل المشار إليها؛ أرقام الروابط هي معرّفات صفحات ويب وليست أرقام صفحات مطبوعة.",
+  "entities": [
+    {
+      "name": "حجر القرد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل حجر القرد بأنه بطن من كندة، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/245.htm",
+      "source_locator": "مدخل «حجر القرد» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الحُجْر بن الهِنو",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل الحُجْر بن الهِنو بأنه فخذ من الأزد، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/245.htm",
+      "source_locator": "مدخل «الحُجْر بن الهِنو» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "حجرة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل حجرة بأنها بطن من بني راشد، من لخم، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/245.htm",
+      "source_locator": "مدخل «حجرة» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم قصير محتمل الالتباس؛ لا يدمج مع كيانات أخرى تحمل الاسم نفسه دون دليل."
+    },
+    {
+      "name": "القصار",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل القصار بأنه فرع من القطمان من الشدادين من بني أوس (بنيوس) من بلحارث بالسعودية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1737.htm",
+      "source_locator": "مدخل «القصار» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "القصاص",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل القصاص بأنه حي من لبيد من سليم من قيس عيلان من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1737.htm",
+      "source_locator": "مدخل «القصاص» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "القصيرين",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل القصيرين بأنهم فخذ من مزينة من مروّح من بني سالم من حرب بالسعودية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1737.htm",
+      "source_locator": "مدخل «القصيرين» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "قطاب",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل قطاب بأنه حي من لبيد من سليم من قيس عيلان من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1737.htm",
+      "source_locator": "مدخل «قطاب» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المرامشة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل المرامشة بأنهم فخذ من الشدادين من بلحارث بالسعودية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1797.htm",
+      "source_locator": "مدخل «المرامشة» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المرايزة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل المرايزة بأنهم فخذ من الحجلة من مروح من بني سالم من حرب بوادي الصفراء بالحجاز.",
+      "source_url": "https://islamport.com/l/nsb/5055/1797.htm",
+      "source_locator": "مدخل «المرايزة» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الهُمَيْمات",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل الهُمَيْمات بأنها عشيرة من ذبيان، من موسى، من جهينة.",
+      "source_url": "https://islamport.com/l/nsb/5055/1217.htm",
+      "source_locator": "مدخل «الهُمَيْمات» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الهميش",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكر المدخل الهميش بوصفهم فرقة من النعيم، إحدى قبائل سورية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1217.htm",
+      "source_locator": "مدخل «الهميش» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "كاهل بن أسد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل كاهل بن أسد بأنه بطن من أسد بن خزيمة، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/970.htm",
+      "source_locator": "مدخل «كاهل بن أسد» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "عمرو بن ربيعة",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "تورد الصفحة مدخلين بالاسم نفسه: أحدهما بطن من غسان من الأزد، والآخر بطن من عامر بن صعصعة من قيس عيلان.",
+      "source_url": "https://islamport.com/l/nsb/5055/828.htm",
+      "source_locator": "مدخلان متتاليان باسم «عمرو بن ربيعة» في الصفحة الرقمية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "يجب حفظهما ككيانين متميزين بعد التحقق؛ لا تدمج السجلات اعتمادًا على تطابق الاسم."
+    }
+  ]
+}
