@@ -41,7 +41,7 @@ def read_pdf(pdf: Path) -> list[str]:
     with tempfile.TemporaryDirectory(prefix="sabaik-ocr-") as temp:
         prefix = str(Path(temp) / "page")
         run(["pdftoppm", "-r", "250", "-jpeg", "-jpegopt", "quality=90", str(pdf), prefix])
-        images = sorted(Path(temp).glob("page-*.jpg"))
+        images = sorted(Path(temp).glob("page-*.jpg"), key=lambda p: int(re.search(r"-(\\d+)\\.jpg$", p.name).group(1)))
         if len(images) != page_count:
             raise RuntimeError(f"Rendered {len(images)} pages, expected {page_count}.")
         for image in images:
@@ -76,8 +76,23 @@ def main() -> int:
     for page_no, page in enumerate(pages, start=1):
         page_text = "\n".join(normalize(line) for line in page.splitlines() if normalize(line))
         if page_text:
-            passages.append({"pageLabel": str(page_no), "passageText": page_text[:5000],
-                "locator": f"PDF page {page_no}; source: {SOURCE_URL}", "reviewStatus": "UNREVIEWED"})
+            # Preserve all text while respecting the app passage limit of 5,000 characters.
+            chunks = []
+            remaining = page_text
+            while remaining:
+                if len(remaining) <= 4800:
+                    chunks.append(remaining)
+                    break
+                split_at = remaining.rfind(" ", 0, 4800)
+                if split_at < 1000:
+                    split_at = 4800
+                chunks.append(remaining[:split_at])
+                remaining = remaining[split_at:].lstrip()
+            for chunk_no, chunk in enumerate(chunks, start=1):
+                label = str(page_no) if len(chunks) == 1 else f"{page_no}-{chunk_no}"
+                passages.append({"pageLabel": label, "passageText": chunk,
+                    "locator": f"PDF page {page_no}, text chunk {chunk_no}/{len(chunks)}; source: {SOURCE_URL}",
+                    "reviewStatus": "UNREVIEWED"})
         for name, excerpt in candidate_spans(page):
             key = (name, page_no)
             if key in seen:
