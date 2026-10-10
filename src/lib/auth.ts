@@ -70,10 +70,19 @@ export const auth = betterAuth({
     try {
       const requestURL = new URL(request.url);
       const requestOrigin = request.headers.get("origin");
-      // Trust the app's own exact origin even when the hosting provider assigns
-      // a deployment hostname that differs from BETTER_AUTH_URL. Never trust
-      // an arbitrary cross-origin Origin header.
-      if (requestOrigin === requestURL.origin) {
+      const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+      const host = forwardedHost || request.headers.get("host") || requestURL.host;
+      const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+      const protocol = forwardedProto || requestURL.protocol.replace(/:$/, "");
+      const canonicalOrigin = `${protocol}://${host}`;
+
+      // Trust only an exact origin match to the host serving this request.
+      // This supports reverse proxies whose internal request URL differs from
+      // the public hostname, without allowing arbitrary cross-origin requests.
+      if (requestOrigin && requestOrigin === canonicalOrigin) {
+        return [...new Set([...trustedOrigins, canonicalOrigin])];
+      }
+      if (requestOrigin && requestOrigin === requestURL.origin) {
         return [...new Set([...trustedOrigins, requestURL.origin])];
       }
 
@@ -83,7 +92,7 @@ export const auth = betterAuth({
         const label = requestURL.hostname.endsWith(suffix)
           ? requestURL.hostname.slice(0, -suffix.length)
           : "";
-        if (/^[a-z0-9-]+$/i.test(label)) {
+        if (/^[a-z0-9-]+$/i.test(label) && requestOrigin === requestURL.origin) {
           return [...new Set([...trustedOrigins, requestURL.origin])];
         }
       }
