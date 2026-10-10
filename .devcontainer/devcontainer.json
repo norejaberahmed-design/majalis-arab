@@ -1,0 +1,22 @@
+{
+  "name": "Majalis Arab",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "مجالس العرب",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    }
+  },
+  "postCreateCommand": "npm ci && node scripts/setup-codespaces.mjs && npm run db:deploy && npm run db:generate",
+  "postStartCommand": "nohup npm run dev -- --hostname 0.0.0.0 > /tmp/majalis-dev.log 2>&1 &",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "Prisma.prisma"
+      ]
+    }
+  }
+}
