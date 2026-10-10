@@ -4,6 +4,7 @@ export function shouldBlockProduction(nodeEnv: string | undefined): boolean {
 
 export function isAllowedDuringReleaseGate(path: string): boolean {
   return path === "/" ||
+    path === "/research" ||
     path === "/login" ||
     path === "/setup" ||
     path === "/forgot-password" ||
