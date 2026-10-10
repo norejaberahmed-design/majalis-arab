@@ -40,6 +40,23 @@ export default function LoginPage() {
     setNotice(null);
   }
 
+  async function signInWithGoogle() {
+    if (busy) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const result = await authClient.signIn.social({ provider: "google", callbackURL: "/research" });
+      if (result.error) {
+        setNotice({ kind: "error", text: "تعذر بدء الدخول عبر Google. تأكد من إعداد OAuth في الاستضافة ثم حاول مجددًا." });
+        setBusy(false);
+      }
+      // Better Auth redirects the browser to Google's consent/login screen on success.
+    } catch {
+      setNotice({ kind: "error", text: "تعذر الاتصال بخدمة Google. حاول مجددًا." });
+      setBusy(false);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -191,6 +208,12 @@ export default function LoginPage() {
             {mode === "signup" && <p>لديك حساب بالفعل؟ <button type="button" onClick={() => changeMode("signin")}>سجّل الدخول</button></p>}
             {mode === "signin" && <button type="button" className="signin-v2-magic" onClick={() => changeMode("magic")}>الدخول برابط يُرسل إلى بريدك الإلكتروني</button>}
             {(mode === "magic" || mode === "forgot") && <button type="button" onClick={() => changeMode("signin")}>العودة إلى تسجيل الدخول</button>}
+          </div>
+          <div className="signin-v2-google">
+            <button type="button" onClick={signInWithGoogle} disabled={busy} aria-label="المتابعة باستخدام Google">
+              <span aria-hidden="true" className="signin-v2-google-g">G</span>
+              {busy ? "جارٍ تحويلك إلى Google…" : "المتابعة باستخدام Google"}
+            </button>
           </div>
           <div className="signin-v2-security"><span aria-hidden="true">⌑</span><p>لا تشارك كلمة المرور أو رابط الدخول مع أي شخص. سنستخدم بريدك لتأكيد الحساب وتأمينه.</p></div>
         </div>
