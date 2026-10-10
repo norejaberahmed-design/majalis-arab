@@ -18,7 +18,7 @@ export default function WorkspaceSetupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!isPending && !session) router.replace("/login");
+    if (!isPending && !session) router.replace("/");
   }, [isPending, session, router]);
 
   useEffect(() => {

@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
         return;
       }
       setComplete(true);
-      setMessage("تم تغيير كلمة المرور. يمكنك الآن تسجيل الدخول.");
+      setMessage("تم تغيير كلمة المرور بنجاح. يمكنك العودة إلى الصفحة الرئيسية.");
     } catch {
       setMessage("تعذر الاتصال بالخدمة. حاول مجددًا.");
     } finally {
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
           {message && <p role="status" className="auth-hint">{message}</p>}
           {ready && token && !complete && <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "جارٍ التغيير…" : "تغيير كلمة المرور"}</button>}
         </form>
-        {complete ? <button className="primary-button auth-submit" type="button" onClick={() => router.replace("/login")}>العودة لتسجيل الدخول</button> : <p className="auth-hint"><Link href="/forgot-password">طلب رابط جديد</Link></p>}
+        {complete ? <button className="primary-button auth-submit" type="button" onClick={() => router.replace("/")}>العودة لتسجيل الدخول</button> : <p className="auth-hint"><Link href="/forgot-password">طلب رابط جديد</Link></p>}
       </section>
     </main>
   );

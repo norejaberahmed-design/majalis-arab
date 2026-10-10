@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           {message && <p role="status" className="auth-hint">{message}</p>}
           {!sent && <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "جارٍ الإرسال…" : "إرسال رابط الاستعادة"}</button>}
         </form>
-        <p className="auth-hint"><Link href="/login">العودة إلى تسجيل الدخول</Link></p>
+        <p className="auth-hint"><Link href="/">العودة إلى الصفحة الرئيسية</Link></p>
       </section>
     </main>
   );

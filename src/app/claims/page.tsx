@@ -25,7 +25,7 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Promi
   const status = rawStatus && allowedStatuses.includes(rawStatus) ? rawStatus : "";
   const context = await getWorkspaceContext(await headers());
   if (!context) {
-    return <main className="shell"><section className="panel"><h1>سجّل الدخول لعرض سجل الادعاءات</h1><Link className="text-link" href="/login">تسجيل الدخول ←</Link></section></main>;
+    return <main className="shell"><section className="panel"><h1>العودة إلى الدليل البحثي</h1><Link className="text-link" href="/">العودة إلى الرئيسية ←</Link></section></main>;
   }
   const canCreateClaims = roleAtLeast(context.role, "REVIEWER") &&
     isCatalogueCurator(context.user.email, process.env.CATALOGUE_CURATOR_EMAILS);
