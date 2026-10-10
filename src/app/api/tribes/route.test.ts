@@ -49,7 +49,7 @@ describe("shared tribe knowledge intake", () => {
 
   it("requires trusted origin and an authenticated workspace", async () => {
     mocks.hasTrustedOrigin.mockReturnValue(false);
-    expect((await POST(request(input))).status).toBe(403);
+    expect((await POST(request(input)).catch(() => ({ status: -1 }))).status).toBe(403);
     mocks.hasTrustedOrigin.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue(null);
     expect((await POST(request(input))).status).toBe(401);
@@ -87,5 +87,16 @@ describe("shared tribe knowledge intake", () => {
     expect(body.data).toMatchObject({ id: "tribe-existing", created: false, entryCreated: true });
     expect(mocks.entityCreate).not.toHaveBeenCalled();
     expect(mocks.entryCreate).toHaveBeenCalled();
+  });
+
+  it("rejects a same-name record that is not classified as a tribe", async () => {
+    mocks.entityFindUnique.mockResolvedValue({ id: "person-existing", name: input.name, kind: "PERSON" });
+    const response = await POST(request(input));
+    const body = await response.json();
+    expect(response.status).toBe(409);
+    expect(body.error).toContain("ليس مصنفًا كقبيلة");
+    expect(mocks.entityCreate).not.toHaveBeenCalled();
+    expect(mocks.entryCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 });
