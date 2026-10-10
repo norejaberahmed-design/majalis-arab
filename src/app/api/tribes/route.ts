@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/validation";
+import { readJsonBody } from "@/lib/http";
 import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
 import { safeExternalHttpUrl } from "@/lib/safe-url";
 
