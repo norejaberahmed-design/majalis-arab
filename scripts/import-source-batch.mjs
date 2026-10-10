@@ -154,12 +154,6 @@ async function importManifest(manifest, workspaceId) {
         if (created) report.passagesCreated += 1;
       }
 
-      if (input.passages.length > 0) {
-        await prisma.source.update({
-          where: { id: source.id },
-          data: { extractionStatus: "EXTRACTED" }
-        });
-      }
     } catch (error) {
       report.errors.push({
         source: input.title,
