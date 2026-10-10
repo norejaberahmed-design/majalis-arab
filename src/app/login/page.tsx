@@ -1,205 +1,97 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    authClient.getSession().then(({ data, error }) => {
+      if (active && !error && data?.session) {
+        router.replace("/setup");
+        router.refresh();
+      }
+    }).catch(() => {
+      // The visitor is not signed in; keep the email sign-in form available.
+    });
+    return () => { active = false; };
+  }, [router]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    setMessage("");
-
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedName = name.trim();
-
-    if (mode === "signup") {
-      if (normalizedName.length < 2) {
-        setMessage("اكتب اسمًا لا يقل عن حرفين.");
-        return;
-      }
-      if (password.length < 12) {
-        setMessage("كلمة المرور يجب أن تتكون من 12 حرفًا على الأقل.");
-        return;
-      }
-      if (password !== confirmation) {
-        setMessage("كلمتا المرور غير متطابقتين. تحقق منهما ثم حاول مجددًا.");
-        return;
-      }
+    if (!normalizedEmail) {
+      setMessage("أدخل بريدك الإلكتروني.");
+      return;
     }
 
     setBusy(true);
+    setMessage("");
     try {
-      if (mode === "signup") {
-        const result = await authClient.signUp.email({
-          name: normalizedName,
-          email: normalizedEmail,
-          password
-        });
-
-        if (result.error) {
-          setMessage("تعذر إنشاء الحساب. تحقق من البيانات وحاول مجددًا، أو سجّل الدخول إذا كان لديك حساب.");
-          return;
-        }
-
-        if (process.env.NODE_ENV !== "production") {
-          // Never enter the protected setup flow unless the server confirms a session.
-          const sessionCheck = await authClient.getSession();
-          if (sessionCheck.error || !sessionCheck.data?.session) {
-            setMessage("تم إرسال طلب إنشاء الحساب، لكن لم يتم تأكيد جلسة الدخول. سجّل الدخول باستخدام بياناتك.");
-            setMode("signin");
-            setPassword("");
-            setConfirmation("");
-            return;
-          }
-          router.replace("/setup");
-          router.refresh();
-          return;
-        }
-
-        setMessage("إذا اكتملت بيانات الحساب، فتحقق من بريدك الإلكتروني لتفعيل الحساب، ثم سجّل الدخول.");
-        setMode("signin");
-        setPassword("");
-        setConfirmation("");
-        return;
-      }
-
-      const result = await authClient.signIn.email({
+      const result = await authClient.signIn.magicLink({
         email: normalizedEmail,
-        password
+        callbackURL: "/setup"
       });
-
       if (result.error) {
-        // Keep the message generic so the form does not reveal account existence.
-        setMessage("تعذر تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور، ثم حاول مجددًا.");
+        setMessage("تعذر إرسال رابط الدخول الآن. تحقق من البريد وحاول مرة أخرى.");
         return;
       }
-
-      // A successful response alone is not enough: confirm that the session is readable.
-      const sessionCheck = await authClient.getSession();
-      if (sessionCheck.error || !sessionCheck.data?.session) {
-        setMessage("لم يتم تأكيد جلسة الدخول. حاول مرة أخرى، وإذا استمرت المشكلة فأعد تحميل الصفحة.");
-        return;
-      }
-
-      router.replace("/setup");
-      router.refresh();
+      setSent(true);
+      setMessage("إذا أمكن إرسال الرابط لهذا البريد، فستصلك رسالة تحتوي على رابط دخول آمن. افحص الوارد والرسائل غير المرغوب فيها.");
     } catch {
-      setMessage("تعذر الاتصال بالخدمة. تحقق من اتصالك وحاول مجددًا.");
+      setMessage("تعذر الاتصال بخدمة البريد. حاول مرة أخرى بعد قليل.");
     } finally {
       setBusy(false);
     }
   }
 
-  function switchMode() {
-    if (busy) return;
-    setMode(mode === "signin" ? "signup" : "signin");
-    setMessage("");
-    setPassword("");
-    setConfirmation("");
-    setShowPassword(false);
-  }
-
   return (
     <main className="auth-shell" dir="rtl">
-      <Link href="/" className="auth-brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>البحث الموثق</small></span></Link>
+      <Link href="/" className="auth-brand">
+        <span className="brand-mark">م</span>
+        <span><strong>مجالس العرب</strong><small>البحث الموثق</small></span>
+      </Link>
       <section className="auth-card" aria-labelledby="auth-title">
-        <p className="eyebrow">دخول آمن إلى مساحة البحث</p>
-        <h1 id="auth-title">{mode === "signin" ? "مرحبًا بعودتك" : "إنشاء حساب جديد"}</h1>
-        <p className="muted">استخدم بريدك الإلكتروني وكلمة مرورك. لا تشارك كلمة المرور مع أي شخص.</p>
+        <p className="eyebrow">دخول آمن بالبريد الإلكتروني</p>
+        <h1 id="auth-title">الدخول إلى حسابك</h1>
+        <p className="muted">أدخل بريدك الإلكتروني وسنرسل لك رابطًا آمنًا للدخول. لا تحتاج إلى كلمة مرور. إذا لم يكن لديك حساب، فسيتم إنشاء حسابك عند إكمال الدخول.</p>
         <form onSubmit={submit} aria-busy={busy}>
-          {mode === "signup" && (
-            <label>
-              الاسم
-              <input
-                autoComplete="name"
-                value={name}
-                onChange={event => setName(event.target.value)}
-                minLength={2}
-                maxLength={80}
-                required
-                disabled={busy}
-              />
-            </label>
+          <label htmlFor="login-email">البريد الإلكتروني</label>
+          <input
+            id="login-email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            dir="ltr"
+            value={email}
+            onChange={event => { setEmail(event.target.value); setSent(false); setMessage(""); }}
+            maxLength={254}
+            required
+            disabled={busy || sent}
+            placeholder="name@example.com"
+          />
+          {message && <p role={sent ? "status" : "alert"} aria-live="polite" className={sent ? "auth-hint" : "auth-error"}>{message}</p>}
+          {!sent ? (
+            <button className="primary-button auth-submit" type="submit" disabled={busy}>
+              {busy ? "جارٍ إرسال الرابط…" : "إرسال رابط الدخول إلى بريدي"}
+            </button>
+          ) : (
+            <button className="primary-button auth-submit" type="button" onClick={() => { setSent(false); setMessage(""); }} disabled={busy}>
+              استخدام بريد إلكتروني آخر
+            </button>
           )}
-          <label>
-            البريد الإلكتروني
-            <input
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              dir="ltr"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              maxLength={254}
-              required
-              disabled={busy}
-            />
-          </label>
-          <label>
-            كلمة المرور
-            <span className="auth-password-row">
-              <input
-                type={showPassword ? "text" : "password"}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                value={password}
-                onChange={event => setPassword(event.target.value)}
-                minLength={mode === "signup" ? 12 : undefined}
-                maxLength={128}
-                required
-                disabled={busy}
-                dir="ltr"
-                aria-describedby={mode === "signup" ? "password-help" : undefined}
-              />
-              <button
-                className="auth-password-toggle"
-                type="button"
-                aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                aria-pressed={showPassword}
-                onClick={() => setShowPassword(value => !value)}
-                disabled={busy}
-              >
-                {showPassword ? "إخفاء" : "إظهار"}
-              </button>
-            </span>
-          </label>
-          {mode === "signup" && (
-            <label>
-              تأكيد كلمة المرور
-              <input
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                value={confirmation}
-                onChange={event => setConfirmation(event.target.value)}
-                minLength={12}
-                maxLength={128}
-                required
-                disabled={busy}
-                dir="ltr"
-              />
-            </label>
-          )}
-          {mode === "signin" && <p className="auth-hint"><Link href="/forgot-password">نسيت كلمة المرور؟</Link></p>}
-          {mode === "signup" && <p id="password-help" className="auth-hint">استخدم 12 حرفًا على الأقل، وأكد كلمة المرور نفسها قبل إنشاء الحساب.</p>}
-          {message && <p role="alert" aria-live="polite" className="auth-error">{message}</p>}
-          <button className="primary-button auth-submit" type="submit" disabled={busy}>
-            {busy ? "جارٍ التحقق…" : mode === "signin" ? "تسجيل الدخول" : "إنشاء الحساب"}
-          </button>
         </form>
-        <button className="auth-switch" type="button" onClick={switchMode} disabled={busy}>
-          {mode === "signin" ? "ليس لديك حساب؟ أنشئ حسابًا" : "لديك حساب؟ سجّل الدخول"}
-        </button>
+        <p className="auth-hint">الرابط صالح لمدة 10 دقائق ويُستخدم مرة واحدة. لا تشاركه مع أحد.</p>
       </section>
       <p className="auth-foot">لا يُعد وجود سجل في المنصة إثباتًا تاريخيًا؛ كل ادعاء يحتاج إلى مصدر ومراجعة.</p>
     </main>

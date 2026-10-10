@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { magicLink } from "better-auth/plugins";
 
 const secret = process.env.BETTER_AUTH_SECRET;
 const smtpHost = process.env.SMTP_HOST;
@@ -20,10 +21,11 @@ const mailer = smtpConfigured ? nodemailer.createTransport({
   auth: { user: smtpUser, pass: smtpPass }
 }) : null;
 const configuredBaseURL = process.env.BETTER_AUTH_URL;
+const codespacesDomain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
 const codespacesOrigin = process.env.NODE_ENV !== "production"
   && process.env.CODESPACE_NAME
-  && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
-  ? `https://${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
+  && codespacesDomain
+  ? `https://${process.env.CODESPACE_NAME}-3000.${codespacesDomain}`
   : undefined;
 // Codespaces hostnames are ephemeral. When running inside Codespaces, prefer
 // the origin derived from its runtime-provided forwarding variables over any
@@ -63,9 +65,45 @@ if (process.env.NODE_ENV === "production" && (!secret || secret.length < 32)) {
 export const auth = betterAuth({
   appName: "مجالس العرب",
   baseURL,
-  trustedOrigins,
+  trustedOrigins: async (request) => {
+    if (!request || process.env.NODE_ENV === "production" || !codespacesDomain) return trustedOrigins;
+    try {
+      const requestURL = new URL(request.url);
+      const suffix = `-3000.${codespacesDomain}`;
+      const label = requestURL.hostname.endsWith(suffix)
+        ? requestURL.hostname.slice(0, -suffix.length)
+        : "";
+      if (/^[a-z0-9-]+$/i.test(label)) {
+        return [...new Set([...trustedOrigins, requestURL.origin])];
+      }
+    } catch {
+      // Keep the configured allowlist when the request URL cannot be parsed.
+    }
+    return trustedOrigins;
+  },
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
+  plugins: [
+    magicLink({
+      expiresIn: 10 * 60,
+      disableSignUp: false,
+      sendMagicLink: async ({ email, url }) => {
+        if (!mailer || !mailFrom) {
+          if (process.env.NODE_ENV === "development") {
+            console.info("[DEV ONLY] Magic sign-in link for " + email + ": " + url);
+            return;
+          }
+          throw new Error("Email delivery is not configured.");
+        }
+        await mailer.sendMail({
+          from: mailFrom,
+          to: email,
+          subject: "رابط الدخول إلى مجالس العرب",
+          text: "مرحبًا،\n\nاستخدم الرابط التالي لتسجيل الدخول إلى مجالس العرب. الرابط صالح لمدة 10 دقائق ويُستخدم مرة واحدة:\n" + url + "\n\nإذا لم تطلب هذا الرابط، فتجاهل الرسالة."
+        });
+      }
+    })
+  ],
   rateLimit: {
     enabled: true,
     storage: "database",
