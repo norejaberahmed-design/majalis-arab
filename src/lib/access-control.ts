@@ -20,17 +20,11 @@ export function hasTrustedOrigin(request: Request) {
   try {
     const originUrl = new URL(origin);
     const requestUrl = new URL(request.url);
-    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-    const host = forwardedHost || request.headers.get("host") || requestUrl.host;
-    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-    const protocol = forwardedProto || requestUrl.protocol.replace(/:$/, "");
-    const canonicalOrigin = `${protocol}://${host}`;
+    const requestHost = (request.headers.get("host") || requestUrl.host).toLowerCase();
 
-    // Compare the browser origin with the public host serving this request.
-    // Hosting proxies may expose an internal request URL, so prefer their
-    // forwarded public host/protocol when present.
-    if (originUrl.origin.toLowerCase() !== canonicalOrigin.toLowerCase() &&
-        originUrl.origin.toLowerCase() !== requestUrl.origin.toLowerCase()) return false;
+    // Compare the browser Origin with the actual Host header. Do not trust
+    // arbitrary forwarded-host headers supplied by clients.
+    if (originUrl.host.toLowerCase() !== requestHost) return false;
 
     return originUrl.protocol === "https:" ||
       originUrl.hostname === "localhost" ||
