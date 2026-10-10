@@ -87,12 +87,6 @@ export default function LoginPage() {
         }
         const session = await authClient.getSession();
         if (session.error || !session.data?.session) {
-          setNotice({ kind: "error", text: "تم إرسال طلب إنشاء الحساب لكن لم تُنشأ جلسة دخول. حاول تسجيل الدخول بالبريد وكلمة المرور." });
-          return;
-        }
-
-        const session = await authClient.getSession();
-        if (session.error || !session.data?.session) {
           setNotice({ kind: "error", text: "تعذر إنشاء جلسة الدخول بعد التسجيل. حاول تسجيل الدخول بالبريد وكلمة المرور." });
           return;
         }
