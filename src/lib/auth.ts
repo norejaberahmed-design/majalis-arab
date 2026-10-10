@@ -19,7 +19,27 @@ const mailer = smtpConfigured ? nodemailer.createTransport({
   secure: smtpPort === 465,
   auth: { user: smtpUser, pass: smtpPass }
 }) : null;
-const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+const baseURL = (process.env.BETTER_AUTH_URL || "http://localhost:3000").replace(/\\/+$/, "");
+const additionalTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || "")
+  .split(",")
+  .map(origin => origin.trim().replace(/\\/+$/, ""))
+  .filter(Boolean);
+const trustedOrigins = [...new Set([baseURL, ...additionalTrustedOrigins])];
+
+for (const origin of trustedOrigins) {
+  let parsed: URL;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    throw new Error(`Invalid origin in BETTER_AUTH_URL / BETTER_AUTH_TRUSTED_ORIGINS: ${origin}`);
+  }
+  if (parsed.origin !== origin || parsed.username || parsed.password) {
+    throw new Error(`Trusted origins must be bare origins without paths or credentials: ${origin}`);
+  }
+  if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+    throw new Error("All trusted authentication origins must use HTTPS in production.");
+  }
+}
 let productionBaseURLIsValid = false;
 try { productionBaseURLIsValid = new URL(baseURL).protocol === "https:"; } catch { productionBaseURLIsValid = false; }
 if (process.env.NODE_ENV === "production" && (!process.env.BETTER_AUTH_URL || !productionBaseURLIsValid)) {
@@ -32,7 +52,7 @@ if (process.env.NODE_ENV === "production" && (!secret || secret.length < 32)) {
 export const auth = betterAuth({
   appName: "مجالس العرب",
   baseURL,
-  trustedOrigins: [baseURL],
+  trustedOrigins,
   secret,
   database: prismaAdapter(prisma, { provider: "sqlite" }),
   rateLimit: {
