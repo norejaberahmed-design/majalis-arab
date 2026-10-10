@@ -27,7 +27,13 @@ export default function LoginPage() {
         return;
       }
       if (mode === "signup") {
-        setMessage("تم إنشاء الحساب. افتح رسالة التحقق في بريدك الإلكتروني ثم سجّل الدخول.");
+        if (process.env.NODE_ENV !== "production") {
+          // Local development has no guaranteed SMTP delivery; create the account and continue.
+          router.replace("/setup");
+          router.refresh();
+          return;
+        }
+        setMessage("تم إنشاء الحساب وحفظ بياناتك. افتح رسالة التحقق في بريدك الإلكتروني لتفعيل الحساب، ثم سجّل الدخول.");
         setMode("signin");
         setPassword("");
         return;
