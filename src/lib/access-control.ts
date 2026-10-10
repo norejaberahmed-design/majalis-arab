@@ -20,11 +20,17 @@ export function hasTrustedOrigin(request: Request) {
   try {
     const originUrl = new URL(origin);
     const requestUrl = new URL(request.url);
+    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = forwardedHost || request.headers.get("host") || requestUrl.host;
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const protocol = forwardedProto || requestUrl.protocol.replace(/:$/, "");
+    const canonicalOrigin = `${protocol}://${host}`;
 
-    // Compare against the request's canonical origin, not a client-supplied
-    // X-Forwarded-Host value. Reverse proxies must configure Next.js with the
-    // canonical public URL instead of trusting arbitrary forwarding headers.
-    if (originUrl.origin.toLowerCase() !== requestUrl.origin.toLowerCase()) return false;
+    // Compare the browser origin with the public host serving this request.
+    // Hosting proxies may expose an internal request URL, so prefer their
+    // forwarded public host/protocol when present.
+    if (originUrl.origin.toLowerCase() !== canonicalOrigin.toLowerCase() &&
+        originUrl.origin.toLowerCase() !== requestUrl.origin.toLowerCase()) return false;
 
     return originUrl.protocol === "https:" ||
       originUrl.hostname === "localhost" ||
