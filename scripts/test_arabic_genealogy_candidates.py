@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 
 from extract_arabic_genealogy_candidates import (
     candidate_quality,
@@ -34,6 +36,25 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
         rows = list(candidates_on_page("ورد ذكر قبيلة بني تميم في النص"))
         self.assertTrue(rows)
         self.assertEqual(rows[0][2], "TRIBAL_MARKER")
+
+
+class SourceProvenanceTests(unittest.TestCase):
+    def test_sabaik_source_url_matches_the_actual_downloaded_scan(self):
+        root = Path(__file__).resolve().parents[1]
+        registry = json.loads((root / "data/sources/arabic-genealogy-books.json").read_text(encoding="utf-8"))
+        source = next(item for item in registry if item["id"] == "sabaik-al-dhahab")
+        workflow = (root / ".github/workflows/extract-sabaik-source.yml").read_text(encoding="utf-8")
+        self.assertIn(source["source_url"], workflow)
+        self.assertIn("--edition 'Bombay edition, 1296 AH; 120-page Wikisource PDF scan'", workflow)
+        self.assertEqual(source["status"], "EXTRACTED_CANDIDATES_NEEDS_HUMAN_REVIEW")
+        self.assertIn("edition", source)
+
+    def test_source_url_is_not_mislabeled_as_the_nyu_1980_catalogue_copy(self):
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github/workflows/extract-sabaik-source.yml").read_text(encoding="utf-8")
+        self.assertIn("upload.wikimedia.org/wikisource", workflow)
+        self.assertIn("ar.wikisource.org/wiki/", workflow)
+        self.assertNotIn("--url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/", workflow)
 
 
 if __name__ == "__main__":
