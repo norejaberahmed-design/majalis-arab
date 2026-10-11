@@ -50,12 +50,16 @@ def text_quality(text: str) -> dict:
     short_ratio = sum(len(word) <= 2 for word in words) / max(1, len(words))
     digit_ratio = digit_count / max(1, len(non_space))
     arabic_ratio = arabic_chars / max(1, len(non_space))
+    coverage_ratio = min(1.0, len(words) / 80)
     score = max(0.0, min(1.0, 0.55 * (1 - short_ratio) + 0.25 * arabic_ratio + 0.20 * (1 - digit_ratio)))
+    # Avoid choosing a sparse OCR result merely because its few words look well-formed.
+    score *= 0.65 + 0.35 * coverage_ratio
     label = "LOW" if len(words) < 20 or short_ratio >= 0.45 or digit_ratio >= 0.12 else (
         "MEDIUM" if short_ratio >= 0.32 or arabic_ratio < 0.65 else "HIGH"
     )
     return {
         "arabicWordCount": len(words),
+        "coverageRatio": round(coverage_ratio, 3),
         "shortWordRatio": round(short_ratio, 3),
         "digitRatio": round(digit_ratio, 3),
         "arabicCharacterRatio": round(arabic_ratio, 3),
@@ -146,16 +150,17 @@ def candidates_on_page(page: str):
                     yield name, line[:2000], "DICTIONARY_HEADING_CANDIDATE"
 
 
-def candidate_quality(name: str, excerpt: str) -> str:
+def candidate_quality(name: str, page_quality: str) -> str:
     tokens = name.split()
-    excerpt_quality = text_quality(excerpt)
+    if not tokens or any(not ARABIC_WORD.fullmatch(token) for token in tokens):
+        return "LOW"
     if len(tokens) == 1 and len(tokens[0]) <= 3:
         return "LOW"
-    if excerpt_quality["qualityLabel"] == "LOW" or len(tokens) == 1:
-        return "LOW" if excerpt_quality["qualityLabel"] == "LOW" else "MEDIUM"
     if any(len(token) <= 2 for token in tokens):
         return "LOW"
-    return "MEDIUM"
+    if len(tokens) == 1 or page_quality == "LOW":
+        return "MEDIUM"
+    return "HIGH" if page_quality == "HIGH" else "MEDIUM"
 
 
 def main() -> int:
@@ -208,7 +213,7 @@ def main() -> int:
                 "sourceAuthor": args.author,
                 "sourceUrl": args.url,
                 "detectionMethod": method,
-                "extractionQuality": candidate_quality(name, excerpt),
+                "extractionQuality": candidate_quality(name, quality["qualityLabel"]),
                 "pageQuality": quality["qualityLabel"],
                 "reviewStatus": "UNREVIEWED",
                 "reviewNote": "Heuristic candidate only. Verify the cited scan and printed page before accepting or linking."
@@ -226,7 +231,7 @@ def main() -> int:
     ])
     write_tsv(passage_file, passages, ["pageLabel", "passageText", "locator", "reviewStatus"])
     write_tsv(quality_file, page_quality_rows, [
-        "pageLabel", "arabicWordCount", "shortWordRatio", "digitRatio",
+        "pageLabel", "arabicWordCount", "coverageRatio", "shortWordRatio", "digitRatio",
         "arabicCharacterRatio", "qualityScore", "qualityLabel", "extractionMode"
     ])
     quality_counts = {label: sum(row["qualityLabel"] == label for row in page_quality_rows)
