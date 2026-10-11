@@ -82,7 +82,8 @@ export default function EntitySearchPanel({
     }
     const params = new URLSearchParams();
     if (value) params.set("q", value);
-    router.push(params.size ? `/entities?${params.toString()}` : "/entities");
+    const queryString = params.toString();
+    router.push(queryString ? `/entities?${queryString}` : "/entities");
   }
 
   return (
