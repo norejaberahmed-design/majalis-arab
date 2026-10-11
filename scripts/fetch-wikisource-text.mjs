@@ -75,7 +75,7 @@ async function main() {
   const urlIndex = args.indexOf("--url");
   const workspaceIndex = args.indexOf("--workspace-id");
   if (urlIndex < 0 || !args[urlIndex + 1] || workspaceIndex < 0 || !args[workspaceIndex + 1]) {
-    process.stderr.write("Usage: npm run db:fetch-wikisource -- --url https://ar.wikisource.org/wiki/PAGE --workspace-id EXISTING_WORKSPACE_ID\n");
+    process.stderr.write("Usage: npm run db:fetch-wikisource-text -- --url https://ar.wikisource.org/wiki/PAGE --workspace-id EXISTING_WORKSPACE_ID\n");
     process.exitCode = 2;
     return;
   }
