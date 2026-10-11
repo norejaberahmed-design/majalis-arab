@@ -70,7 +70,7 @@ export const auth = betterAuth({
           : "";
         const numericPort = hostLabel.length > 0 && [...hostLabel].every(char => char >= "0" && char <= "9");
         const forwardedProtocolMatches = !forwardedProto || forwardedProto === "https";
-        const originHostMatchesRequest = originHostname === requestHost.toLowerCase() || originHostname === requestURL.hostname.toLowerCase();
+        const originHostMatchesRequest = originHostname === requestHost.split(":")[0].toLowerCase() || originHostname === requestURL.hostname.toLowerCase();
         if (originURL.protocol === "https:" && numericPort && forwardedProtocolMatches && (originHostMatchesRequest || !forwardedHost)) {
           return [...new Set([...trustedOrigins, originURL.origin])];
         }
