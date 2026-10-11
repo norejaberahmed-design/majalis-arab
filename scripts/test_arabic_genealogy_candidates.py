@@ -20,7 +20,10 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
         self.assertEqual(extract_candidate_name(" من العرب في الجاهلية"), "")
 
     def test_short_ambiguous_candidate_is_low_quality(self):
-        self.assertEqual(candidate_quality("التق", "وليضومف قبيلة التق : الؤا"), "LOW")
+        self.assertEqual(candidate_quality("التق", "HIGH"), "LOW")
+
+    def test_clean_multiword_candidate_on_readable_page_is_high_extraction_quality(self):
+        self.assertEqual(candidate_quality("عبد القيس", "HIGH"), "HIGH")
 
     def test_quality_report_marks_fragmented_text_low(self):
         report = text_quality("ا م و ١ ٢ ٣ ك ل ب ا د ٧ ن")
