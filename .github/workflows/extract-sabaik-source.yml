@@ -73,7 +73,7 @@ jobs:
           {
             echo "## First-source extraction"
             echo
-            grep -E '^(PDF pages processed|Extraction mode|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
+            grep -E '^(PDF pages processed|Extraction mode|Source edition|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
             echo
             echo '### Review gate'
             echo 'All rows are UNREVIEWED. Quality labels estimate text legibility only; they do not verify a tribe name or lineage.'
