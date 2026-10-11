@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة ثالثة من أسماء الكيانات القبلية المستخرجة من مداخل رقمية في معجم قبائل العرب القديمة والحديثة لعمر رضا كحالة. تشمل قبائل وبطونًا وأفخاذًا وعشائر؛ يجب الاحتفاظ بالتصنيف الذي يذكره المصدر وعدم اعتبار كل اسم قبيلة مستقلة.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م"
+  },
+  "extraction_method": "استخراج من النص الرقمي المنشور للمداخل المشار إليها؛ الروابط تحدد صفحات الويب ولا تعني أرقام صفحات مطبوعة.",
+  "entities": [
+    {
+      "name": "قَطَن",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من تغلب، ومنهم بنو رزاح.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل قطن",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "قَطَن بن ربيعة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من نمير، ويذكر بني قطن بن ربيعة بن عبد الله بن الحارث بن نمير.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل قطن بن ربيعة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "قَطَن بن عَبْقَر",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من كهلان، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل قطن بن عبقر",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "قَطَن بن عَريب",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من حمير، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل قطن بن عريب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "قَطَن بن نهشل",
+      "entity_kind": "TRIBE_OR_CLAN",
+      "evidence_summary": "يذكره المدخل بوصفه قبيلة كانت محالفة لبني زيد بن نهشل وبني مناف بن دارم في الحروب.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل قطن بن نهشل",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "القطيبي",
+      "entity_kind": "TRIBAL_GROUP",
+      "evidence_summary": "يذكر المدخل القطيبي ضمن قبائل النواحي التسع المحمية في جنوب شبه الجزيرة العربية.",
+      "source_url": "https://islamport.com/l/nsb/5055/954.htm",
+      "source_locator": "مدخل القطيبي",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللِّب بن الدُّعام",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من دومان ابن بكيل، من همدان، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل اللب بن الدعام",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللبادنة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكرهم المدخل بوصفهم عشائر البلقاء، ويورد أفخاذًا منها اللوانسة والرواشدة والهواوشة والحواتمة.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل اللبادنة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللِّبْد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل اللِّبد بأنه بطون من بني تميم، ويسرد أسماء عدة ضمنها.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل اللبد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "لُبْنَي بن زُرَيْق",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من طيء، من كهلان، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل لبنى بن زريق",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "لُبْنَى بن سعد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من بني سامة بن لؤي، من قريش، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل لبنى بن سعد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللَّبُوء",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من عبد القيس بن أفصى، من ربيعة، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل اللبوء",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "لَبوان بن مالك",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من المعافر، ويذكر بني لبوان بن مالك بن الحارث.",
+      "source_url": "https://islamport.com/l/nsb/5055/1001.htm",
+      "source_locator": "مدخل لبوان بن مالك",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللَّهابة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفهم المدخل بأنهم بطن من عوف، من بني مسروح المقيمين في ثغر رابغ.",
+      "source_url": "https://islamport.com/l/nsb/5055/1008.htm",
+      "source_locator": "مدخل اللهابة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "اللهامق",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفهم المدخل بأنهم بطن من الجبور، من بني علي، من حرب.",
+      "source_url": "https://islamport.com/l/nsb/5055/1008.htm",
+      "source_locator": "مدخل اللهامق",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "لِهْب بن أَحْجَن",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من الأزد، من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1008.htm",
+      "source_locator": "مدخل لهب بن أحجن",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مخزوم",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من بني عبس، من قيس بن عيلان، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل مخزوم",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مخزوم بن يَقَظَة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من لؤي بن غالب، من قريش، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل مخزوم بن يقظة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المُخَصَّبة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفهم المدخل بأنهم بطن من قبيلة بني هاجر، ويذكر عددًا من الأفخاذ التابعة لهم.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل المخصبة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "مُخْلِف",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من حرب.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل مخلف",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المُخَيَّل",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفه المدخل بأنه بطن من ربيعة بن نزار، من العدنانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل المخيل",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المَدابح",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يذكر المدخل المدابح بوصفهم من عشائر شمال فلسطين.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل المدابح",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "المَدابسة",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصفهم المدخل بأنهم بطن من لام بن الحارث بن ساعدة باليمن.",
+      "source_url": "https://islamport.com/l/nsb/5055/1050.htm",
+      "source_locator": "مدخل المدابسة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    }
+  ]
+}

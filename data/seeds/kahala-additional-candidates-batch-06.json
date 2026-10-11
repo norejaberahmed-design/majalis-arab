@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة سادسة من أسماء مداخل معجم قبائل العرب القديمة والحديثة. تضم قبائل وبطونًا وفروعًا وأسماء متشابهة؛ لا تعتمد كسجل أنساب نهائي قبل المراجعة البشرية.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م"
+  },
+  "extraction_method": "استخراج من النص الرقمي المنشور للمداخل؛ معرّفات صفحات الويب ليست أرقام صفحات مطبوعة.",
+  "entities": [
+    {
+      "name": "أشيتم",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يسجل المعجم مدخل أشيتم ويصفه بأنه قبيلة، مع إحالة إلى لسان العرب والقاموس.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل أشيتم",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الأصابح",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يصف المدخل الأصابح بأنهم من القبائل القحطانية في جنوبي شبه الجزيرة العربية، ويورد نسبًا من أصبح بن عمرو.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل الأصابح",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الأصابعة",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يورد المعجم مدخل الأصابعة بوصفه بطنًا من بني يزيد في سياق تاريخي بشمال أفريقيا.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل الأصابعة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "لا يُدمج مع أسماء متقاربة لفظيًا دون تحقق من النسب والسياق."
+    },
+    {
+      "name": "أصبار",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل أصبار بأنه بطن من غسان.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل أصبار",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "إصبع",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل إصبع بأنه فرقة من قبيلة أهل بارق، ويذكر موقع ديارها شمالي محايل.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل إصبع",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أصبي",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل أصبي بأنه بطن من كهلان من القحطانية.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل أصبي",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الأصرار",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يذكر المعجم الأصرار بوصفهم من قبائل اليمن.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل الأصرار",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أصرم",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يصف المدخل أصرم بأنه قبيلة من بني سعد بن زيد مناة بن تميم.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل أصرم",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الأصم",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يصف المدخل الأصم بأنه قبيلة عدنانية وينسبها إلى عامر بن كلاب بن ربيعة بن عامر بن صعصعة.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل الأصم",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "أصمع",
+      "entity_kind": "TRIBE",
+      "evidence_summary": "يذكر المعجم أصمع بوصفهم من قبائل بني سعد بن قيس من غطفان.",
+      "source_url": "https://islamport.com/l/nsb/5055/32.htm",
+      "source_locator": "مدخل أصمع",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الثعالب",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يورد المعجم الثعالب بوصفهم بطنًا من بني فتّال بن مرّة.",
+      "source_url": "https://islamport.com/l/nsb/5055/141.htm",
+      "source_locator": "مدخل الثعالب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم قريب من الثعالبة؛ لا تُدمج المادتان تلقائيًا."
+    },
+    {
+      "name": "الثعالبة",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يعرض المدخل نسبًا للثعالبة إلى بني الحسين بن علي، ثم يذكر اختلافًا في نسب ثعالب أخرى بصعيد مصر بين روايات المصادر.",
+      "source_url": "https://islamport.com/l/nsb/5055/141.htm",
+      "source_locator": "مدخل الثعالبة والحاشية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "المادة تجمع سياقات وأنسابًا مختلفة؛ يلزم فصل كل كيان عن الآخر قبل اعتماده."
+    },
+    {
+      "name": "السعالي",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يصف المدخل السعالي بأنهم بطن من الصبيحيين، من بني زريق، من ثعلبة طيء، ويذكر مساكن تاريخية قرب أطراف مصر مما يلي الشام.",
+      "source_url": "https://islamport.com/l/nsb/5055/510.htm",
+      "source_locator": "مدخل السعالي",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "السعايد",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يصف المدخل السعايد بأنهم فرقة من قبيلة هذيل التي تحيط ديارها بمكة من جهاتها الأربع.",
+      "source_url": "https://islamport.com/l/nsb/5055/510.htm",
+      "source_locator": "مدخل السعايد",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "السعايدة",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يصف المدخل السعايدة بأنهم فرقة من العبيديين، إحدى عشائر الطفيلة بمنطقة الكرك.",
+      "source_url": "https://islamport.com/l/nsb/5055/510.htm",
+      "source_locator": "مدخل السعايدة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "لا تدمج مع السعايد؛ تشابه الاسم لا يثبت وحدة الكيان."
+    },
+    {
+      "name": "جعدة بن كعب",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يورد المعجم نسب جعدة بن كعب إلى عامر بن صعصعة، ويذكر أن فيهم قبائل وعشائر ومواطن وأودية تاريخية.",
+      "source_url": "https://islamport.com/l/nsb/5055/194.htm",
+      "source_locator": "مدخل جعدة بن كعب",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الجعفر",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يصف المعجم الجعفر بأنها قبيلة يقيم قسم منها بنجد وآخر بالعراق، ويورد عدة أفخاذ.",
+      "source_url": "https://islamport.com/l/nsb/5055/194.htm",
+      "source_locator": "مدخل الجعفر",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم متعدد الاستعمالات؛ يلزم التحقق من وحدة الكيان وتحديد المقصود قبل الدمج."
+    },
+    {
+      "name": "جعفر",
+      "entity_kind": "UNRESOLVED",
+      "evidence_summary": "يذكر المدخل جعفر بوصفه فخذًا من قبيلة آل كثير المقيمة بحضرموت.",
+      "source_url": "https://islamport.com/l/nsb/5055/194.htm",
+      "source_locator": "مدخل جعفر بعد مدخل الجعفر",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "يُحفظ منفصلًا عن مدخل الجعفر وعن الأشخاص المسمين جعفر."
+    }
+  ]
+}

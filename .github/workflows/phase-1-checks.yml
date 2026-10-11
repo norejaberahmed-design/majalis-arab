@@ -55,6 +55,10 @@ jobs:
         run: npm test
         env:
           DATABASE_URL: "file:./dev.db"
+      - name: Audit source-attributed genealogy candidate corpus
+        run: npm run data:audit-genealogy-candidates
+      - name: Compile Arabic PDF extraction script
+        run: python -m py_compile scripts/extract_arabic_genealogy_candidates.py
       - run: npm run lint
       - name: Build
         run: npm run build
