@@ -3,7 +3,7 @@ name: Extract first genealogy source
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "fix/arabic-source-extraction-quality-20261011"]
+    branches: ["main"]
     paths:
       - ".github/workflows/extract-sabaik-source.yml"
       - "scripts/extract_arabic_genealogy_candidates.py"
@@ -36,6 +36,29 @@ jobs:
             --output /tmp/sabaik-al-dhahab.pdf
           pdfinfo /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-info.txt
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
+      - name: Prefer the high-accuracy Arabic OCR model when available
+        run: |
+          TESSDATA_DIR="$(tesseract --print-tessdata-dir)"
+          cp "$TESSDATA_DIR/ara.traineddata" "$RUNNER_TEMP/ara-ubuntu.traineddata"
+          if curl --fail --location --retry 3 --retry-delay 2 \
+            'https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata' \
+            --output "$RUNNER_TEMP/ara-best.traineddata"; then
+            MODEL_SIZE="$(wc -c < "$RUNNER_TEMP/ara-best.traineddata")"
+            if [ "$MODEL_SIZE" -ge 5000000 ]; then
+              install -m 0644 "$RUNNER_TEMP/ara-best.traineddata" "$TESSDATA_DIR/ara.traineddata"
+              if pdftoppm -f 1 -l 1 -r 150 -png -singlefile /tmp/sabaik-al-dhahab.pdf "$RUNNER_TEMP/ocr-probe" >/dev/null 2>&1 \
+                && tesseract "$RUNNER_TEMP/ocr-probe.png" stdout -l ara --psm 6 >/dev/null 2>&1; then
+                echo "Installed and smoke-tested tessdata_best Arabic OCR model."
+              else
+                install -m 0644 "$RUNNER_TEMP/ara-ubuntu.traineddata" "$TESSDATA_DIR/ara.traineddata"
+                echo "::warning::High-accuracy Arabic model failed its smoke test; restored the Ubuntu model."
+              fi
+            else
+              echo "::warning::High-accuracy Arabic model download was unexpectedly small; keeping the Ubuntu model."
+            fi
+          else
+            echo "::warning::High-accuracy Arabic model download failed; keeping the Ubuntu model."
+          fi
       - name: Extract page-linked candidates and passages
         run: |
           python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf \
