@@ -3,12 +3,13 @@
     "id": "sabaik-al-dhahab",
     "title": "سبائك الذهب في معرفة قبائل العرب",
     "author": "محمد أمين السويدي",
-    "source_url": "https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar",
-    "catalogue_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_url": "https://ar.wikisource.org/wiki/%D9%85%D9%84%D9%81:%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf",
+    "catalogue_url": "https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar",
     "source_type": "digitized_book",
+    "edition": "Bombay edition, 1296 AH; Wikisource PDF scan, 120 pages",
     "geographic_scope": "القبائل العربية",
-    "status": "REGISTERED_NOT_EXTRACTED",
-    "notes": "نسخة رقمية مفهرسة لدى Arabic Collections Online؛ يجب تسجيل الطبعة وترقيم صفحات PDF عند المعالجة."
+    "status": "EXTRACTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+    "notes": "عولجت نسخة ويكي مصدر المطابقة للرابط، لكن OCR غير صالح للاعتماد الآلي: تشغيل 38157907860 أنتج 132 مرشحًا (0 عالي الجودة، 33 متوسطًا، 99 منخفضًا) و93/120 صفحة منخفضة المقروئية. تجربة نسخة NYU عالية الدقة في التشغيل 38159743368 لم تحسن النتيجة: 138 مرشحًا، 0 عالي الجودة، 105 منخفضة، و99/128 صفحة منخفضة. تبقى النتائج تشخيصية فقط؛ لا تُستورد الأسماء إلى الكتالوج ولا تُعتمد قبل التحقق من صورة الصفحة."
   },
   {
     "id": "muajam-qabail-arab-v1",

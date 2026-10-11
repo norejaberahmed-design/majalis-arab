@@ -64,15 +64,16 @@ jobs:
         run: |
           python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf \
             --title 'سبائك الذهب في معرفة قبائل العرب' \
-            --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' \
+            --url 'https://ar.wikisource.org/wiki/%D9%85%D9%84%D9%81:%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf' \
             --author 'محمد أمين البغدادي السويدي' \
+            --edition 'Bombay edition, 1296 AH; 120-page Wikisource PDF scan' \
             --out data/sources/sabaik-al-dhahab | tee /tmp/extraction-summary.txt
           cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt /tmp/extraction-summary.txt \
             > data/sources/sabaik-al-dhahab/source-report.txt
           {
             echo "## First-source extraction"
             echo
-            grep -E '^(PDF pages processed|Extraction mode|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
+            grep -E '^(PDF pages processed|Extraction mode|Source edition|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
             echo
             echo '### Review gate'
             echo 'All rows are UNREVIEWED. Quality labels estimate text legibility only; they do not verify a tribe name or lineage.'

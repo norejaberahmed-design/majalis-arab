@@ -182,6 +182,7 @@ def main() -> int:
     parser.add_argument("--title", required=True, help="Exact book/source title")
     parser.add_argument("--url", required=True, help="Canonical source URL")
     parser.add_argument("--author", default="")
+    parser.add_argument("--edition", default="", help="Edition/scan identity for provenance")
     parser.add_argument("--out", type=Path, required=True, help="Output directory")
     args = parser.parse_args()
     if not args.pdf.is_file():
@@ -224,6 +225,7 @@ def main() -> int:
                 "evidenceExcerpt": excerpt,
                 "sourceTitle": args.title,
                 "sourceAuthor": args.author,
+                "sourceEdition": args.edition,
                 "sourceUrl": args.url,
                 "detectionMethod": method,
                 "extractionQuality": candidate_quality(name, quality["qualityLabel"]),
@@ -239,7 +241,7 @@ def main() -> int:
             writer.writerows(rows)
 
     write_tsv(candidate_file, candidates, [
-        "candidateName", "pageLabel", "evidenceExcerpt", "sourceTitle", "sourceAuthor",
+        "candidateName", "pageLabel", "evidenceExcerpt", "sourceTitle", "sourceAuthor", "sourceEdition",
         "sourceUrl", "detectionMethod", "extractionQuality", "pageQuality", "reviewStatus", "reviewNote"
     ])
     write_tsv(passage_file, passages, ["pageLabel", "passageText", "locator", "reviewStatus"])
@@ -253,6 +255,7 @@ def main() -> int:
                                 for label in ("HIGH", "MEDIUM", "LOW")}
     print(f"PDF pages processed: {len(pages)}")
     print(f"Extraction mode: {extraction_mode}")
+    print(f"Source edition: {args.edition or 'not specified'}")
     print(f"Candidate mentions (unverified): {len(candidates)}")
     print(f"Candidate extraction-quality counts (not verification): {candidate_quality_counts}")
     print(f"Page text-quality counts (legibility proxy): {quality_counts}")
