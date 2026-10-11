@@ -57,17 +57,22 @@ export const auth = betterAuth({
         const proxyProtocolMatches = !forwardedProto || forwardedProto === originURL.protocol.replace(":", "");
         if (originURL.host.toLowerCase() === requestHost && proxyProtocolMatches && (secure || (process.env.NODE_ENV !== "production" && local))) return [...new Set([...trustedOrigins, originURL.origin])];
       }
-      if (process.env.NODE_ENV !== "production" && codespacesDomain && process.env.CODESPACE_NAME) {
+      if (process.env.NODE_ENV !== "production" && codespacesDomain && process.env.CODESPACE_NAME && requestOrigin) {
         // Codespaces may expose the app on 3000, 3001, or another forwarded port.
-        // Accept only this Codespace name, a numeric port, and the configured forwarding domain.
+        // Reverse proxies can leave request.url on an internal host; validate the browser
+        // origin against this exact Codespace name and the configured forwarding domain.
+        const originURL = new URL(requestOrigin);
         const prefix = `${process.env.CODESPACE_NAME}-`;
         const suffix = `.${codespacesDomain}`;
-        const hostLabel = requestURL.hostname.startsWith(prefix) && requestURL.hostname.endsWith(suffix)
-          ? requestURL.hostname.slice(prefix.length, -suffix.length)
+        const originHostname = originURL.hostname.toLowerCase();
+        const hostLabel = originHostname.startsWith(prefix.toLowerCase()) && originHostname.endsWith(suffix.toLowerCase())
+          ? originHostname.slice(prefix.length, -suffix.length)
           : "";
         const numericPort = hostLabel.length > 0 && [...hostLabel].every(char => char >= "0" && char <= "9");
-        if (numericPort && requestOrigin === requestURL.origin) {
-          return [...new Set([...trustedOrigins, requestURL.origin])];
+        const forwardedProtocolMatches = !forwardedProto || forwardedProto === "https";
+        const originHostMatchesRequest = originHostname === requestHost.toLowerCase() || originHostname === requestURL.hostname.toLowerCase();
+        if (originURL.protocol === "https:" && numericPort && forwardedProtocolMatches && (originHostMatchesRequest || !forwardedHost)) {
+          return [...new Set([...trustedOrigins, originURL.origin])];
         }
       }
     } catch { /* Keep the explicit allowlist if request metadata is malformed. */ }
