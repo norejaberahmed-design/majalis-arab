@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
 
 const BASE_URL = "http://localhost:3000";
+const TEST_SECRET = "test-only-secret-value-long-enough-for-auth-lifecycle";
 const originalNodeEnv = process.env.NODE_ENV;
 
 function cookieHeader(response: Response) {
@@ -34,7 +36,7 @@ describe("authentication lifecycle against SQLite", () => {
   beforeAll(async () => {
     process.env.NODE_ENV = "development";
     process.env.BETTER_AUTH_URL = BASE_URL;
-    process.env.BETTER_AUTH_SECRET = "test-only-secret-value-long-enough-for-auth-lifecycle";
+    process.env.BETTER_AUTH_SECRET = TEST_SECRET;
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
@@ -62,6 +64,16 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ name: "Lifecycle Test", email, password: oldPassword })
     }));
     expect(signUp.status).toBeLessThan(400);
+    const expiredEmailToken = await new SignJWT({ email: email.toLowerCase() })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt(Math.floor(Date.now() / 1000) - 7200)
+      .setExpirationTime(Math.floor(Date.now() / 1000) - 3600)
+      .sign(new TextEncoder().encode(TEST_SECRET));
+    const expiredEmailVerification = await auth.handler(new Request(
+      `${BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(expiredEmailToken)}`
+    ));
+    expect(expiredEmailVerification.status).toBe(401);
+
     const signupCookies = cookieHeader(signUp);
     expect(signupCookies).toContain("better-auth");
     const signupSession = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
@@ -178,6 +190,34 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(newSignIn.status).toBe(200);
     const newCookies = cookieHeader(newSignIn);
+
+    const secondResetRequest = await auth.handler(new Request(`${BASE_URL}/api/auth/request-password-reset`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: BASE_URL },
+      body: JSON.stringify({ email, redirectTo: "/reset-password" })
+    }));
+    expect(secondResetRequest.status).toBeLessThan(400);
+    const secondResetUrl = await loggedLink(mailLog, "Password reset link");
+    const expiredResetToken = new URL(secondResetUrl).searchParams.get("token");
+    expect(expiredResetToken).toBeTruthy();
+    const expiredRecord = await prisma.verification.updateMany({
+      where: { identifier: `reset-password:${expiredResetToken}` },
+      data: { expiresAt: new Date(Date.now() - 60_000) }
+    });
+    expect(expiredRecord.count).toBe(1);
+
+    const rejectedExpiredReset = await auth.handler(new Request(`${BASE_URL}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: BASE_URL },
+      body: JSON.stringify({ newPassword: "Should-not-apply-789!", token: expiredResetToken })
+    }));
+    expect(rejectedExpiredReset.status).toBeGreaterThanOrEqual(400);
+
+    const sessionAfterExpiredReset = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
+      headers: { cookie: newCookies }
+    }));
+    expect((await sessionAfterExpiredReset.json()).user.email).toBe(email);
+
     const finalSignOut = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-out`, {
       method: "POST",
       headers: { origin: BASE_URL, cookie: newCookies }
