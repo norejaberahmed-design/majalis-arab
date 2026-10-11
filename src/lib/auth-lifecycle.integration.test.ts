@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 const BASE_URL = "http://localhost:3000";
 const originalNodeEnv = process.env.NODE_ENV;
@@ -98,6 +99,32 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(selectResponse.status).toBe(200);
     expect(cookieHeader(selectResponse)).toContain("majalis_workspace");
+
+    // A valid session must not be able to select a workspace owned by another user.
+    const foreignSuffix = `foreign-${process.pid}-${Date.now()}`;
+    const foreignUser = await prisma.user.create({
+      data: { name: "Foreign workspace owner", email: `${foreignSuffix}@example.test` },
+      select: { id: true }
+    });
+    const foreignWorkspace = await prisma.workspace.create({
+      data: { name: "Foreign lifecycle council", slug: foreignSuffix },
+      select: { id: true }
+    });
+    try {
+      await prisma.workspaceMember.create({
+        data: { workspaceId: foreignWorkspace.id, userId: foreignUser.id, role: "OWNER" }
+      });
+      const foreignSelection = await selectWorkspace(new NextRequest(`${BASE_URL}/api/workspaces/active`, {
+        method: "POST",
+        headers: { origin: BASE_URL, "content-type": "application/json", cookie: sessionCookies },
+        body: JSON.stringify({ workspaceId: foreignWorkspace.id })
+      }));
+      expect(foreignSelection.status).toBe(403);
+      expect(cookieHeader(foreignSelection)).not.toContain("majalis_workspace");
+    } finally {
+      await prisma.workspace.deleteMany({ where: { id: foreignWorkspace.id } });
+      await prisma.user.deleteMany({ where: { id: foreignUser.id } });
+    }
 
     const workspacesResponse = await listWorkspaces(new NextRequest(`${BASE_URL}/api/workspaces`, {
       headers: { cookie: sessionCookies }
