@@ -47,14 +47,14 @@ describe("authentication email delivery failures", () => {
   });
 
   it("does not report verification email delivery as successful when SMTP fails", async () => {
-    const email = \`smtp-failure-\${process.pid}-\${Date.now()}@example.test\`;
+    const email = `smtp-failure-${process.pid}-${Date.now()}@example.test`;
     const user = await prisma.user.create({
       data: { name: "SMTP failure test", email, emailVerified: false },
       select: { id: true }
     });
     userId = user.id;
 
-    const response = await auth.handler(new Request(\`\${BASE_URL}/api/auth/send-verification-email\`, {
+    const response = await auth.handler(new Request(`${BASE_URL}/api/auth/send-verification-email`, {
       method: "POST",
       headers: { "content-type": "application/json", origin: BASE_URL },
       body: JSON.stringify({ email, callbackURL: "/" })
