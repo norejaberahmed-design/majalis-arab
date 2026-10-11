@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "dataset_status": "SOURCE_ATTESTED_CANDIDATES_NEEDS_HUMAN_REVIEW",
+  "description_ar": "دفعة سابعة: مرشحات لفروع وردت في مادة مطير بمعجم قبائل العرب القديمة والحديثة، وتحتاج مراجعة بشرية.",
+  "source_book": {
+    "title": "معجم قبائل العرب القديمة والحديثة",
+    "author": "عمر رضا كحالة",
+    "edition": "الطبعة السابعة، مؤسسة الرسالة، بيروت، 1414هـ/1994م"
+  },
+  "extraction_method": "استخراج من النص الرقمي؛ رقم رابط الويب ليس رقم الصفحة المطبوعة.",
+  "entities": [
+    {
+      "name": "علوة",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يذكر المصدر علوة أحد البطنين الكبيرين في تقسيم مجموعة مطير الواردة في المدخل.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، فقرة علوة وبرية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "برية",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يذكر المصدر برية أحد البطنين الكبيرين في تقسيم مجموعة مطير الواردة في المدخل.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، فقرة علوة وبرية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الموهة",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يورد المصدر الموهة ضمن أقسام علوة في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات علوة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "الجبلان",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يورد المصدر الجبلان ضمن أقسام علوة في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات علوة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "دوي عون",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يورد المصدر دوي عون ضمن أقسام علوة في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات علوة",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "وسامة الهلال",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يذكر المصدر وسامة الهلال ضمن تقسيم برية في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات برية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    },
+    {
+      "name": "واصل",
+      "entity_kind": "BRANCH",
+      "evidence_summary": "يذكر المصدر واصل أحد الفخذين اللذين يقسم إليهما بطن برية في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات برية",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW",
+      "notes": "اسم عام؛ لا يدمج مع كيانات أخرى بالاسم وحده."
+    },
+    {
+      "name": "الصعران",
+      "entity_kind": "CLAN_OR_SUBTRIBE",
+      "evidence_summary": "يورد المصدر الصعران ضمن أقسام وسامة الهلال في مادة مطير.",
+      "source_url": "https://islamport.com/l/nsb/5055/1104.htm",
+      "source_locator": "مادة مطير، تفريعات وسامة الهلال",
+      "review_status": "SOURCE_ATTESTED_NEEDS_HUMAN_REVIEW"
+    }
+  ]
+}
