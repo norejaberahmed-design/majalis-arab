@@ -45,12 +45,12 @@ jobs:
             --output "$RUNNER_TEMP/ara-best.traineddata"; then
             MODEL_SIZE="$(wc -c < "$RUNNER_TEMP/ara-best.traineddata")"
             if [ "$MODEL_SIZE" -ge 5000000 ]; then
-              install -m 0644 "$RUNNER_TEMP/ara-best.traineddata" "$TESSDATA_DIR/ara.traineddata"
+              sudo install -m 0644 "$RUNNER_TEMP/ara-best.traineddata" "$TESSDATA_DIR/ara.traineddata"
               if pdftoppm -f 1 -l 1 -r 150 -png -singlefile /tmp/sabaik-al-dhahab.pdf "$RUNNER_TEMP/ocr-probe" >/dev/null 2>&1 \
                 && tesseract "$RUNNER_TEMP/ocr-probe.png" stdout -l ara --psm 6 >/dev/null 2>&1; then
                 echo "Installed and smoke-tested tessdata_best Arabic OCR model."
               else
-                install -m 0644 "$RUNNER_TEMP/ara-ubuntu.traineddata" "$TESSDATA_DIR/ara.traineddata"
+                sudo install -m 0644 "$RUNNER_TEMP/ara-ubuntu.traineddata" "$TESSDATA_DIR/ara.traineddata"
                 echo "::warning::High-accuracy Arabic model failed its smoke test; restored the Ubuntu model."
               fi
             else
