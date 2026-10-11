@@ -1,11 +1,11 @@
 # Authentication and workspace isolation
 
-Status: workspace isolation, SQLite migration-upgrade, authentication lifecycle, persistent rate-limit enforcement, and password-reset session revocation have passing integration/regression tests. Email failure/expiry cases, complete authorization inventory, and final independent release review remain blockers.
+Status: workspace isolation, SQLite migration-upgrade, authentication lifecycle (including SMTP failure, verification/reset expiry, resend, and duplicate-sign-up enumeration), persistent rate-limit enforcement, and password-reset session revocation have passing integration/regression tests. The complete authorization inventory and final independent release review remain blockers.
 
 ## Implemented foundations
 
 - Better Auth with Prisma-backed user, session, account, and verification records.
-- Email/password sign-up and sign-in, password reset, secure production cookie settings, and server-side session lookup. Email verification delivery is implemented but is not currently required on sign-up (`requireEmailVerification: false`, `sendOnSignUp: false`); enable it only after the end-to-end email lifecycle tests pass.
+- Email/password sign-up and sign-in, password reset, secure production cookie settings, and server-side session lookup. New sign-ups do not automatically create a session (`autoSignIn: false`), which enables Better Auth's generic duplicate-sign-up response and reduces account enumeration. Email verification delivery is implemented but is not currently required on sign-up (`requireEmailVerification: false`, `sendOnSignUp: false`); changing that policy still requires a product decision and end-to-end verification UX validation.
 - Workspace and WorkspaceMember models with a unique `(workspaceId, userId)` membership pair and explicit roles.
 - Server-side workspace selection checks the authenticated user's membership before setting the HTTP-only active-workspace cookie.
 - State-changing requests validate Origin against the request's canonical origin; do not trust client-supplied `X-Forwarded-Host`.
@@ -40,7 +40,7 @@ The tests also verify denied writes do not change the foreign record, create a c
 
 ## Remaining requirements before production
 
-- Test SMTP delivery failures, expired verification/reset tokens, resend verification, and duplicate-account enumeration behavior.
+- Decide whether production sign-up must require email verification; delivery failure, expiry, resend, and duplicate-account enumeration regression tests now pass.
 - Finish a route/server-action authorization inventory and add negative tests for uncovered state-changing paths; verify no endpoint trusts client-supplied user IDs or role claims.
 - Validate the migration upgrade path against a copy of any actual deployed database before a production release. CI now tests incremental migrations from the initial schema while preserving pre-existing source/workspace rows.
 - Configure real SMTP, canonical HTTPS URL, random production auth secret, backups/restore, and operational monitoring.
