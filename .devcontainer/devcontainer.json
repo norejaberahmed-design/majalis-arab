@@ -11,7 +11,7 @@
       "visibility": "private"
     }
   },
-  "postCreateCommand": "npm ci && node scripts/setup-codespaces.mjs && npm run db:deploy && npm run db:generate",
+  "postCreateCommand": "npm ci && node scripts/setup-codespaces.mjs && npm run db:deploy && npm run db:generate && npm run db:seed-bibliography && npm run db:seed-public-domain-passage",
   "postStartCommand": "nohup npm run dev -- --hostname 0.0.0.0 > /tmp/majalis-dev.log 2>&1 &",
   "customizations": {
     "vscode": {
