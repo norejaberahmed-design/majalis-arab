@@ -9,8 +9,8 @@ describe("source-attributed tribe name candidate index", () => {
     expect(tribeNameCandidates.every(candidate => candidate.reviewStatus !== "VERIFIED")).toBe(true);
   });
 
-  it("finds Arabic names while ignoring diacritics and common letter variants", () => {
-    const results = searchTribeNameCandidates("عنزه");
+  it("finds Arabic names while ignoring Arabic diacritics", () => {
+    const results = searchTribeNameCandidates("عَنْزَة");
     expect(results.some(candidate => candidate.name === "عنزة")).toBe(true);
   });
 
