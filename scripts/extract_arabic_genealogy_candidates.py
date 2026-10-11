@@ -166,7 +166,7 @@ def candidate_quality(name: str, page_quality: str) -> str:
     tokens = name.split()
     if not tokens or any(not ARABIC_WORD.fullmatch(token) for token in tokens):
         return "LOW"
-    if len(tokens) == 1 and len(tokens[0]) <= 3:
+    if len(tokens) == 1 and len(tokens[0]) <= 4:
         return "LOW"
     if any(len(token) <= 2 for token in tokens):
         return "LOW"
