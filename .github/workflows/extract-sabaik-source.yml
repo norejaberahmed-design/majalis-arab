@@ -29,11 +29,21 @@ jobs:
           tesseract --list-langs | grep -qx ara
       - name: Test candidate extraction rules
         run: python -m unittest discover -s scripts -p 'test_arabic_genealogy_candidates.py' -v
-      - name: Download the public-domain scan
+      - name: Download the highest-resolution public-domain scan
         run: |
-          curl --fail --location --retry 3 --retry-delay 2 \
-            'https://upload.wikimedia.org/wikisource/ar/5/58/%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf' \
-            --output /tmp/sabaik-al-dhahab.pdf
+          HIGH_RES_URL='https://mc.dlib.nyu.edu/files/books/nyu_aco001225/nyu_aco001225_hi.pdf'
+          LOW_RES_URL='https://upload.wikimedia.org/wikisource/ar/5/58/%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf'
+          if curl --fail --location --retry 2 --retry-delay 2 --max-time 240 "$HIGH_RES_URL" --output /tmp/sabaik-al-dhahab.pdf \
+            && pdfinfo /tmp/sabaik-al-dhahab.pdf >/dev/null \
+            && [ "$(stat -c%s /tmp/sabaik-al-dhahab.pdf)" -gt 20000000 ]; then
+            echo 'Selected NYU high-resolution scan (82 MB catalog edition).'
+            echo 'Selected scan: NYU high-resolution public-domain PDF' > /tmp/source-selected.txt
+          else
+            echo '::warning::NYU high-resolution download failed or was incomplete; using Wikimedia public-domain scan.'
+            rm -f /tmp/sabaik-al-dhahab.pdf
+            curl --fail --location --retry 3 --retry-delay 2 "$LOW_RES_URL" --output /tmp/sabaik-al-dhahab.pdf
+            echo 'Selected scan: Wikimedia 120-page public-domain PDF (fallback)' > /tmp/source-selected.txt
+          fi
           pdfinfo /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-info.txt
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
       - name: Prefer the high-accuracy Arabic OCR model when available
@@ -67,11 +77,12 @@ jobs:
             --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' \
             --author 'محمد أمين البغدادي السويدي' \
             --out data/sources/sabaik-al-dhahab | tee /tmp/extraction-summary.txt
-          cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt /tmp/extraction-summary.txt \
+          cat /tmp/source-selected.txt /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt /tmp/extraction-summary.txt \
             > data/sources/sabaik-al-dhahab/source-report.txt
           {
             echo "## First-source extraction"
             echo
+            cat /tmp/source-selected.txt
             grep -E '^(PDF pages processed|Extraction mode|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
             echo
             echo '### Review gate'
