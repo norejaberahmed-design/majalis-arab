@@ -25,12 +25,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils tesseract-ocr tesseract-ocr-ara
-          TESSDATA_DIR="$(tesseract --print-tessdata-dir)"
-          # Prefer the higher-accuracy model, but keep the distro model if the
-          # upstream model host is temporarily unavailable.
-          curl --fail --location --retry 3 --retry-delay 2 \
-            https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata \
-            --output "$TESSDATA_DIR/ara.traineddata" || echo "::warning::Could not fetch tessdata_best; using packaged Arabic model."
+          # Use Ubuntu's packaged Arabic model. Downloading an optional
+          # upstream model here made setup brittle and is not required to run OCR.
+          tesseract --list-langs | grep -qx ara
       - name: Download the public-domain scan
         run: |
           curl --fail --location --retry 3 --retry-delay 2 \
