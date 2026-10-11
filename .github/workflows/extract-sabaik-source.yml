@@ -6,7 +6,8 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/extract-sabaik-source.yml"
-      - "scripts/extract_genealogy_source.py"
+      - "scripts/extract_arabic_genealogy_candidates.py"
+      - "scripts/test_arabic_genealogy_candidates.py"
 
 permissions:
   contents: read
@@ -25,9 +26,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils tesseract-ocr tesseract-ocr-ara
-          # Use Ubuntu's packaged Arabic model. Downloading an optional
-          # upstream model here made setup brittle and is not required to run OCR.
           tesseract --list-langs | grep -qx ara
+      - name: Test candidate extraction rules
+        run: python -m unittest discover -s scripts -p 'test_arabic_genealogy_candidates.py' -v
       - name: Download the public-domain scan
         run: |
           curl --fail --location --retry 3 --retry-delay 2 \
@@ -37,18 +38,21 @@ jobs:
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
       - name: Extract page-linked candidates and passages
         run: |
-          python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf --title 'سبائك الذهب في معرفة قبائل العرب' --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' --author 'محمد أمين البغدادي السويدي' --out data/sources/sabaik-al-dhahab
-          cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt > data/sources/sabaik-al-dhahab/source-report.txt
+          python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf \
+            --title 'سبائك الذهب في معرفة قبائل العرب' \
+            --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' \
+            --author 'محمد أمين البغدادي السويدي' \
+            --out data/sources/sabaik-al-dhahab | tee /tmp/extraction-summary.txt
+          cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt /tmp/extraction-summary.txt \
+            > data/sources/sabaik-al-dhahab/source-report.txt
           {
             echo "## First-source extraction"
             echo
-            echo 'All rows are candidates/passages, not verified genealogy.'
-            echo
-            echo '### Counts'
-            echo 'Pages processed and candidate counts are recorded in the job log.'
+            grep -E '^(PDF pages processed|Extraction mode|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages):' /tmp/extraction-summary.txt
             echo
             echo '### Review gate'
-            echo 'Every row is UNREVIEWED. Do not import names or lineage claims without checking the cited page image.'
+            echo 'All rows are UNREVIEWED. Quality labels estimate text legibility only; they do not verify a tribe name or lineage.'
+            echo 'Verify each candidate against the cited page image and printed page number before accepting or linking it.'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload extraction report for human review
         uses: actions/upload-artifact@v5
