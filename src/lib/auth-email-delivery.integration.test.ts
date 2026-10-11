@@ -33,6 +33,7 @@ describe("authentication email delivery failures", () => {
     process.env.SMTP_USER = "ci-user";
     process.env.SMTP_PASS = "ci-password-not-used";
     process.env.MAIL_FROM = "Majalis CI <ci@example.invalid>";
+    // Deterministic failure: the test must never contact a real SMTP service.
     mailerMocks.sendMail.mockRejectedValue(new Error("SMTP unavailable"));
     auth = (await import("./auth")).auth;
   });
