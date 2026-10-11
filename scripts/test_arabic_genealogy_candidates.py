@@ -22,8 +22,8 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
     def test_short_ambiguous_candidate_is_low_quality(self):
         self.assertEqual(candidate_quality("التق", "HIGH"), "LOW")
 
-    def test_clean_multiword_candidate_on_readable_page_is_high_extraction_quality(self):
-        self.assertEqual(candidate_quality("عبد القيس", "HIGH"), "HIGH")
+    def test_readable_multiword_candidate_is_still_unverified_medium_quality(self):
+        self.assertEqual(candidate_quality("عبد القيس", "HIGH"), "MEDIUM")
 
     def test_quality_report_marks_fragmented_text_low(self):
         report = text_quality("ا م و ١ ٢ ٣ ك ل ب ا د ٧ ن")
