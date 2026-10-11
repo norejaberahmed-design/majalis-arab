@@ -41,7 +41,7 @@ def read_pdf(pdf: Path) -> list[str]:
     with tempfile.TemporaryDirectory(prefix="sabaik-ocr-") as temp:
         prefix = str(Path(temp) / "page")
         run(["pdftoppm", "-r", "250", "-jpeg", "-jpegopt", "quality=90", str(pdf), prefix])
-        images = sorted(Path(temp).glob("page-*.jpg"), key=lambda p: int(re.search(r"-(\\d+)\\.jpg$", p.name).group(1)))
+        images = sorted(Path(temp).glob("page-*.jpg"), key=lambda p: int(re.search(r"-(\d+)\.jpg$", p.name).group(1)))
         if len(images) != page_count:
             raise RuntimeError(f"Rendered {len(images)} pages, expected {page_count}.")
         for image in images:
