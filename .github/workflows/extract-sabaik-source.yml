@@ -42,7 +42,7 @@ jobs:
           test -n "$TESSDATA_DIR" && test -f "$TESSDATA_DIR/ara.traineddata"
           cp "$TESSDATA_DIR/ara.traineddata" "$RUNNER_TEMP/ara-ubuntu.traineddata"
           if curl --fail --location --retry 3 --retry-delay 2 \
-            'https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata' \
+            'https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/e12c65a915945e4c28e237a9b52bc4a8f39a0cec/ara.traineddata' \
             --output "$RUNNER_TEMP/ara-best.traineddata"; then
             MODEL_SIZE="$(wc -c < "$RUNNER_TEMP/ara-best.traineddata")"
             if [ "$MODEL_SIZE" -ge 5000000 ]; then
