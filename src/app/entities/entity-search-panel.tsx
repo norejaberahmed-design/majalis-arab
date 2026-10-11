@@ -41,7 +41,7 @@ export default function EntitySearchPanel({
     setError("");
   }, [initialEntities, initialQuery]);
 
-  // Suggestions come only from saved tribe records; no generated names.
+  // Suggestions come from saved profiles and the source-attributed candidate index; no generated names.
   useEffect(() => {
     const value = query.trim();
     if (value.length < 2) {
