@@ -52,7 +52,19 @@
     "source_type": "bibliographic_catalogue",
     "geographic_scope": "أنساب العرب",
     "status": "REGISTERED_NEEDS_EDITION_URL",
-    "notes": "مصدر تراثي؛ يلزم اختيار نسخة رقمية محددة وتوثيق طبعتها قبل الاستخراج."
+    "notes": "هذا سجل فهرسي عام فقط. النسخة ذات النص الرقمي ورابط الأقسام تسجل بصورة مستقلة في jamharat-ansab-al-arab-text-1403."
+  },
+  {
+    "id": "jamharat-ansab-al-arab-text-1403",
+    "title": "جمهرة أنساب العرب — النص الرقمي",
+    "author": "علي بن أحمد ابن حزم الأندلسي",
+    "source_url": "https://ketabonline.com/ar/books/6886",
+    "catalogue_url": "https://www.familysearch.org/en/library/MENA/multi-country-books",
+    "source_type": "digital_text",
+    "edition": "Dar al-Kutub al-Ilmiyya, Beirut, 1403 AH / 1983 CE; digital catalogue says page numbering matches the printed edition",
+    "geographic_scope": "أنساب العرب",
+    "status": "REGISTERED_NOT_EXTRACTED",
+    "notes": "نسخة نصية رقمية منسوبة إلى المكتبة الشاملة، تعرض فهرس أقسام وروابط إلى صفحات القارئ الرقمي. لم يتم استخراج المرشحات بعد. عند الاستخراج احتفظ برابط كل قسم ورقم الصفحة الرقمي، ولا تفترض رقم الصفحة المطبوعة من معامل الرابط وحده. جميع العناوين تبقى غير مراجعة ولا تثبت وحدها نسبًا أو انتماء قبليًا."
   },
   {
     "id": "nihayat-al-arab",
