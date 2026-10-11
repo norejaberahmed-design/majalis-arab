@@ -25,7 +25,7 @@ Audit baseline: `main` as inspected on 2026-10-11. This is a static route invent
 | `/api/entities` | GET, POST | Authenticated member for shared-catalogue search; POST deliberately returns 503 until catalogue governance is enabled | `entities/route.test.ts` |
 | `/api/entities/[id]/note` | GET, PUT, DELETE | Private note scoped by workspace and entity; writes require trusted Origin and EDITOR-or-higher | `entities/[id]/note/route.test.ts`; tenant-isolation integration |
 | `/api/addition-requests` | GET, POST | Authenticated member; VIEWER sees own requests, REVIEWER sees requests in active workspace; actor is derived from session | `addition-requests/route.test.ts`; tenant-isolation integration |
-| `/api/addition-requests/[id]` | PATCH | REVIEWER-or-higher, trusted Origin; target lookup and update constrained by request ID and workspace ID | Tenant-isolation integration tests guessed foreign IDs |
+| `/api/addition-requests/[id]` | PATCH | REVIEWER-or-higher, trusted Origin; target lookup and compare-and-set update constrained by request ID and workspace ID | `addition-requests/[id]/route.test.ts`; tenant-isolation integration |
 | `/api/council/posts` | GET, POST | Authenticated workspace member; posts are workspace-scoped; POST validates Origin | Tenant-isolation integration |
 | `/api/council/posts/[id]/comments` | POST | Parent post must belong to active workspace before comment creation; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
 | `/api/council/posts/[id]/reaction` | PUT | Target post belongs to active workspace; reaction is keyed to current user; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
@@ -47,7 +47,7 @@ Audit baseline: `main` as inspected on 2026-10-11. This is a static route invent
 - SQLite tenant-isolation tests verify that foreign addition requests, private notes, council posts/comments/reactions, and curation drafts cannot be read or mutated through guessed IDs.
 - Authentication lifecycle tests cover sign-up, sign-in/out, password reset, session revocation after reset, workspace creation/switching, and foreign-workspace rejection.
 - Additional authentication regression tests cover persistent sign-in rate limits, SMTP failure, expired verification/reset tokens, resend, and duplicate-account enumeration.
-- Direct route tests exist for addition requests, curation claims/entities/passages/places/relationships/sources, entity search/notes, source intake/import, tribe contributions, workspace members, and workspace-to-tribe linking.
+- Direct route tests exist for addition request submission and review, curation claims/entities/passages/places/relationships/sources, entity search/notes, source intake/import, tribe contributions, workspace creation/listing/members, and workspace-to-tribe linking.
 - CI runs Prisma schema/migration checks, tests, lint, production build, dependency audit, and CodeQL.
 
 ## Remaining release blockers
