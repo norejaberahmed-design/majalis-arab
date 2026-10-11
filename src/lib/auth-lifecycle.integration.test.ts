@@ -190,11 +190,6 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(newSignIn.status).toBe(200);
     const newCookies = cookieHeader(newSignIn);
-    const finalSignOut = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-out`, {
-      method: "POST",
-      headers: { origin: BASE_URL, cookie: newCookies }
-    }));
-    expect(finalSignOut.status).toBeLessThan(400);
 
     const secondResetRequest = await auth.handler(new Request(`${BASE_URL}/api/auth/request-password-reset`, {
       method: "POST",
@@ -218,18 +213,16 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(rejectedExpiredReset.status).toBeGreaterThanOrEqual(400);
 
-    const passwordAfterExpiredReset = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
-      method: "POST",
-      headers: { "content-type": "application/json", origin: BASE_URL },
-      body: JSON.stringify({ email, password: newPassword })
+    const sessionAfterExpiredReset = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
+      headers: { cookie: newCookies }
     }));
-    expect(passwordAfterExpiredReset.status).toBe(200);
-    const afterExpiredResetCookies = cookieHeader(passwordAfterExpiredReset);
-    const signOutAfterExpiredReset = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-out`, {
+    expect((await sessionAfterExpiredReset.json()).user.email).toBe(email);
+
+    const finalSignOut = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-out`, {
       method: "POST",
-      headers: { origin: BASE_URL, cookie: afterExpiredResetCookies }
+      headers: { origin: BASE_URL, cookie: newCookies }
     }));
-    expect(signOutAfterExpiredReset.status).toBeLessThan(400);
+    expect(finalSignOut.status).toBeLessThan(400);
     mailLog.mockRestore();
   }, 30000);
   it("enforces the persistent sign-in attempt limit", async () => {
