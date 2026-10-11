@@ -44,8 +44,46 @@ export async function POST(request: NextRequest) {
         select: { id: true, name: true, kind: true }
       });
 
-      // All user contributions remain workspace-private until a curator verifies them.
-      // Do not write unreviewed user content into the shared research catalogue.
+      // Existing tribe profiles accept shared contributions, but every entry
+      // stays visibly UNREVIEWED until a separate review process verifies it.
+      if (entity) {
+        const duplicateEntry = await tx.tribeKnowledgeEntry.findFirst({
+          where: { entityId: entity.id, content: parsed.data.content, sourceUrl },
+          select: { id: true }
+        });
+        if (duplicateEntry) {
+          return { kind: "knowledge" as const, id: duplicateEntry.id, created: false, existingEntity: entity };
+        }
+
+        const entry = await tx.tribeKnowledgeEntry.create({
+          data: {
+            entityId: entity.id,
+            content: parsed.data.content,
+            sourceUrl,
+            status: "UNREVIEWED",
+            createdByUserId: context.user.id
+          },
+          select: { id: true, status: true }
+        });
+        await tx.auditLog.create({
+          data: {
+            workspaceId: context.workspaceId,
+            actorUserId: context.user.id,
+            actor: context.user.email,
+            action: "TRIBE_KNOWLEDGE_ENTRY_SUBMITTED",
+            targetType: "TribeKnowledgeEntry",
+            targetId: entry.id,
+            details: JSON.stringify({
+              entityId: entity.id,
+              status: "UNREVIEWED",
+              sourceUrl: sourceUrl ? "provided" : "not_provided"
+            })
+          }
+        });
+        return { kind: "knowledge" as const, id: entry.id, created: true, existingEntity: entity };
+      }
+
+      // A new name is not published as a shared entity until reviewed.
       const duplicateRequest = await tx.additionRequest.findFirst({
         where: {
           workspaceId: context.workspaceId,
@@ -56,14 +94,14 @@ export async function POST(request: NextRequest) {
         select: { id: true }
       });
       if (duplicateRequest) {
-        return { requestId: duplicateRequest.id, created: false, existingEntity: entity };
+        return { kind: "request" as const, id: duplicateRequest.id, created: false, existingEntity: null };
       }
 
       const additionRequest = await tx.additionRequest.create({
         data: {
           workspaceId: context.workspaceId,
           userId: context.user.id,
-          entityId: entity?.id ?? null,
+          entityId: null,
           proposedName: name,
           proposedKind: "TRIBE",
           explanation: parsed.data.content,
@@ -83,25 +121,32 @@ export async function POST(request: NextRequest) {
           targetId: additionRequest.id,
           details: JSON.stringify({
             proposedName: name,
-            existingEntityId: entity?.id ?? null,
+            existingEntityId: null,
             status: "SUBMITTED",
             sourceUrl: sourceUrl ? "provided" : "not_provided"
           })
         }
       });
-      return { requestId: additionRequest.id, created: true, existingEntity: entity };
+      return { kind: "request" as const, id: additionRequest.id, created: true, existingEntity: null };
     });
 
+    const isSharedKnowledge = result.kind === "knowledge";
     return NextResponse.json({
       data: {
-        requestId: result.requestId,
+        requestId: isSharedKnowledge ? null : result.id,
+        knowledgeEntryId: isSharedKnowledge ? result.id : null,
         submittedForReview: true,
+        shared: isSharedKnowledge,
         created: result.created,
         existingEntity: result.existingEntity
       },
-      message: result.created
-        ? "أُرسلت المساهمة إلى قائمة المراجعة الخاصة بمجلسك. لن تظهر في الكتالوج المشترك حتى تُراجع وتُعتمد."
-        : "هذه المساهمة موجودة بالفعل في قائمة المراجعة؛ لم ننشئ نسخة مكررة."
+      message: isSharedKnowledge
+        ? result.created
+          ? "أُضيفت المعلومة إلى ملف القبيلة المشترك بحالة «غير مراجع». ستظهر لأعضاء المجالس المرتبطة بهذا السجل؛ لا تُعد حقيقة حتى تُراجع."
+          : "هذه المعلومة موجودة بالفعل في ملف القبيلة المشترك؛ لم ننشئ نسخة مكررة."
+        : result.created
+          ? "اسم القبيلة غير موجود في الدليل؛ أُرسل طلب إضافته إلى قائمة المراجعة الخاصة بمجلسك."
+          : "هذا الطلب موجود بالفعل في قائمة المراجعة؛ لم ننشئ نسخة مكررة."
     }, { status: result.created ? 201 : 200, headers: NO_STORE });
   } catch (error) {
     console.error("Tribe contribution submission failed", error);

@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   entityFindUnique: vi.fn(),
   additionRequestFindFirst: vi.fn(),
   additionRequestCreate: vi.fn(),
+  knowledgeEntryFindFirst: vi.fn(),
+  knowledgeEntryCreate: vi.fn(),
   auditCreate: vi.fn(),
   transaction: vi.fn()
 }));
@@ -37,10 +39,13 @@ describe("tribe contribution intake", () => {
     mocks.entityFindUnique.mockResolvedValue(null);
     mocks.additionRequestFindFirst.mockResolvedValue(null);
     mocks.additionRequestCreate.mockResolvedValue({ id: "request-a" });
+    mocks.knowledgeEntryFindFirst.mockResolvedValue(null);
+    mocks.knowledgeEntryCreate.mockResolvedValue({ id: "knowledge-a", status: "UNREVIEWED" });
     mocks.auditCreate.mockResolvedValue({});
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
       tribalEntity: { findUnique: mocks.entityFindUnique },
       additionRequest: { findFirst: mocks.additionRequestFindFirst, create: mocks.additionRequestCreate },
+      tribeKnowledgeEntry: { findFirst: mocks.knowledgeEntryFindFirst, create: mocks.knowledgeEntryCreate },
       auditLog: { create: mocks.auditCreate }
     }));
   });
@@ -76,15 +81,43 @@ describe("tribe contribution intake", () => {
     }));
   });
 
-  it("keeps contributions to existing tribes in the private review queue", async () => {
+  it("shares contributions to an existing tribe as explicitly unreviewed entries", async () => {
     mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
-    const response = await POST(request({ ...input, content: "معلومة إضافية مختلفة عن القبيلة وتحتاج إلى مراجعة المصدر." }));
+    const content = "معلومة إضافية مختلفة عن القبيلة وتحتاج إلى مراجعة المصدر.";
+    const response = await POST(request({ ...input, content }));
     const body = await response.json();
     expect(response.status).toBe(201);
-    expect(body.data).toMatchObject({ submittedForReview: true, existingEntity: { id: "tribe-existing" } });
-    expect(mocks.additionRequestCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ workspaceId: "workspace-a", entityId: "tribe-existing", status: "SUBMITTED" })
+    expect(body.data).toMatchObject({
+      knowledgeEntryId: "knowledge-a",
+      requestId: null,
+      shared: true,
+      submittedForReview: true,
+      existingEntity: { id: "tribe-existing" }
+    });
+    expect(mocks.knowledgeEntryCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: {
+        entityId: "tribe-existing",
+        content,
+        sourceUrl: input.sourceUrl,
+        status: "UNREVIEWED",
+        createdByUserId: "user-a"
+      }
     }));
+    expect(mocks.additionRequestCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "TRIBE_KNOWLEDGE_ENTRY_SUBMITTED", targetType: "TribeKnowledgeEntry" })
+    }));
+  });
+
+  it("does not duplicate an existing shared knowledge entry", async () => {
+    mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
+    mocks.knowledgeEntryFindFirst.mockResolvedValue({ id: "knowledge-existing" });
+    const response = await POST(request(input));
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.data).toMatchObject({ knowledgeEntryId: "knowledge-existing", shared: true, created: false });
+    expect(mocks.knowledgeEntryCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
   it("does not duplicate a pending request for the same name and content", async () => {
