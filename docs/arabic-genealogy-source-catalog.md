@@ -43,3 +43,15 @@ The tool writes:
 ## Current status
 
 This change registers source metadata and adds a reusable PDF candidate extractor. It does **not** claim that these books have already been processed or that a verified count of tribe names exists.
+
+## Candidate corpus included in the repository
+
+The `data/seeds/` directory now contains eight source-attributed batches totaling **170 candidate records** from digitized entries associated with *معجم قبائل العرب القديمة والحديثة*. They are review material, not a list of 170 verified independent tribes. Some records may refer to a clan, sub-tribe, person, or unresolved name; several records have a source URL and summary but still need their exact passage checked.
+
+Run the metadata audit with:
+
+```bash
+npm run data:audit-genealogy-candidates
+```
+
+The audit checks that every record has a name, source URL, and review status, and that no record is marked verified. It does not insert records into the live database. Before any candidate becomes a shared tribe profile, a reviewer must confirm the cited source passage, determine the entity type, resolve spelling variants, and preserve the evidence locator.
