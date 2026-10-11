@@ -102,7 +102,7 @@ export default function EntitySearchPanel({
       <section className="page-intro">
         <p className="eyebrow">قاعدة المعرفة القبلية</p>
         <h1>البحث في القبائل والكيانات</h1>
-        <p className="intro">اكتب اسم القبيلة لتظهر الأسماء المسجلة في قاعدة المعرفة. اختر الاسم الصحيح ثم ابحث لفتح سجله ومصادره؛ الاقتراحات تعرض سجلات موجودة فقط.</p>
+        <p className="intro">اكتب اسم القبيلة لعرض السجلات المحفوظة والمرشحات المنقولة من مصادر. افتح المصدر للتحقق من المرشح؛ لا يظهر ملف قبلي معتمد إلا إذا كان سجلًا محفوظًا ومراجعًا.</p>
         <form onSubmit={submit} className="search-form">
           <label htmlFor="entity-query">اسم القبيلة أو الفرع أو المكان</label>
           <div className="search-row">
