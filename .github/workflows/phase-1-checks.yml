@@ -59,6 +59,8 @@ jobs:
         run: npm run data:audit-genealogy-candidates
       - name: Compile Arabic PDF extraction script
         run: python -m py_compile scripts/extract_arabic_genealogy_candidates.py
+      - name: Test Arabic genealogy candidate extraction rules
+        run: python -m unittest discover -s scripts -p 'test_arabic_genealogy_candidates.py' -v
       - run: npm run lint
       - name: Build
         run: npm run build
