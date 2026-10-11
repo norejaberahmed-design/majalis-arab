@@ -21,6 +21,13 @@ SPACE = re.compile(r"\s+")
 DIACRITICS = re.compile(r"[\u064b-\u065f\u0670ـ]")
 MARKER = re.compile(r"(?:قبيلة|قبائل|بطن|بطون|فخذ|أفخاذ|عشيرة|عشائر)")
 HEADING = re.compile(r"^([\u0621-\u064a][\u0621-\u064a\sـًٌٍَُِّْٰ()«»\-]{1,70}?)\s*[:：]")
+COMMON_ARABIC_WORDS = set("""
+من في على إلى الى عن أن إن هو هي الذي التي الذين كان كانت يكون تكون ثم حيث كما إذا اذا
+وذلك وله لها له عند بين بعد قبل حتى أما اما فقد وقد وهم فهي فهو يقال تسمى المعروفة المعروف
+المشهورة المشهور قبيلة قبائل بطن بطون فخذ أفخاذ عشيرة عشائر قال وقالت ذكر وذكر العرب العربي
+نسب نسبه قوم قومه بن بني بنو آل ابن أبي أبو هذا هذه ذلك تلك كل بعض أكثر أكثرهم منهم لهم بها
+به فيه إليها ومنها وهي وهو ومن قد لا ما لم لن أو لكن غير غيره مثل حيث إذا فإن فأن وكانوا
+""".split())
 STOP_WORDS = {
     "من", "في", "على", "الى", "إلى", "عن", "أن", "إن", "هو", "هي", "وهو", "وهي",
     "الذي", "التي", "الذين", "اللاتي", "كان", "كانت", "يكون", "تكون", "ثم", "حيث",
@@ -50,16 +57,21 @@ def text_quality(text: str) -> dict:
     short_ratio = sum(len(word) <= 2 for word in words) / max(1, len(words))
     digit_ratio = digit_count / max(1, len(non_space))
     arabic_ratio = arabic_chars / max(1, len(non_space))
+    common_word_ratio = sum(word in COMMON_ARABIC_WORDS for word in words) / max(1, len(words))
     coverage_ratio = min(1.0, len(words) / 80)
-    score = max(0.0, min(1.0, 0.55 * (1 - short_ratio) + 0.25 * arabic_ratio + 0.20 * (1 - digit_ratio)))
-    # Avoid choosing a sparse OCR result merely because its few words look well-formed.
+    score = max(0.0, min(1.0,
+        0.45 * (1 - short_ratio) + 0.20 * arabic_ratio
+        + 0.15 * (1 - digit_ratio) + 0.20 * common_word_ratio
+    ))
+    # Avoid choosing sparse or lexically implausible OCR merely because its tokens are long.
     score *= 0.65 + 0.35 * coverage_ratio
-    label = "LOW" if len(words) < 20 or short_ratio >= 0.45 or digit_ratio >= 0.12 else (
-        "MEDIUM" if short_ratio >= 0.32 or arabic_ratio < 0.65 else "HIGH"
+    label = "LOW" if len(words) < 20 or short_ratio >= 0.45 or digit_ratio >= 0.12 or common_word_ratio < 0.04 else (
+        "MEDIUM" if short_ratio >= 0.32 or arabic_ratio < 0.65 or common_word_ratio < 0.08 else "HIGH"
     )
     return {
         "arabicWordCount": len(words),
         "coverageRatio": round(coverage_ratio, 3),
+        "commonWordRatio": round(common_word_ratio, 3),
         "shortWordRatio": round(short_ratio, 3),
         "digitRatio": round(digit_ratio, 3),
         "arabicCharacterRatio": round(arabic_ratio, 3),
@@ -158,9 +170,10 @@ def candidate_quality(name: str, page_quality: str) -> str:
         return "LOW"
     if any(len(token) <= 2 for token in tokens):
         return "LOW"
-    if len(tokens) == 1 or page_quality == "LOW":
-        return "MEDIUM"
-    return "HIGH" if page_quality == "HIGH" else "MEDIUM"
+    if page_quality == "LOW":
+        return "LOW"
+    # Readability cannot establish that OCR produced a correct tribal name.
+    return "MEDIUM"
 
 
 def main() -> int:
@@ -231,7 +244,7 @@ def main() -> int:
     ])
     write_tsv(passage_file, passages, ["pageLabel", "passageText", "locator", "reviewStatus"])
     write_tsv(quality_file, page_quality_rows, [
-        "pageLabel", "arabicWordCount", "coverageRatio", "shortWordRatio", "digitRatio",
+        "pageLabel", "arabicWordCount", "coverageRatio", "commonWordRatio", "shortWordRatio", "digitRatio",
         "arabicCharacterRatio", "qualityScore", "qualityLabel", "extractionMode"
     ])
     quality_counts = {label: sum(row["qualityLabel"] == label for row in page_quality_rows)
