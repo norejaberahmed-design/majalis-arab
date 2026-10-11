@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { searchTribeNameCandidates } from "@/lib/tribe-name-candidates";
 
 type Entity = {
   id: string;
@@ -47,6 +48,13 @@ export default function EntitySearchPanel({
       setSuggestions([]);
       return;
     }
+    const candidateSuggestions: Entity[] = searchTribeNameCandidates(value, 8).map(candidate => ({
+      id: `candidate-${candidate.id}`,
+      name: candidate.name,
+      kind: candidate.entityKind,
+      summary: candidate.evidence || null
+    }));
+    setSuggestions(candidateSuggestions);
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
@@ -59,11 +67,14 @@ export default function EntitySearchPanel({
         if (!response.ok) return;
         const payload = await response.json();
         if (Array.isArray(payload.data)) {
-          setSuggestions(payload.data.filter((item: Entity) => item.kind === "TRIBE"));
+          setSuggestions([
+            ...payload.data.filter((item: Entity) => item.kind === "TRIBE"),
+            ...candidateSuggestions
+          ]);
         }
       } catch (cause) {
         if (cause instanceof Error && cause.name !== "AbortError") {
-          setSuggestions([]);
+          setSuggestions(candidateSuggestions);
         }
       }
     }, 250);
