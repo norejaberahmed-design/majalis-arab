@@ -64,6 +64,17 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ name: "Lifecycle Test", email, password: oldPassword })
     }));
     expect(signUp.status).toBeLessThan(400);
+
+    const resendVerification = await auth.handler(new Request(`${BASE_URL}/api/auth/send-verification-email`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: BASE_URL },
+      body: JSON.stringify({ email, callbackURL: "/" })
+    }));
+    expect(resendVerification.status).toBe(200);
+    const verificationUrl = await loggedLink(mailLog, "Verification link");
+    expect(new URL(verificationUrl).pathname).toBe("/verify-email");
+    expect(new URL(verificationUrl).searchParams.get("token")).toBeTruthy();
+
     const expiredEmailToken = await new SignJWT({ email: email.toLowerCase() })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt(Math.floor(Date.now() / 1000) - 7200)
