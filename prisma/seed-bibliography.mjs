@@ -65,8 +65,20 @@ const bibliography = [
     author: "محمد أمين البغدادي السويدي؛ أحمد بن علي القلقشندي (بحسب فهرس NYU)",
     publisher: "المكتبة العلمية، قم (بحسب فهرس NYU)",
     publicationYear: null,
+    edition: "NYU catalogue edition, c. 1980; 128-page high-resolution PDF scan",
     url: "https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar",
+    extractionStatus: "OCR_REQUIRED",
     bibliographicNote: "سجل ببليوغرافي أولي اعتمادًا على فهرس Arabic Collections Online بجامعة نيويورك؛ بيانات سنة النشر غير محسومة في الفهرس. تجربة OCR للنسخة المصورة عالية الدقة (128 صفحة PDF) أعطت 138 مرشح اسم، منها 105 منخفضة الجودة و33 متوسطة، وصُنفت 99 صفحة من 128 منخفضة الوضوح آليًا. لم تُعتمد أي أسماء أو أنساب من هذه التجربة؛ يلزم فحص الصور صفحةً صفحة قبل إدخال أي مرشح في الدليل. فهرس NYU يذكر أن المواد المعروضة ضمن الملكية العامة بحسب تقديره، ويجب مراجعة شروط المصدر قبل إعادة نشر النص."
+  },
+  {
+    title: "سبائك الذهب في معرفة قبائل العرب — طبعة بومباي",
+    author: "محمد أمين البغدادي السويدي",
+    publisher: "نسخة مصورة على ويكي مصدر",
+    publicationYear: null,
+    edition: "Bombay edition, 1296 AH; 120-page Wikisource PDF scan",
+    url: "https://ar.wikisource.org/wiki/%D9%85%D9%84%D9%81:%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf",
+    extractionStatus: "OCR_REQUIRED",
+    bibliographicNote: "تجربة OCR لنسخة ويكي مصدر (120 صفحة) أعطت 132 مرشحًا غير مراجع: 0 عالي الجودة و33 متوسطًا و99 منخفضًا، وصُنفت 93 صفحة منخفضة المقروئية. لا تُستورد أسماء من الناتج ولا تُعتمد أنساب قبل مراجعة صورة الصفحة. رابط المصدر يشير إلى ملف الطبعة المستخدمة فعليًا."
   }
 
 ];
@@ -78,10 +90,22 @@ async function main() {
   for (const item of bibliography) {
     const match = await prisma.source.findFirst({
       where: { title: item.title, url: item.url },
-      select: { id: true }
+      select: { id: true, humanReviewed: true, extractionStatus: true }
     });
 
     if (match) {
+      // Keep human-reviewed records untouched; refresh only known extraction status and bibliographic metadata.
+      if (!match.humanReviewed && item.extractionStatus) {
+        await prisma.source.update({
+          where: { id: match.id },
+          data: {
+            extractionStatus: item.extractionStatus,
+            ...(item.bibliographicNote ? { bibliographicNote: item.bibliographicNote } : {}),
+            ...(item.edition ? { edition: item.edition } : {}),
+            ...(item.publisher ? { publisher: item.publisher } : {})
+          }
+        });
+      }
       existing += 1;
       continue;
     }
@@ -90,7 +114,7 @@ async function main() {
       data: {
         ...item,
         accessStatus: "NOT_CHECKED",
-        extractionStatus: "NOT_ATTEMPTED",
+        extractionStatus: item.extractionStatus ?? "NOT_ATTEMPTED",
         humanReviewed: false
       }
     });
