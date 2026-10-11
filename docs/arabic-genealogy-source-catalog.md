@@ -23,6 +23,7 @@ python scripts/extract_arabic_genealogy_candidates.py /path/to/book.pdf \
   --title "عنوان الكتاب كما في النسخة" \
   --author "اسم المؤلف" \
   --url "https://canonical-source.example/book" \
+  --edition "Edition and scan identity" \\
   --out data/sources/<source-id>
 ```
 
