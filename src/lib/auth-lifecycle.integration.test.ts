@@ -72,7 +72,7 @@ describe("authentication lifecycle against SQLite", () => {
     }));
     expect(resendVerification.status).toBe(200);
     const verificationUrl = await loggedLink(mailLog, "Verification link");
-    expect(new URL(verificationUrl).pathname).toBe("/verify-email");
+    expect(new URL(verificationUrl).pathname).toBe("/api/auth/verify-email");
     expect(new URL(verificationUrl).searchParams.get("token")).toBeTruthy();
 
     const expiredEmailToken = await new SignJWT({ email: email.toLowerCase() })
