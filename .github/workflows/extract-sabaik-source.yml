@@ -25,9 +25,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils tesseract-ocr tesseract-ocr-ara
+          TESSDATA_DIR="$(tesseract --print-tessdata-dir)"
+          curl --fail --location --retry 3 --retry-delay 2 https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata --output "$TESSDATA_DIR/ara.traineddata"
       - name: Download the public-domain scan
         run: |
-          curl --fail --location --retry 3 --retry-delay 2 \
+          curl --fail --location --retry 3 --retry-delay 2 https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata --output "$TESSDATA_DIR/ara.traineddata"
             'https://upload.wikimedia.org/wikisource/ar/5/58/%D8%B3%D8%A8%D8%A7%D8%A6%D9%83_%D8%A7%D9%84%D8%B0%D9%87%D8%A8_%D9%81%D9%8A_%D9%85%D8%B9%D8%B1%D9%81%D8%A9_%D9%82%D8%A8%D8%A7%D8%A6%D9%84_%D8%A7%D9%84%D8%B9%D8%B1%D8%A8.pdf' \
             --output /tmp/sabaik-al-dhahab.pdf
           pdfinfo /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-info.txt
