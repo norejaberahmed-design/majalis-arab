@@ -20,7 +20,7 @@ describe("Arabic history source discovery", () => {
       ns: 0,
       snippet: "ذكر <b>القبائل</b> العربية"
     }, "صفة جزيرة العرب");
-    expect(result.url).toBe("https://ar.wikisource.org/wiki/صفة_جزيرة_العرب/الجزء_الأول");
+    expect(decodeURIComponent(result.url)).toBe("https://ar.wikisource.org/wiki/صفة_جزيرة_العرب/الجزء_الأول");
     expect(result.snippet).toBe("ذكر القبائل العربية");
     expect(result.status).toBe("CANDIDATE_REQUIRES_BIBLIOGRAPHIC_REVIEW");
     expect(result.warning).toContain("لا تثبت");
