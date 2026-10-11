@@ -102,17 +102,12 @@ async function main() {
         url: requested.url,
         bibliographicNote: "نص صفحة ويب جُلب عبر واجهة MediaWiki API. لا يمثل بالضرورة كتابًا كاملًا أو طبعة مطبوعة محددة؛ يلزم توثيق المؤلف والطبعة والصفحات ومراجعة النص يدويًا.",
         accessStatus: "NOT_CHECKED",
-        extractionStatus: "EXTRACTED",
+        extractionStatus: "NOT_ATTEMPTED",
         humanReviewed: false
       },
       select: { id: true, humanReviewed: true }
     });
     sourceCreated = true;
-  } else {
-    await prisma.source.update({
-      where: { id: source.id },
-      data: { extractionStatus: "EXTRACTED" }
-    });
   }
 
   let passagesCreated = 0;
