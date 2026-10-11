@@ -46,16 +46,23 @@ async function main() {
   const args = process.argv.slice(2);
   const workspaceIndex = args.indexOf("--workspace-id");
   const limitIndex = args.indexOf("--limit");
+  const offsetIndex = args.indexOf("--offset");
   if (workspaceIndex < 0 || !args[workspaceIndex + 1]) {
-    process.stderr.write("Usage: node scripts/extract-tribal-name-candidates.mjs --workspace-id <existing-workspace-id> [--limit 500]\n");
+    process.stderr.write("Usage: node scripts/extract-tribal-name-candidates.mjs --workspace-id <existing-workspace-id> [--limit 500] [--offset 0]\n");
     process.exitCode = 2;
     return;
   }
 
   const workspaceId = args[workspaceIndex + 1];
   const limit = limitIndex >= 0 ? Number(args[limitIndex + 1]) : 500;
+  const offset = offsetIndex >= 0 ? Number(args[offsetIndex + 1]) : 0;
   if (!Number.isInteger(limit) || limit < 1 || limit > 10000) {
     process.stderr.write("--limit must be an integer from 1 to 10000.\n");
+    process.exitCode = 2;
+    return;
+  }
+  if (!Number.isSafeInteger(offset) || offset < 0) {
+    process.stderr.write("--offset must be a non-negative safe integer.\n");
     process.exitCode = 2;
     return;
   }
@@ -63,12 +70,24 @@ async function main() {
   const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } });
   if (!workspace) throw new Error("Workspace not found; provide an existing --workspace-id.");
 
+  const totalPassages = await prisma.evidencePassage.count();
   const passages = await prisma.evidencePassage.findMany({
-    orderBy: { createdAt: "asc" },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    skip: offset,
     take: limit,
-    select: { id: true, sourceId: true, pageLabel: true, passageText: true, source: { select: { title: true, url: true } } }
+    select: { id: true, sourceId: true, pageLabel: true, passageText: true }
   });
-  const report = { passagesScanned: passages.length, candidatesFound: 0, suggestionsCreated: 0, duplicatesSkipped: 0 };
+  const nextOffset = offset + passages.length;
+  const report = {
+    totalPassages,
+    offset,
+    passagesScanned: passages.length,
+    nextOffset,
+    hasMore: nextOffset < totalPassages,
+    candidatesFound: 0,
+    suggestionsCreated: 0,
+    duplicatesSkipped: 0
+  };
   for (const passage of passages) {
     for (const candidate of extractNameCandidates(passage.passageText)) {
       report.candidatesFound += 1;
