@@ -91,7 +91,7 @@ export const auth = betterAuth({
     "/request-password-reset": { window: 3600, max: 3 }, "/reset-password": { window: 60, max: 5 }
   }},
   emailAndPassword: {
-    enabled: true, revokeSessionsOnPasswordReset: true, minPasswordLength: 12, maxPasswordLength: 128, autoSignIn: true,
+    enabled: true, revokeSessionsOnPasswordReset: true, minPasswordLength: 12, maxPasswordLength: 128, autoSignIn: false,
     requireEmailVerification: false,
     sendResetPassword: async ({ user, token }) => {
       const resetUrl = new URL("/reset-password", baseURL); resetUrl.searchParams.set("token", token);
