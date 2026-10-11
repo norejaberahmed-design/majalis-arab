@@ -20,7 +20,7 @@ export function auditCandidateCorpus(datasets) {
       name: row.name ?? row.name_as_published ?? row.candidateName ?? "",
       sourceUrl: row.source_url ?? row.sourceUrl ?? "",
       status: row.review_status ?? row.reviewStatus ?? "",
-      entityKind: row.entity_kind ?? row.entity_kind ?? "UNRESOLVED",
+      entityKind: row.entity_kind ?? row.entityKind ?? "UNRESOLVED",
       datasetStatus: dataset.dataset_status ?? "UNKNOWN"
     });
   }
