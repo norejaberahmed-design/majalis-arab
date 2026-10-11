@@ -37,7 +37,7 @@ jobs:
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
       - name: Extract page-linked candidates and passages
         run: |
-          python scripts/extract_genealogy_source.py /tmp/sabaik-al-dhahab.pdf
+          python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf --title 'سبائك الذهب في معرفة قبائل العرب' --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' --author 'محمد أمين البغدادي السويدي' --out data/sources/sabaik-al-dhahab
           cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt > data/sources/sabaik-al-dhahab/source-report.txt
           {
             echo "## First-source extraction"
@@ -51,7 +51,7 @@ jobs:
             echo 'Every row is UNREVIEWED. Do not import names or lineage claims without checking the cited page image.'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload extraction report for human review
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sabaik-al-dhahab-extraction
           path: data/sources/sabaik-al-dhahab/
