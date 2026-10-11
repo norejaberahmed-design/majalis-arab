@@ -5,7 +5,7 @@ Status: workspace isolation, SQLite migration-upgrade, authentication lifecycle,
 ## Implemented foundations
 
 - Better Auth with Prisma-backed user, session, account, and verification records.
-- Email/password sign-up and sign-in, required email verification, password reset, secure production cookie settings, and server-side session lookup.
+- Email/password sign-up and sign-in, password reset, secure production cookie settings, and server-side session lookup. Email verification delivery is implemented but is not currently required on sign-up (`requireEmailVerification: false`, `sendOnSignUp: false`); enable it only after the end-to-end email lifecycle tests pass.
 - Workspace and WorkspaceMember models with a unique `(workspaceId, userId)` membership pair and explicit roles.
 - Server-side workspace selection checks the authenticated user's membership before setting the HTTP-only active-workspace cookie.
 - State-changing requests validate Origin against the request's canonical origin; do not trust client-supplied `X-Forwarded-Host`.
