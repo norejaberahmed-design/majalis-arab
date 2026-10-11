@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireWorkspace } from "@/lib/current-user";
+import TribeKnowledgeEntryForm from "./knowledge-entry-form";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,13 @@ export default async function MyTribePage() {
           passages: {
             orderBy: { createdAt: "desc" }, take: 30,
             select: { id: true, pageLabel: true, locator: true, passageText: true, reviewedByHuman: true, source: { select: { id: true, title: true } } }
+          },
+          knowledgeEntries: {
+            orderBy: { createdAt: "desc" }, take: 100,
+            select: {
+              id: true, content: true, sourceUrl: true, status: true, createdAt: true,
+              createdBy: { select: { name: true } }
+            }
           },
           places: {
             orderBy: { updatedAt: "desc" }, take: 50,
@@ -99,7 +107,29 @@ export default async function MyTribePage() {
             <article><span>العلاقات المسجلة</span><strong>{relationships.length}</strong><small>ليست كلها بالضرورة علاقات نسب</small></article>
             <article><span>الروايات والادعاءات</span><strong>{tribe.claims.length}</strong><small>تشمل الحالات المتعارضة وغير المراجعة</small></article>
             <article><span>مقاطع الأدلة</span><strong>{tribe.passages.length}</strong><small>حتى 30 مقطعًا في هذا الملخص</small></article>
+            <article><span>مساهمات الأعضاء</span><strong>{tribe.knowledgeEntries.length}</strong><small>معلومات مشتركة تحتاج إلى مراجعة</small></article>
             <article><span>الأماكن المرتبطة</span><strong>{tribe.places.length}</strong><small>أماكن مرتبطة بكيان هذا الملف</small></article>
+          </section>
+
+          <TribeKnowledgeEntryForm tribeName={tribe.name} />
+
+          <section className="panel list-panel">
+            <div className="list-heading"><h2>مساهمات أفراد القبيلة</h2><span className="count-pill">{tribe.knowledgeEntries.length}</span></div>
+            <p className="muted">تظهر هذه المساهمات للمجالس المرتبطة بسجل القبيلة نفسه. جميع المساهمات تبدأ بحالة غير مراجع ولا تُعد إثباتًا تاريخيًا.</p>
+            {tribe.knowledgeEntries.length === 0 ? (
+              <div className="empty-state"><strong>لا توجد مساهمات من الأعضاء بعد</strong><p>يمكنك إضافة معلومة مع رابط مصدر إن توفر؛ وستظهر للجميع بحالة مراجعة واضحة.</p></div>
+            ) : (
+              <div className="entity-list">{tribe.knowledgeEntries.map(entry => (
+                <article className="entity-row" key={entry.id}>
+                  <div>
+                    <p>{entry.content}</p>
+                    <small>أضافها: {entry.createdBy?.name || "عضو"} · {entry.createdAt.toLocaleDateString("ar-SA")}</small>
+                    {entry.sourceUrl && <p><a className="text-link" href={entry.sourceUrl} target="_blank" rel="noopener noreferrer">فتح المصدر المقدم ↗</a></p>}
+                  </div>
+                  <span className="status-label pending">غير مراجع</span>
+                </article>
+              ))}</div>
+            )}
           </section>
 
           <section className="panel list-panel">
