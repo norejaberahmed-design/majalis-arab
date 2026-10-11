@@ -38,7 +38,8 @@ jobs:
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
       - name: Prefer the high-accuracy Arabic OCR model when available
         run: |
-          TESSDATA_DIR="$(tesseract --print-tessdata-dir)"
+          TESSDATA_DIR="$(dirname "$(find /usr/share/tesseract-ocr -path '*/tessdata/ara.traineddata' -print -quit)")"
+          test -n "$TESSDATA_DIR" && test -f "$TESSDATA_DIR/ara.traineddata"
           cp "$TESSDATA_DIR/ara.traineddata" "$RUNNER_TEMP/ara-ubuntu.traineddata"
           if curl --fail --location --retry 3 --retry-delay 2 \
             'https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/main/ara.traineddata' \
