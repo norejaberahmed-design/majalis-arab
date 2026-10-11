@@ -1,139 +1,61 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 type Mode = "signin" | "signup" | "forgot";
 
 type Notice = {
-  type: "success" | "error" | "info";
+  type: "success" | "error";
   message: string;
-  action?: { label: string; onClick: () => void };
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/* ============================================================
-   مؤشر قوة كلمة المرور
-   ============================================================ */
-function getPasswordStrength(pw: string) {
-  const checks = {
-    length: pw.length >= 12,
-    lower: /[a-z]/.test(pw),
-    upper: /[A-Z]/.test(pw),
-    digit: /\d/.test(pw),
-    symbol: /[^A-Za-z0-9]/.test(pw),
-  };
-  const score = Object.values(checks).filter(Boolean).length;
-
-  const label =
-    score <= 1
-      ? "ضعيفة جدًا"
-      : score === 2
-        ? "ضعيفة"
-        : score === 3
-          ? "متوسطة"
-          : score === 4
-            ? "قوية"
-            : "قوية جدًا";
-
-  const level = score <= 1 ? 1 : score === 2 ? 2 : score === 3 ? 3 : 4;
-
-  return { score, label, level, checks };
-}
-
-function PasswordStrength({ password }: { password: string }) {
-  const { label, level, checks } = getPasswordStrength(password);
-  if (!password) return null;
-
-  return (
-    <div className="signin-v2-strength" aria-live="polite">
-      <div className="signin-v2-strength-bar">
-        <span className={`level-${level}`} />
-      </div>
-      <div className="signin-v2-strength-meta">
-        <span>{label}</span>
-        <ul>
-          <li data-ok={checks.length}>12 حرفًا</li>
-          <li data-ok={checks.upper || checks.lower}>حروف</li>
-          <li data-ok={checks.digit}>أرقام</li>
-          <li data-ok={checks.symbol}>رموز</li>
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   الصفحة الرئيسية
-   ============================================================ */
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // ✅ الإصلاح 5: حفظ الصفحة السابقة
-  const redirectTo = useMemo(() => {
-    const raw = searchParams.get("redirect") || "/";
-    // منع open redirect: يجب أن يبدأ بـ /
-    return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
-  }, [searchParams]);
-
-  // ✅ الإصلاح 1: الوضع الافتراضي = تسجيل الدخول
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // ✅ الإصلاح 2
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  /* فحص الجلسة */
   useEffect(() => {
     let active = true;
-    const controller = new AbortController();
 
-    (async () => {
+    async function checkSession() {
       try {
         const result = await authClient.getSession();
-        if (!active) return;
-        if (!result.error && result.data?.session) {
-          router.replace(redirectTo);
+
+        if (active && !result.error && result.data?.session) {
+          router.replace("/");
           router.refresh();
           return;
         }
       } catch {
-        /* تجاهل */
+        // يسمح بعرض نموذج الدخول إذا تعذر فحص الجلسة.
       } finally {
         if (active) setCheckingSession(false);
       }
-    })();
+    }
+
+    void checkSession();
 
     return () => {
       active = false;
-      controller.abort();
     };
-  }, [router, redirectTo]);
+  }, [router]);
 
-  /* تبديل الوضع — ✅ تصفير كل الحقول */
   function changeMode(next: Mode) {
     if (busy) return;
+
     setMode(next);
-    setName("");
-    setEmail("");
     setPassword("");
-    setConfirmPassword("");
     setShowPassword(false);
-    setShowConfirm(false);
     setNotice(null);
   }
 
@@ -141,75 +63,42 @@ export default function LoginPage() {
     setNotice({ type: "error", message });
   }
 
-  /* ✅ إعادة إرسال رسالة التأكيد */
-  async function resendVerification(targetEmail: string) {
-    try {
-      const result = await authClient.sendVerificationEmail?.({
-        email: targetEmail,
-        callbackURL: redirectTo,
-      });
-      if (result?.error) {
-        error("تعذر إعادة إرسال الرسالة. حاول لاحقًا.");
-        return;
-      }
-      setNotice({
-        type: "success",
-        message: "تم إعادة إرسال رسالة التأكيد إلى بريدك.",
-      });
-    } catch {
-      error("تعذر إعادة إرسال الرسالة. حاول لاحقًا.");
-    }
-  }
-
-  /* الإرسال */
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // تحقق البريد
-    if (!EMAIL_RE.test(cleanEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       error("يرجى إدخال بريد إلكتروني صحيح.");
       return;
     }
 
-    // تحقق الاسم
     if (mode === "signup" && name.trim().length < 2) {
       error("يرجى إدخال اسم لا يقل عن حرفين.");
       return;
     }
 
-    // تحقق كلمة المرور
-    if (mode !== "forgot") {
-      if (password.length < 1) {
-        error("يرجى إدخال كلمة المرور.");
-        return;
-      }
-      if (mode === "signup") {
-        if (password.length < 12) {
-          error("كلمة المرور يجب أن تتكون من 12 حرفًا على الأقل.");
-          return;
-        }
-        // ✅ الإصلاح 2: تطابق كلمتي المرور
-        if (password !== confirmPassword) {
-          error("كلمتا المرور غير متطابقتين.");
-          return;
-        }
-      }
+    if (mode !== "forgot" && password.length < 1) {
+      error("يرجى إدخال كلمة المرور.");
+      return;
+    }
+
+    if (mode === "signup" && password.length < 12) {
+      error("كلمة المرور يجب أن تتكون من 12 حرفًا على الأقل.");
+      return;
     }
 
     setBusy(true);
     setNotice(null);
 
     try {
-      /* ============ إنشاء حساب ============ */
       if (mode === "signup") {
         const result = await authClient.signUp.email({
           name: name.trim(),
           email: cleanEmail,
           password,
-          callbackURL: redirectTo, // ✅ الإصلاح 5
+          callbackURL: "/",
         });
 
         if (result.error) {
@@ -221,32 +110,32 @@ export default function LoginPage() {
           return;
         }
 
+        // لا نفترض أن البريد تم تأكيده أو أن الجلسة جاهزة.
         const sessionResult = await authClient.getSession();
-        if (!sessionResult.error && sessionResult.data?.session) {
-          router.replace(redirectTo);
+
+        if (
+          !sessionResult.error &&
+          sessionResult.data?.session
+        ) {
+          router.replace("/");
           router.refresh();
           return;
         }
 
-        // ✅ الإصلاح 4: زر إعادة إرسال
         setNotice({
           type: "success",
           message:
-            "تم إرسال طلب التسجيل. افتح بريدك وابحث عن رسالة التحقق ثم اضغط رابط التأكيد.",
-          action: {
-            label: "إعادة إرسال الرسالة",
-            onClick: () => void resendVerification(cleanEmail),
-          },
+            "تم إرسال طلب التسجيل. افتح بريدك الإلكتروني وابحث عن رسالة التحقق، ثم اضغط رابط التأكيد لإكمال التسجيل.",
         });
+
         return;
       }
 
-      /* ============ تسجيل دخول ============ */
       if (mode === "signin") {
         const result = await authClient.signIn.email({
           email: cleanEmail,
           password,
-          callbackURL: redirectTo, // ✅ الإصلاح 5
+          callbackURL: "/",
         });
 
         if (result.error) {
@@ -258,12 +147,11 @@ export default function LoginPage() {
           return;
         }
 
-        router.replace(redirectTo);
+        router.replace("/");
         router.refresh();
         return;
       }
 
-      /* ============ استعادة كلمة المرور ============ */
       const result = await authClient.requestPasswordReset({
         email: cleanEmail,
         redirectTo: "/reset-password",
@@ -280,7 +168,9 @@ export default function LoginPage() {
           "إذا كان البريد مرتبطًا بحساب، فستصلك تعليمات إعادة تعيين كلمة المرور.",
       });
     } catch {
-      error("تعذر الاتصال بخدمة التسجيل. تحقق من اتصالك وحاول مجددًا.");
+      error(
+        "تعذر الاتصال بخدمة التسجيل. تحقق من اتصالك وحاول مجددًا."
+      );
     } finally {
       setBusy(false);
     }
@@ -299,7 +189,6 @@ export default function LoginPage() {
 
   return (
     <main className="signin-v2-page" dir="rtl">
-      {/* الشريط الجانبي */}
       <aside className="signin-v2-aside">
         <Link href="/" className="signin-v2-brand">
           <span className="signin-v2-mark">م</span>
@@ -322,8 +211,8 @@ export default function LoginPage() {
           </h1>
 
           <p>
-            أنشئ حسابك، واكتشف التاريخ، واجمع المراجع، وشارك في مجتمع
-            يحترم الدليل.
+            أنشئ حسابك، واكتشف التاريخ، واجمع المراجع،
+            وشارك في مجتمع يحترم الدليل.
           </p>
 
           <ul>
@@ -356,7 +245,6 @@ export default function LoginPage() {
         </p>
       </aside>
 
-      {/* النموذج */}
       <section className="signin-v2-main">
         <div className="signin-v2-mobile-brand">
           <span className="signin-v2-mark">م</span>
@@ -406,7 +294,11 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <form className="signin-v2-form" onSubmit={submit} aria-busy={busy}>
+          <form
+            className="signin-v2-form"
+            onSubmit={submit}
+            aria-busy={busy}
+          >
             {mode === "signup" && (
               <label className="signin-v2-field">
                 <span>الاسم</span>
@@ -415,7 +307,7 @@ export default function LoginPage() {
                   type="text"
                   autoComplete="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(event) => setName(event.target.value)}
                   placeholder="الاسم الذي سيظهر في المجلس"
                   minLength={2}
                   maxLength={80}
@@ -434,7 +326,7 @@ export default function LoginPage() {
                 inputMode="email"
                 autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="name@example.com"
                 maxLength={254}
                 required
@@ -443,87 +335,43 @@ export default function LoginPage() {
             </label>
 
             {mode !== "forgot" && (
-              <>
-                <label className="signin-v2-field">
-                  <span>كلمة المرور</span>
-                  <div className="signin-v2-password">
-                    <input
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      dir="ltr"
-                      autoComplete={
-                        mode === "signup"
-                          ? "new-password"
-                          : "current-password"
-                      }
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={
-                        mode === "signup"
-                          ? "12 حرفًا على الأقل"
-                          : "أدخل كلمة المرور"
-                      }
-                      minLength={mode === "signup" ? 12 : undefined}
-                      maxLength={128}
-                      required
-                      disabled={busy}
-                    />
-                    <button
-                      type="button"
-                      aria-label={
-                        showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
-                      }
-                      disabled={busy}
-                      onClick={() => setShowPassword((v) => !v)}
-                    >
-                      {showPassword ? "إخفاء" : "إظهار"}
-                    </button>
-                  </div>
-                </label>
-
-                {/* ✅ الإصلاح 3: مؤشر القوة (للتسجيل فقط) */}
-                {mode === "signup" && <PasswordStrength password={password} />}
-              </>
-            )}
-
-            {/* ✅ الإصلاح 2: تأكيد كلمة المرور */}
-            {mode === "signup" && (
               <label className="signin-v2-field">
-                <span>تأكيد كلمة المرور</span>
+                <span>كلمة المرور</span>
                 <div className="signin-v2-password">
                   <input
-                    name="confirmPassword"
-                    type={showConfirm ? "text" : "password"}
+                    name="password"
+                    type={showPassword ? "text" : "password"}
                     dir="ltr"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="أعد إدخال كلمة المرور"
-                    minLength={12}
+                    autoComplete={
+                      mode === "signup"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                    value={password}
+                    onChange={(event) =>
+                      setPassword(event.target.value)
+                    }
+                    placeholder={
+                      mode === "signup"
+                        ? "12 حرفًا على الأقل"
+                        : "أدخل كلمة المرور"
+                    }
+                    minLength={mode === "signup" ? 12 : undefined}
                     maxLength={128}
                     required
                     disabled={busy}
-                    aria-invalid={
-                      confirmPassword.length > 0 &&
-                      confirmPassword !== password
-                    }
                   />
+
                   <button
                     type="button"
-                    aria-label={
-                      showConfirm ? "إخفاء التأكيد" : "إظهار التأكيد"
-                    }
                     disabled={busy}
-                    onClick={() => setShowConfirm((v) => !v)}
+                    onClick={() =>
+                      setShowPassword((value) => !value)
+                    }
                   >
-                    {showConfirm ? "إخفاء" : "إظهار"}
+                    {showPassword ? "إخفاء" : "إظهار"}
                   </button>
                 </div>
-                {confirmPassword.length > 0 && confirmPassword !== password && (
-                  <small className="signin-v2-hint error">
-                    كلمتا المرور غير متطابقتين
-                  </small>
-                )}
               </label>
             )}
 
@@ -546,29 +394,17 @@ export default function LoginPage() {
                 aria-live="polite"
               >
                 <span aria-hidden="true">
-                  {notice.type === "success"
-                    ? "✓"
-                    : notice.type === "error"
-                      ? "!"
-                      : "i"}
+                  {notice.type === "success" ? "✓" : "!"}
                 </span>
-                <div>
-                  <p>{notice.message}</p>
-                  {/* ✅ الإصلاح 4 */}
-                  {notice.action && (
-                    <button
-                      type="button"
-                      className="signin-v2-notice-action"
-                      onClick={notice.action.onClick}
-                    >
-                      {notice.action.label}
-                    </button>
-                  )}
-                </div>
+                <p>{notice.message}</p>
               </div>
             )}
 
-            <button type="submit" className="signin-v2-submit" disabled={busy}>
+            <button
+              type="submit"
+              className="signin-v2-submit"
+              disabled={busy}
+            >
               {busy
                 ? "جارٍ المعالجة…"
                 : mode === "signup"
@@ -576,6 +412,7 @@ export default function LoginPage() {
                   : mode === "signin"
                     ? "تسجيل الدخول"
                     : "إرسال تعليمات الاستعادة"}
+
               {!busy && <span aria-hidden="true">←</span>}
             </button>
           </form>
@@ -593,6 +430,7 @@ export default function LoginPage() {
                 </button>
               </p>
             )}
+
             {mode === "signin" && (
               <p>
                 مستخدم جديد؟{" "}
@@ -605,6 +443,7 @@ export default function LoginPage() {
                 </button>
               </p>
             )}
+
             {mode === "forgot" && (
               <button
                 type="button"
@@ -619,8 +458,8 @@ export default function LoginPage() {
           <div className="signin-v2-security">
             <span aria-hidden="true">⌑</span>
             <p>
-              لا تشارك كلمة المرور مع أي شخص. استخدم بريدك الحقيقي لتتمكن من
-              تأكيد حسابك واستعادته.
+              لا تشارك كلمة المرور مع أي شخص. استخدم بريدك
+              الحقيقي لتتمكن من تأكيد حسابك واستعادته.
             </p>
           </div>
         </div>
