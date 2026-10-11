@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "./dashboard.css";
 
 export const metadata: Metadata = {
   title: "مجالس العرب | البحث الموثق",
