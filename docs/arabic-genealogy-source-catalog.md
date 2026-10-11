@@ -7,12 +7,12 @@ This repository is building a cumulative, source-backed catalogue of Arabic trib
 The machine-readable registry is `data/sources/arabic-genealogy-books.json`. It includes:
 - **سبائك الذهب في معرفة قبائل العرب** — محمد أمين السويدي.
 - **معجم قبائل العرب القديمة والحديثة** — عمر رضا كحالة, parts 1 and 2.
-- **جمهرة أنساب العرب** — ابن حزم.
+- **جمهرة أنساب العرب** — ابن حزم; a separate digital-text edition is registered at [KetabOnline](https://ketabonline.com/ar/books/6886), edition 1403 AH / 1983 CE.
 - **نهاية الأرب في معرفة أنساب العرب** — القلقشندي.
 - **مختلف القبائل ومؤتلفها** — محمد بن حبيب.
 - **معجم قبائل المملكة العربية السعودية** — حمد الجاسر.
 
-A registered source is not the same as an extracted source. The `sabaik-al-dhahab` (Wikisource/Bombay 1296 AH) and `sabaik-al-dhahab-nyu-1980` records track two separate extraction attempts, but both remain **unusable for automatic ingestion** because OCR quality is poor. Other records stay `REGISTERED_NOT_EXTRACTED` or `REGISTERED_NEEDS_EDITION_URL` until an actual copy is processed.
+A registered source is not the same as an extracted source. The `sabaik-al-dhahab` (Wikisource/Bombay 1296 AH) and `sabaik-al-dhahab-nyu-1980` records track two separate extraction attempts, but both remain **unusable for automatic ingestion** because OCR quality is poor. The `jamharat-ansab-al-arab-text-1403` digital text source is now registered but has not yet been extracted; its section links are available for page-specific evidence. Other records stay `REGISTERED_NOT_EXTRACTED` or `REGISTERED_NEEDS_EDITION_URL` until an actual copy is processed.
 
 ## Extract candidate mentions from a local PDF
 
@@ -45,7 +45,7 @@ The tool writes:
 
 The first extraction attempt used the **Bombay edition (1296 AH)** linked from Wikisource (120-page PDF). Run [38157907860](https://github.com/norejaberahmed-design/majalis-arab/actions/runs/38157907860) produced 132 unverified candidate mentions: 0 HIGH, 33 MEDIUM, 99 LOW; 93 of 120 pages were rated LOW for legibility. A diagnostic attempt with the 128-page NYU high-resolution scan, run [38159743368](https://github.com/norejaberahmed-design/majalis-arab/actions/runs/38159743368), produced 138 mentions with 0 HIGH, 33 MEDIUM, 105 LOW; 99 of 128 pages were LOW. The high-resolution scan did not materially improve OCR.
 
-**Decision:** do not ingest either output into the live catalogue. The extracted text contains visibly corrupted Arabic names. Keep the artifacts for diagnosis only; a human must check page images, or the pipeline must use a reliable digital transcription before these candidates can be reviewed. The source registry points to the actual Wikisource scan used, and the NYU catalogue link is retained separately.
+**Decision:** do not ingest either output into the live catalogue. The extracted text contains visibly corrupted Arabic names. Keep the artifacts for diagnosis only; a human must check page images, or the pipeline must use a reliable digital transcription before these candidates can be reviewed. The source registry points to the actual Wikisource scan used, and the NYU catalogue link is retained separately. A better next extraction target is the digital text of *جمهرة أنساب العرب* at KetabOnline: its catalogue states that the page numbering matches the printed edition and exposes section-level reader links. It is registered as NOT_EXTRACTED; no headings or genealogy claims have been imported from it yet.
 
 ## Candidate corpus included in the repository
 

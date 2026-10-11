@@ -41,14 +41,14 @@ jobs:
         run: |
           npm run db:seed-bibliography
           npm run db:seed-bibliography
-          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count(),p.source.count({where:{title:{contains:"سبائك الذهب"},extractionStatus:"OCR_REQUIRED"}})]).then(([sources,entities,passages,claims,ocrSources])=>{console.log({sources,entities,passages,claims,ocrSources}); if(sources!==9||entities!==0||passages!==0||claims!==0||ocrSources!==2) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
+          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count(),p.source.count({where:{title:{contains:"سبائك الذهب"},extractionStatus:"OCR_REQUIRED"}})]).then(([sources,entities,passages,claims,ocrSources])=>{console.log({sources,entities,passages,claims,ocrSources}); if(sources!==10||entities!==0||passages!==0||claims!==0||ocrSources!==2) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
         env:
           DATABASE_URL: "file:./dev.db"
       - name: Verify attributed public-domain passage import is idempotent
         run: |
           npm run db:seed-public-domain-passage
           npm run db:seed-public-domain-passage
-          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count(),p.source.count({where:{title:{contains:"سبائك الذهب"},extractionStatus:"OCR_REQUIRED"}})]).then(([sources,entities,passages,claims,ocrSources])=>{console.log({sources,entities,passages,claims,ocrSources}); if(sources!==10||entities!==0||passages!==1||claims!==0||ocrSources!==2) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
+          node -e 'const {PrismaClient}=require("@prisma/client"); const p=new PrismaClient(); Promise.all([p.source.count(),p.tribalEntity.count(),p.evidencePassage.count(),p.historicalClaim.count(),p.source.count({where:{title:{contains:"سبائك الذهب"},extractionStatus:"OCR_REQUIRED"}})]).then(([sources,entities,passages,claims,ocrSources])=>{console.log({sources,entities,passages,claims,ocrSources}); if(sources!==11||entities!==0||passages!==1||claims!==0||ocrSources!==2) process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>p.$disconnect())'
         env:
           DATABASE_URL: "file:./dev.db"
       - name: Run unit and SQLite tenant-isolation tests
