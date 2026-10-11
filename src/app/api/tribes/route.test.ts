@@ -109,6 +109,16 @@ describe("tribe contribution intake", () => {
     }));
   });
 
+  it("does not attach a tribe contribution to a non-tribe entity with the same normalized name", async () => {
+    mocks.entityFindUnique.mockResolvedValue({ id: "person-existing", name: input.name, kind: "PERSON" });
+    const response = await POST(request(input));
+    const body = await response.json();
+    expect(response.status).toBe(201);
+    expect(body.data).toMatchObject({ requestId: "request-a", knowledgeEntryId: null, shared: false });
+    expect(mocks.knowledgeEntryCreate).not.toHaveBeenCalled();
+    expect(mocks.additionRequestCreate).toHaveBeenCalled();
+  });
+
   it("does not duplicate an existing shared knowledge entry", async () => {
     mocks.entityFindUnique.mockResolvedValue({ id: "tribe-existing", name: input.name, kind: "TRIBE" });
     mocks.knowledgeEntryFindFirst.mockResolvedValue({ id: "knowledge-existing" });
