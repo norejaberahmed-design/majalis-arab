@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
       // Existing tribe profiles accept shared contributions, but every entry
       // stays visibly UNREVIEWED until a separate review process verifies it.
-      if (entity) {
+      if (entity?.kind === "TRIBE") {
         const duplicateEntry = await tx.tribeKnowledgeEntry.findFirst({
           where: { entityId: entity.id, content: parsed.data.content, sourceUrl },
           select: { id: true }
