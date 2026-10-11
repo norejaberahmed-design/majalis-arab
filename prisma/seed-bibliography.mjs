@@ -35,6 +35,32 @@ const bibliography = [
     url: "https://ediscovery.qnl.qa/ar/islandora/search?f%5B0%5D=dc.subject%3A%D8%A7%D9%84%D9%82%D8%A8%D8%A7%D8%A6%D9%84+%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9&f%5B1%5D=dc.date%3A%221938%22&islandora_solr_search_navigation=0",
     bibliographicNote: "نتائج فهرس مكتبة قطر الوطنية تعرض العنوان والمؤلف وبيانات مجلدات، منها سجل مفهرس تحت تاريخ 1937/1938. السنة هنا تقريبية مستندة إلى بيانات الفهرس، وتحتاج مطابقة مع صفحة عنوان النسخة قبل اعتمادها للاستشهاد. لم يُسجل أي ادعاء تاريخي من هذا المرجع."
   }
+,
+  {
+    title: "معجم قبائل العرب القديمة والحديثة — الجزء الأول",
+    author: "عمر رضا كحالة",
+    publisher: "Arabic Collections Online / NYU Libraries",
+    publicationYear: null,
+    url: "https://sites.dlib.nyu.edu/viewer/books/aub_aco003047/display?lang=ar",
+    bibliographicNote: "سجل ببليوغرافي لنسخة رقمية من الجزء الأول. لم يُتحقق من الطبعة والترقيم المطبوع أو شروط إعادة نشر النص، ولم يُستخرج النص الكامل. يلزم مراجعة صفحة العنوان قبل اعتماد الاستشهاد."
+  },
+  {
+    title: "معجم قبائل العرب القديمة والحديثة — الجزء الثاني",
+    author: "عمر رضا كحالة",
+    publisher: "Arabic Collections Online / NYU Libraries",
+    publicationYear: null,
+    url: "https://sites.dlib.nyu.edu/viewer/books/aub_aco003048/display?lang=ar",
+    bibliographicNote: "سجل ببليوغرافي مستقل للجزء الثاني. لا تفترض مطابقة الترقيم مع الجزء الأول؛ لم يُتحقق من الطبعة أو شروط إعادة نشر النص، ولم يُستخرج النص الكامل."
+  },
+  {
+    title: "معجم قبائل المملكة العربية السعودية",
+    author: "حمد الجاسر",
+    publisher: "نسخة PDF مفهرسة على موقع إسلام واي",
+    publicationYear: null,
+    url: "https://books.islamway.net/1/525_aljasir_mejmqabyil.pdf",
+    bibliographicNote: "رابط نسخة PDF مرجعية يحتاج فحصًا مباشرًا لصفحة العنوان والطبعة وحقوق الاستخدام قبل الاستخراج أو إعادة نشر النص. لم يُقرأ الكتاب كاملًا ولم تُستخرج منه أسماء في هذا السجل."
+  }
+
 ];
 
 async function main() {
