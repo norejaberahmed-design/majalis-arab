@@ -122,7 +122,7 @@ export default function EntitySearchPanel({
             </datalist>
             <button type="submit" className="primary-button">بحث</button>
           </div>
-          <small id="tribe-suggestion-help">تظهر اقتراحات من أسماء القبائل المحفوظة فقط. إذا لم يظهر الاسم، فهذا لا يعني أنه غير موجود تاريخيًا؛ قد لا يكون أُضيف إلى القاعدة بعد.</small>
+          <small id="tribe-suggestion-help">تظهر اقتراحات من السجلات المحفوظة وفهرس أسماء مرتبط بمصادر. مرشحات الفهرس غير مراجعة ولا تُعد حقائق معتمدة.</small>
           {error && <p className="form-message" role="alert">{error}</p>}
         </form>
       </section>
