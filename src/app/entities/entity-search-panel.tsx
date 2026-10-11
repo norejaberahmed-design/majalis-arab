@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 type Entity = {
@@ -25,12 +26,19 @@ export default function EntitySearchPanel({
   initialEntities: Entity[];
   initialQuery: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [entities, setEntities] = useState<Entity[]>(initialEntities);
   const [suggestions, setSuggestions] = useState<Entity[]>([]);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [searched, setSearched] = useState(false);
+  const [searched, setSearched] = useState(Boolean(initialQuery));
+
+  useEffect(() => {
+    setQuery(initialQuery);
+    setEntities(initialEntities);
+    setSearched(Boolean(initialQuery));
+    setError("");
+  }, [initialEntities, initialQuery]);
 
   // Suggestions come only from saved tribe records; no generated names.
   useEffect(() => {
@@ -65,35 +73,16 @@ export default function EntitySearchPanel({
     };
   }, [query]);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = query.trim();
     if (value.length > 100) {
       setError("عبارة البحث أطول من 100 حرف.");
       return;
     }
-    setBusy(true);
-    setError("");
-    try {
-      const params = new URLSearchParams();
-      if (value) params.set("q", value);
-      const response = await fetch(`/api/entities?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store"
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "تعذر إكمال البحث.");
-      if (!Array.isArray(payload.data)) throw new Error("استجابة البحث غير صالحة.");
-      setEntities(payload.data.map((item: Entity) => ({
-        id: item.id, name: item.name, kind: item.kind, summary: item.summary
-      })));
-      setSearched(true);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "تعذر الاتصال بخدمة البحث.");
-    } finally {
-      setBusy(false);
-    }
+    const params = new URLSearchParams();
+    if (value) params.set("q", value);
+    router.push(params.size ? `/entities?${params.toString()}` : "/entities");
   }
 
   return (
@@ -119,7 +108,7 @@ export default function EntitySearchPanel({
             <datalist id="tribe-name-suggestions">
               {suggestions.map(entity => <option key={entity.id} value={entity.name} />)}
             </datalist>
-            <button type="submit" className="primary-button" disabled={busy}>{busy ? "جارٍ البحث…" : "بحث"}</button>
+            <button type="submit" className="primary-button">بحث</button>
           </div>
           <small id="tribe-suggestion-help">تظهر اقتراحات من أسماء القبائل المحفوظة فقط. إذا لم يظهر الاسم، فهذا لا يعني أنه غير موجود تاريخيًا؛ قد لا يكون أُضيف إلى القاعدة بعد.</small>
           {error && <p className="form-message" role="alert">{error}</p>}
