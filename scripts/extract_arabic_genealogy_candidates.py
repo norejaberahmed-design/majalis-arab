@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Build a page-linked candidate index from an Arabic genealogy PDF.
+"""Create a page-linked, human-reviewable candidate index from an Arabic genealogy PDF.
 
-Candidates are only name mentions for human review, not verified tribes or lineage.
-Requires Poppler (pdftotext, pdfinfo, pdftoppm) and, for scanned PDFs,
-Tesseract with Arabic language data installed.
+Text extraction is heuristic only. Candidate names and OCR passages are never verified facts.
+Requires Poppler and Tesseract with Arabic language data for scanned/poor-quality pages.
 """
 from __future__ import annotations
 
@@ -17,40 +16,94 @@ import tempfile
 from pathlib import Path
 
 ARABIC = re.compile(r"[\u0600-\u06ff]")
+ARABIC_WORD = re.compile(r"[\u0621-\u064a]+")
 SPACE = re.compile(r"\s+")
 DIACRITICS = re.compile(r"[\u064b-\u065f\u0670ـ]")
-EXPLICIT_TRIBE = re.compile(r"(?:قبيلة|قبائل)\s+([^،؛:.()]{2,70})")
-# Conservative dictionary-entry headings such as "بنو فلان:" or "الفلانيّة:"
+MARKER = re.compile(r"(?:قبيلة|قبائل|بطن|بطون|فخذ|أفخاذ|عشيرة|عشائر)")
 HEADING = re.compile(r"^([\u0621-\u064a][\u0621-\u064a\sـًٌٍَُِّْٰ()«»\-]{1,70}?)\s*[:：]")
+COMMON_ARABIC_WORDS = set("""
+من في على إلى الى عن أن إن هو هي الذي التي الذين كان كانت يكون تكون ثم حيث كما إذا اذا
+وذلك وله لها له عند بين بعد قبل حتى أما اما فقد وقد وهم فهي فهو يقال تسمى المعروفة المعروف
+المشهورة المشهور قبيلة قبائل بطن بطون فخذ أفخاذ عشيرة عشائر قال وقالت ذكر وذكر العرب العربي
+نسب نسبه قوم قومه بن بني بنو آل ابن أبي أبو هذا هذه ذلك تلك كل بعض أكثر أكثرهم منهم لهم بها
+به فيه إليها ومنها وهي وهو ومن قد لا ما لم لن أو لكن غير غيره مثل حيث إذا فإن فأن وكانوا
+""".split())
+STOP_WORDS = {
+    "من", "في", "على", "الى", "إلى", "عن", "أن", "إن", "هو", "هي", "وهو", "وهي",
+    "الذي", "التي", "الذين", "اللاتي", "كان", "كانت", "يكون", "تكون", "ثم", "حيث",
+    "كما", "اذا", "إذا", "وذلك", "وهي", "وله", "لها", "له", "عند", "بين", "بعد",
+    "قبل", "حتى", "اما", "أما", "فقد", "وقد", "وهي", "وهم", "فهي", "فهو", "يقال",
+    "تسمى", "المعروفة", "المعروف", "المشهورة", "المشهور", "قبيلة", "قبائل", "بطن",
+    "بطون", "فخذ", "أفخاذ", "عشيرة", "عشائر",
+}
+
 
 def run(args: list[str]) -> str:
     proc = subprocess.run(args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     return proc.stdout
 
+
 def normalize(text: str) -> str:
     text = DIACRITICS.sub("", text)
     return SPACE.sub(" ", text).strip()
 
-def pdf_pages(pdf: Path) -> list[str]:
+
+def text_quality(text: str) -> dict:
+    """A transparent OCR-legibility proxy, not a measure of historical truth."""
+    words = ARABIC_WORD.findall(text)
+    arabic_chars = len(ARABIC.findall(text))
+    non_space = [char for char in text if not char.isspace()]
+    digit_count = sum(char.isdigit() for char in non_space)
+    short_ratio = sum(len(word) <= 2 for word in words) / max(1, len(words))
+    digit_ratio = digit_count / max(1, len(non_space))
+    arabic_ratio = arabic_chars / max(1, len(non_space))
+    common_word_ratio = sum(word in COMMON_ARABIC_WORDS for word in words) / max(1, len(words))
+    coverage_ratio = min(1.0, len(words) / 80)
+    score = max(0.0, min(1.0,
+        0.45 * (1 - short_ratio) + 0.20 * arabic_ratio
+        + 0.15 * (1 - digit_ratio) + 0.20 * common_word_ratio
+    ))
+    # Avoid choosing sparse or lexically implausible OCR merely because its tokens are long.
+    score *= 0.65 + 0.35 * coverage_ratio
+    label = "LOW" if len(words) < 20 or short_ratio >= 0.45 or digit_ratio >= 0.12 or common_word_ratio < 0.04 else (
+        "MEDIUM" if short_ratio >= 0.32 or arabic_ratio < 0.65 or common_word_ratio < 0.08 else "HIGH"
+    )
+    return {
+        "arabicWordCount": len(words),
+        "coverageRatio": round(coverage_ratio, 3),
+        "commonWordRatio": round(common_word_ratio, 3),
+        "shortWordRatio": round(short_ratio, 3),
+        "digitRatio": round(digit_ratio, 3),
+        "arabicCharacterRatio": round(arabic_ratio, 3),
+        "qualityScore": round(score, 3),
+        "qualityLabel": label,
+    }
+
+
+def pages_from_pdf(pdf: Path) -> tuple[list[str], str]:
     raw = run(["pdftotext", "-layout", str(pdf), "-"])
-    pages = [p.strip() for p in raw.split("\f")]
-    arabic_count = sum(len(ARABIC.findall(p)) for p in pages)
-    pages = [p for p in pages if p]
-    if len(pages) >= 2 and arabic_count >= 500:
-        return pages
+    embedded_pages = [page.strip() for page in raw.split("\f") if page.strip()]
+    total_arabic = sum(len(ARABIC.findall(page)) for page in embedded_pages)
+    qualities = [text_quality(page) for page in embedded_pages]
+    low_ratio = sum(q["qualityLabel"] == "LOW" for q in qualities) / max(1, len(qualities))
+    median_short = sorted(q["shortWordRatio"] for q in qualities)[len(qualities) // 2] if qualities else 1.0
+
+    # Arabic glyph count alone is not enough: scanned PDFs sometimes contain a broken OCR layer.
+    # Re-OCR when the text layer is sparse or its token statistics indicate substantial corruption.
+    if len(embedded_pages) >= 5 and total_arabic >= 500 and low_ratio < 0.35 and median_short < 0.42:
+        return embedded_pages, "embedded-text"
 
     missing = [tool for tool in ("pdfinfo", "pdftoppm", "tesseract") if not shutil.which(tool)]
     if missing:
-        raise RuntimeError("Scanned PDF detected; missing tools: " + ", ".join(missing))
+        raise RuntimeError("Poor/scanned PDF text detected; missing tools: " + ", ".join(missing))
     match = re.search(r"^Pages:\s+(\d+)", run(["pdfinfo", str(pdf)]), re.M)
     if not match:
         raise RuntimeError("Could not read the PDF page count.")
     page_count = int(match.group(1))
-    result = []
+    result: list[str] = []
     with tempfile.TemporaryDirectory(prefix="arabic-genealogy-") as temp:
         prefix = str(Path(temp) / "page")
-        run(["pdftoppm", "-r", "250", "-jpeg", "-jpegopt", "quality=90", str(pdf), prefix])
-        # Natural numeric sort: page-2.jpg must precede page-10.jpg.
+        run(["pdftoppm", "-r", "300", "-gray", "-jpeg", "-jpegopt", "quality=92", str(pdf), prefix])
         images = sorted(
             Path(temp).glob("page-*.jpg"),
             key=lambda p: int(re.search(r"-(\d+)\.jpg$", p.name).group(1))
@@ -58,8 +111,28 @@ def pdf_pages(pdf: Path) -> list[str]:
         if len(images) != page_count:
             raise RuntimeError(f"Rendered {len(images)} pages, expected {page_count}.")
         for image in images:
-            result.append(run(["tesseract", str(image), "stdout", "-l", "ara", "--psm", "6"]))
-    return result
+            attempts = [
+                run(["tesseract", str(image), "stdout", "-l", "ara", "--psm", str(psm)])
+                for psm in (4, 6)
+            ]
+            result.append(max(attempts, key=lambda candidate: text_quality(candidate)["qualityScore"]))
+    return result, "tesseract-ara-psm4-or-6"
+
+
+def extract_candidate_name(text: str) -> str:
+    """Capture a short name phrase after a tribal marker; stop before prose."""
+    words = ARABIC_WORD.findall(text)
+    selected: list[str] = []
+    for word in words:
+        if word in STOP_WORDS:
+            break
+        if len(word) < 2:
+            break
+        selected.append(word)
+        if len(selected) == 4:
+            break
+    return " ".join(selected).strip()
+
 
 def candidates_on_page(page: str):
     seen = set()
@@ -67,19 +140,41 @@ def candidates_on_page(page: str):
         line = normalize(raw_line)
         if len(line) < 4 or not ARABIC.search(line):
             continue
-        matches = []
-        for match in EXPLICIT_TRIBE.finditer(line):
-            matches.append((normalize(match.group(1)).strip(" -،؛ "), line, "EXPLICIT_TRIBE_WORDING"))
+        for match in MARKER.finditer(line):
+            name = extract_candidate_name(line[match.end():]).strip(" -،؛:")
+            if len(name) < 2:
+                continue
+            words = name.split()
+            # Don't turn common grammatical words or obvious OCR fragments into name candidates.
+            if any(word in STOP_WORDS or len(word) < 2 for word in words):
+                continue
+            key = (name, "TRIBAL_MARKER")
+            if key not in seen:
+                seen.add(key)
+                yield name, line[:2000], "TRIBAL_MARKER"
         heading = HEADING.match(line)
         if heading:
             name = normalize(heading.group(1)).strip(" -،؛:")
-            if 2 <= len(name) <= 80:
-                matches.append((name, line, "DICTIONARY_HEADING_CANDIDATE"))
-        for name, excerpt, method in matches:
-            key = (name, method)
-            if len(name) >= 2 and key not in seen:
-                seen.add(key)
-                yield name, excerpt[:2000], method
+            if 3 <= len(name) <= 60 and len(name.split()) <= 5:
+                key = (name, "DICTIONARY_HEADING_CANDIDATE")
+                if key not in seen:
+                    seen.add(key)
+                    yield name, line[:2000], "DICTIONARY_HEADING_CANDIDATE"
+
+
+def candidate_quality(name: str, page_quality: str) -> str:
+    tokens = name.split()
+    if not tokens or any(not ARABIC_WORD.fullmatch(token) for token in tokens):
+        return "LOW"
+    if len(tokens) == 1 and len(tokens[0]) <= 4:
+        return "LOW"
+    if any(len(token) <= 2 for token in tokens):
+        return "LOW"
+    if page_quality == "LOW":
+        return "LOW"
+    # Readability cannot establish that OCR produced a correct tribal name.
+    return "MEDIUM"
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -92,7 +187,7 @@ def main() -> int:
     if not args.pdf.is_file():
         parser.error(f"PDF not found: {args.pdf}")
     try:
-        pages = pdf_pages(args.pdf)
+        pages, extraction_mode = pages_from_pdf(args.pdf)
     except (subprocess.CalledProcessError, RuntimeError) as exc:
         print(f"Extraction failed: {exc}", file=sys.stderr)
         return 2
@@ -100,13 +195,15 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     candidate_file = args.out / "tribe-candidates.tsv"
     passage_file = args.out / "page-passages.tsv"
-    candidates, passages = [], []
+    quality_file = args.out / "page-quality.tsv"
+    candidates, passages, page_quality_rows = [], [], []
     seen = set()
     for pdf_page, text in enumerate(pages, start=1):
+        quality = text_quality(text)
+        page_quality_rows.append({"pageLabel": str(pdf_page), **quality, "extractionMode": extraction_mode})
         clean_lines = [normalize(line) for line in text.splitlines() if normalize(line)]
         page_text = "\n".join(clean_lines)
         if page_text:
-            # Keep the app's maximum passage size (5,000 chars) with margin.
             for chunk_no, start in enumerate(range(0, len(page_text), 4800), start=1):
                 chunk = page_text[start:start + 4800].strip()
                 if chunk:
@@ -129,8 +226,10 @@ def main() -> int:
                 "sourceAuthor": args.author,
                 "sourceUrl": args.url,
                 "detectionMethod": method,
+                "extractionQuality": candidate_quality(name, quality["qualityLabel"]),
+                "pageQuality": quality["qualityLabel"],
                 "reviewStatus": "UNREVIEWED",
-                "reviewNote": "Verify against the page image and printed page number before accepting or linking."
+                "reviewNote": "Heuristic candidate only. Verify the cited scan and printed page before accepting or linking."
             })
 
     def write_tsv(path: Path, rows: list[dict], fields: list[str]) -> None:
@@ -140,17 +239,29 @@ def main() -> int:
             writer.writerows(rows)
 
     write_tsv(candidate_file, candidates, [
-        "candidateName", "pageLabel", "evidenceExcerpt", "sourceTitle",
-        "sourceAuthor", "sourceUrl", "detectionMethod", "reviewStatus", "reviewNote"
+        "candidateName", "pageLabel", "evidenceExcerpt", "sourceTitle", "sourceAuthor",
+        "sourceUrl", "detectionMethod", "extractionQuality", "pageQuality", "reviewStatus", "reviewNote"
     ])
     write_tsv(passage_file, passages, ["pageLabel", "passageText", "locator", "reviewStatus"])
+    write_tsv(quality_file, page_quality_rows, [
+        "pageLabel", "arabicWordCount", "coverageRatio", "commonWordRatio", "shortWordRatio", "digitRatio",
+        "arabicCharacterRatio", "qualityScore", "qualityLabel", "extractionMode"
+    ])
+    quality_counts = {label: sum(row["qualityLabel"] == label for row in page_quality_rows)
+                      for label in ("HIGH", "MEDIUM", "LOW")}
+    candidate_quality_counts = {label: sum(row["extractionQuality"] == label for row in candidates)
+                                for label in ("HIGH", "MEDIUM", "LOW")}
     print(f"PDF pages processed: {len(pages)}")
+    print(f"Extraction mode: {extraction_mode}")
     print(f"Candidate mentions (unverified): {len(candidates)}")
+    print(f"Candidate extraction-quality counts (not verification): {candidate_quality_counts}")
+    print(f"Page text-quality counts (legibility proxy): {quality_counts}")
     print(f"Evidence passages: {len(passages)}")
     print(f"Output: {args.out}")
     print("Printed book page numbers may differ from PDF page numbers.")
     print("All extracted candidates and passages are UNREVIEWED.")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

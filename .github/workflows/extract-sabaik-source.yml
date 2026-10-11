@@ -6,7 +6,8 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/extract-sabaik-source.yml"
-      - "scripts/extract_genealogy_source.py"
+      - "scripts/extract_arabic_genealogy_candidates.py"
+      - "scripts/test_arabic_genealogy_candidates.py"
 
 permissions:
   contents: read
@@ -25,9 +26,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils tesseract-ocr tesseract-ocr-ara
-          # Use Ubuntu's packaged Arabic model. Downloading an optional
-          # upstream model here made setup brittle and is not required to run OCR.
           tesseract --list-langs | grep -qx ara
+      - name: Test candidate extraction rules
+        run: python -m unittest discover -s scripts -p 'test_arabic_genealogy_candidates.py' -v
       - name: Download the public-domain scan
         run: |
           curl --fail --location --retry 3 --retry-delay 2 \
@@ -35,20 +36,47 @@ jobs:
             --output /tmp/sabaik-al-dhahab.pdf
           pdfinfo /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-info.txt
           sha256sum /tmp/sabaik-al-dhahab.pdf | tee /tmp/source-pdf-sha256.txt
+      - name: Prefer the high-accuracy Arabic OCR model when available
+        run: |
+          TESSDATA_DIR="$(dirname "$(find /usr/share/tesseract-ocr -path '*/tessdata/ara.traineddata' -print -quit)")"
+          test -n "$TESSDATA_DIR" && test -f "$TESSDATA_DIR/ara.traineddata"
+          cp "$TESSDATA_DIR/ara.traineddata" "$RUNNER_TEMP/ara-ubuntu.traineddata"
+          if curl --fail --location --retry 3 --retry-delay 2 \
+            'https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/e12c65a915945e4c28e237a9b52bc4a8f39a0cec/ara.traineddata' \
+            --output "$RUNNER_TEMP/ara-best.traineddata"; then
+            MODEL_SIZE="$(wc -c < "$RUNNER_TEMP/ara-best.traineddata")"
+            if [ "$MODEL_SIZE" -ge 5000000 ]; then
+              sudo install -m 0644 "$RUNNER_TEMP/ara-best.traineddata" "$TESSDATA_DIR/ara.traineddata"
+              if pdftoppm -f 1 -l 1 -r 150 -png -singlefile /tmp/sabaik-al-dhahab.pdf "$RUNNER_TEMP/ocr-probe" >/dev/null 2>&1 \
+                && tesseract "$RUNNER_TEMP/ocr-probe.png" stdout -l ara --psm 6 >/dev/null 2>&1; then
+                echo "Installed and smoke-tested tessdata_best Arabic OCR model."
+              else
+                sudo install -m 0644 "$RUNNER_TEMP/ara-ubuntu.traineddata" "$TESSDATA_DIR/ara.traineddata"
+                echo "::warning::High-accuracy Arabic model failed its smoke test; restored the Ubuntu model."
+              fi
+            else
+              echo "::warning::High-accuracy Arabic model download was unexpectedly small; keeping the Ubuntu model."
+            fi
+          else
+            echo "::warning::High-accuracy Arabic model download failed; keeping the Ubuntu model."
+          fi
       - name: Extract page-linked candidates and passages
         run: |
-          python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf --title 'سبائك الذهب في معرفة قبائل العرب' --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' --author 'محمد أمين البغدادي السويدي' --out data/sources/sabaik-al-dhahab
-          cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt > data/sources/sabaik-al-dhahab/source-report.txt
+          python scripts/extract_arabic_genealogy_candidates.py /tmp/sabaik-al-dhahab.pdf \
+            --title 'سبائك الذهب في معرفة قبائل العرب' \
+            --url 'https://sites.dlib.nyu.edu/viewer/books/nyu_aco001225/1?embed=1&lang=ar' \
+            --author 'محمد أمين البغدادي السويدي' \
+            --out data/sources/sabaik-al-dhahab | tee /tmp/extraction-summary.txt
+          cat /tmp/source-pdf-info.txt /tmp/source-pdf-sha256.txt /tmp/extraction-summary.txt \
+            > data/sources/sabaik-al-dhahab/source-report.txt
           {
             echo "## First-source extraction"
             echo
-            echo 'All rows are candidates/passages, not verified genealogy.'
-            echo
-            echo '### Counts'
-            echo 'Pages processed and candidate counts are recorded in the job log.'
+            grep -E '^(PDF pages processed|Extraction mode|Candidate mentions|Candidate extraction-quality counts|Page text-quality counts|Evidence passages)' /tmp/extraction-summary.txt
             echo
             echo '### Review gate'
-            echo 'Every row is UNREVIEWED. Do not import names or lineage claims without checking the cited page image.'
+            echo 'All rows are UNREVIEWED. Quality labels estimate text legibility only; they do not verify a tribe name or lineage.'
+            echo 'Verify each candidate against the cited page image and printed page number before accepting or linking it.'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload extraction report for human review
         uses: actions/upload-artifact@v5
