@@ -12,7 +12,7 @@ The machine-readable registry is `data/sources/arabic-genealogy-books.json`. It 
 - **مختلف القبائل ومؤتلفها** — محمد بن حبيب.
 - **معجم قبائل المملكة العربية السعودية** — حمد الجاسر.
 
-A registered source is not the same as an extracted source. The `sabaik-al-dhahab` record now tracks an extraction attempt, but remains **unusable for automatic ingestion** because OCR quality is poor. Other records stay `REGISTERED_NOT_EXTRACTED` or `REGISTERED_NEEDS_EDITION_URL` until an actual copy is processed.
+A registered source is not the same as an extracted source. The `sabaik-al-dhahab` (Wikisource/Bombay 1296 AH) and `sabaik-al-dhahab-nyu-1980` records track two separate extraction attempts, but both remain **unusable for automatic ingestion** because OCR quality is poor. Other records stay `REGISTERED_NOT_EXTRACTED` or `REGISTERED_NEEDS_EDITION_URL` until an actual copy is processed.
 
 ## Extract candidate mentions from a local PDF
 
