@@ -64,6 +64,21 @@ describe("authentication lifecycle against SQLite", () => {
       body: JSON.stringify({ name: "Lifecycle Test", email, password: oldPassword })
     }));
     expect(signUp.status).toBeLessThan(400);
+    const signUpBody = await signUp.json();
+    expect(signUpBody.token).toBeNull();
+    expect(cookieHeader(signUp)).not.toContain("better-auth");
+
+    const duplicateSignUp = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: BASE_URL },
+      body: JSON.stringify({ name: "Duplicate Attempt", email, password: oldPassword })
+    }));
+    expect(duplicateSignUp.status).toBe(signUp.status);
+    const duplicateBody = await duplicateSignUp.json();
+    expect(duplicateBody.token).toBeNull();
+    expect(duplicateBody.user.email).toBe(email);
+    expect(JSON.stringify(duplicateBody)).not.toMatch(/already exists|user exists|email already/i);
+    expect(cookieHeader(duplicateSignUp)).not.toContain("better-auth");
 
     const resendVerification = await auth.handler(new Request(`${BASE_URL}/api/auth/send-verification-email`, {
       method: "POST",
@@ -84,13 +99,6 @@ describe("authentication lifecycle against SQLite", () => {
       `${BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(expiredEmailToken)}`
     ));
     expect(expiredEmailVerification.status).toBe(401);
-
-    const signupCookies = cookieHeader(signUp);
-    expect(signupCookies).toContain("better-auth");
-    const signupSession = await auth.handler(new Request(`${BASE_URL}/api/auth/get-session`, {
-      headers: { cookie: signupCookies }
-    }));
-    expect((await signupSession.json()).user.email).toBe(email);
 
     const signIn = await auth.handler(new Request(`${BASE_URL}/api/auth/sign-in/email`, {
       method: "POST",
