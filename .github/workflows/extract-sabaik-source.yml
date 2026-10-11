@@ -3,7 +3,7 @@ name: Extract first genealogy source
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches: ["main", "fix/use-high-resolution-genealogy-source-20261011"]
     paths:
       - ".github/workflows/extract-sabaik-source.yml"
       - "scripts/extract_arabic_genealogy_candidates.py"
