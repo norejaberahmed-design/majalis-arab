@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { searchTribeNameCandidates } from "@/lib/tribe-name-candidates";
 
 type Entity = {
   id: string;
@@ -25,20 +27,34 @@ export default function EntitySearchPanel({
   initialEntities: Entity[];
   initialQuery: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [entities, setEntities] = useState<Entity[]>(initialEntities);
   const [suggestions, setSuggestions] = useState<Entity[]>([]);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [searched, setSearched] = useState(false);
+  const [searched, setSearched] = useState(Boolean(initialQuery));
 
-  // Suggestions come only from saved tribe records; no generated names.
+  useEffect(() => {
+    setQuery(initialQuery);
+    setEntities(initialEntities);
+    setSearched(Boolean(initialQuery));
+    setError("");
+  }, [initialEntities, initialQuery]);
+
+  // Suggestions come from saved profiles and the source-attributed candidate index; no generated names.
   useEffect(() => {
     const value = query.trim();
     if (value.length < 2) {
       setSuggestions([]);
       return;
     }
+    const candidateSuggestions: Entity[] = searchTribeNameCandidates(value, 8).map(candidate => ({
+      id: `candidate-${candidate.id}`,
+      name: candidate.name,
+      kind: candidate.entityKind,
+      summary: candidate.evidence || null
+    }));
+    setSuggestions(candidateSuggestions);
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
@@ -51,11 +67,14 @@ export default function EntitySearchPanel({
         if (!response.ok) return;
         const payload = await response.json();
         if (Array.isArray(payload.data)) {
-          setSuggestions(payload.data.filter((item: Entity) => item.kind === "TRIBE"));
+          setSuggestions([
+            ...payload.data.filter((item: Entity) => item.kind === "TRIBE"),
+            ...candidateSuggestions
+          ]);
         }
       } catch (cause) {
         if (cause instanceof Error && cause.name !== "AbortError") {
-          setSuggestions([]);
+          setSuggestions(candidateSuggestions);
         }
       }
     }, 250);
@@ -65,35 +84,17 @@ export default function EntitySearchPanel({
     };
   }, [query]);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = query.trim();
     if (value.length > 100) {
       setError("عبارة البحث أطول من 100 حرف.");
       return;
     }
-    setBusy(true);
-    setError("");
-    try {
-      const params = new URLSearchParams();
-      if (value) params.set("q", value);
-      const response = await fetch(`/api/entities?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store"
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "تعذر إكمال البحث.");
-      if (!Array.isArray(payload.data)) throw new Error("استجابة البحث غير صالحة.");
-      setEntities(payload.data.map((item: Entity) => ({
-        id: item.id, name: item.name, kind: item.kind, summary: item.summary
-      })));
-      setSearched(true);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "تعذر الاتصال بخدمة البحث.");
-    } finally {
-      setBusy(false);
-    }
+    const params = new URLSearchParams();
+    if (value) params.set("q", value);
+    const queryString = params.toString();
+    router.push(queryString ? `/entities?${queryString}` : "/entities");
   }
 
   return (
@@ -101,7 +102,7 @@ export default function EntitySearchPanel({
       <section className="page-intro">
         <p className="eyebrow">قاعدة المعرفة القبلية</p>
         <h1>البحث في القبائل والكيانات</h1>
-        <p className="intro">اكتب اسم القبيلة لتظهر الأسماء المسجلة في قاعدة المعرفة. اختر الاسم الصحيح ثم ابحث لفتح سجله ومصادره؛ الاقتراحات تعرض سجلات موجودة فقط.</p>
+        <p className="intro">اكتب اسم القبيلة لعرض السجلات المحفوظة والمرشحات المنقولة من مصادر. افتح المصدر للتحقق من المرشح؛ لا يظهر ملف قبلي معتمد إلا إذا كان سجلًا محفوظًا ومراجعًا.</p>
         <form onSubmit={submit} className="search-form">
           <label htmlFor="entity-query">اسم القبيلة أو الفرع أو المكان</label>
           <div className="search-row">
@@ -119,9 +120,9 @@ export default function EntitySearchPanel({
             <datalist id="tribe-name-suggestions">
               {suggestions.map(entity => <option key={entity.id} value={entity.name} />)}
             </datalist>
-            <button type="submit" className="primary-button" disabled={busy}>{busy ? "جارٍ البحث…" : "بحث"}</button>
+            <button type="submit" className="primary-button">بحث</button>
           </div>
-          <small id="tribe-suggestion-help">تظهر اقتراحات من أسماء القبائل المحفوظة فقط. إذا لم يظهر الاسم، فهذا لا يعني أنه غير موجود تاريخيًا؛ قد لا يكون أُضيف إلى القاعدة بعد.</small>
+          <small id="tribe-suggestion-help">تظهر اقتراحات من السجلات المحفوظة وفهرس أسماء مرتبط بمصادر. مرشحات الفهرس غير مراجعة ولا تُعد حقائق معتمدة.</small>
           {error && <p className="form-message" role="alert">{error}</p>}
         </form>
       </section>
