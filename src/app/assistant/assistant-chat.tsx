@@ -14,7 +14,7 @@ export default function AssistantChat() {
     event.preventDefault();
     const content = draft.trim();
     if (!content || busy) return;
-    const nextMessages: Message[] = [...messages, { role: "user", content }].slice(-8);
+    const nextMessages: Message[] = [...messages, { role: "user" as const, content }].slice(-8);
     setMessages(nextMessages);
     setDraft("");
     setError("");
