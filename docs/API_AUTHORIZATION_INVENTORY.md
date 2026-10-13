@@ -1,6 +1,6 @@
 # API Authorization Inventory
 
-Audit baseline: `main` as inspected on 2026-10-11. This is a static route inventory and review aid, not an independent penetration test or production security certification.
+Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant route was added. This is a static route inventory and review aid, not an independent penetration test or production security certification. This is a static route inventory and review aid, not an independent penetration test or production security certification.
 
 ## Shared authorization invariants
 
@@ -16,7 +16,7 @@ Audit baseline: `main` as inspected on 2026-10-11. This is a static route invent
 
 | Route | Methods | Expected boundary | Automated evidence |
 |---|---|---|---|
-| `/api/auth/[...all]` | Better Auth handler | Better Auth origin checks, persistent rate limits, secure session cookies and password policy | Authentication lifecycle integration; expiry, SMTP failure, resend, duplicate-sign-up and rate-limit regression tests |
+| `/api/assistant` | POST | Trusted Origin + authenticated active-workspace membership; bounded message count/length; server-only API key; no app-database conversation persistence; upstream errors are bounded | `assistant/route.test.ts` covers origin/session denial, validation, missing key, mocked response, and `store: false`\n| `/api/auth/[...all]` | Better Auth handler | Better Auth origin checks, persistent rate limits, secure session cookies and password policy | Authentication lifecycle integration; expiry, SMTP failure, resend, duplicate-sign-up and rate-limit regression tests |
 | `/api/workspaces` | GET, POST | Authenticated user; GET lists only own memberships; POST creates caller as OWNER and validates Origin | Auth lifecycle integration |
 | `/api/workspaces/active` | POST | Caller must be a member before the HTTP-only active-workspace cookie is set | Auth lifecycle integration verifies foreign-workspace rejection |
 | `/api/workspaces/members` | GET, POST | Active workspace; writes require trusted Origin and EDITOR-or-higher; membership predicates are workspace-scoped | `workspaces/members/route.test.ts` |
@@ -47,7 +47,7 @@ Audit baseline: `main` as inspected on 2026-10-11. This is a static route invent
 - SQLite tenant-isolation tests verify that foreign addition requests, private notes, council posts/comments/reactions, and curation drafts cannot be read or mutated through guessed IDs.
 - Authentication lifecycle tests cover sign-up, sign-in/out, password reset, session revocation after reset, workspace creation/switching, and foreign-workspace rejection.
 - Additional authentication regression tests cover persistent sign-in rate limits, SMTP failure, expired verification/reset tokens, resend, and duplicate-account enumeration.
-- Direct route tests exist for addition request submission and review, curation claims/entities/passages/places/relationships/sources, entity search/notes, source intake/import, tribe contributions, workspace creation/listing/members, and workspace-to-tribe linking.
+- Direct route tests exist for assistant requests, addition request submission and review, curation claims/entities/passages/places/relationships/sources, entity search/notes, source intake/import, tribe contributions, workspace creation/listing/members, and workspace-to-tribe linking.
 - CI runs Prisma schema/migration checks, tests, lint, production build, dependency audit, and CodeQL.
 
 ## Remaining release blockers
