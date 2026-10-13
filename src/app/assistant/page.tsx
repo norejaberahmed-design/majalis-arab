@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireWorkspace } from "@/lib/current-user";
 import AssistantChat from "./assistant-chat";
+import "./assistant.css";
 
 export const dynamic = "force-dynamic";
 
