@@ -1,6 +1,6 @@
 # API Authorization Inventory
 
-Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant route was added. This is a static route inventory and review aid, not an independent penetration test or production security certification. This is a static route inventory and review aid, not an independent penetration test or production security certification.
+Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant route was added. This is a static route inventory and review aid, not an independent penetration test or production security certification.
 
 ## Shared authorization invariants
 
@@ -19,7 +19,7 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 | `/api/assistant` | POST | Trusted Origin + authenticated active-workspace membership; bounded message count/length; server-only API key; no app-database conversation persistence; upstream errors are bounded | `assistant/route.test.ts` covers origin/session denial, validation, missing key, mocked response, and `store: false`\n| `/api/auth/[...all]` | Better Auth handler | Better Auth origin checks, persistent rate limits, secure session cookies and password policy | Authentication lifecycle integration; expiry, SMTP failure, resend, duplicate-sign-up and rate-limit regression tests |
 | `/api/workspaces` | GET, POST | Authenticated user; GET lists only own memberships; POST creates caller as OWNER and validates Origin | Auth lifecycle integration |
 | `/api/workspaces/active` | POST | Caller must be a member before the HTTP-only active-workspace cookie is set | Auth lifecycle integration verifies foreign-workspace rejection |
-| `/api/workspaces/members` | GET, POST | Active workspace; writes require trusted Origin and EDITOR-or-higher; membership predicates are workspace-scoped | `workspaces/members/route.test.ts` |
+| `/api/workspaces/members` | GET, POST | Active workspace; writes require trusted Origin and EDITOR-or-higher; membership predicates are workspace-scoped; client-supplied role is not authority | `workspaces/members/route.test.ts` verifies a submitted `role: OWNER` is stored as `VIEWER` |
 | `/api/workspaces/tribe` | GET, POST, DELETE | Workspace-scoped link; mutations require trusted Origin and OWNER; only TRIBE/CLAN entities are linkable | `workspaces/tribe/route.test.ts` |
 | `/api/tribes` | POST | Authenticated member + trusted Origin; contributions to existing profiles remain UNREVIEWED; missing names go to an addition-request workflow | `tribes/route.test.ts` |
 | `/api/entities` | GET, POST | Authenticated member for shared-catalogue search; POST deliberately returns 503 until catalogue governance is enabled | `entities/route.test.ts` |
@@ -59,3 +59,11 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 5. Run all release checks on one exact release-candidate commit and record an independent security review.
 
 **Do not deploy publicly yet.** This inventory records static review and current tests; it is not proof of a completed independent security review.
+
+## Latest regression additions (2026-10-13)
+
+- `src/app/api/curation/entities/route.test.ts`: negative cases verify untrusted Origin is rejected before workspace lookup/transaction, a non-allowlisted reviewer is denied, and curator allowlisting does not bypass the required reviewer role.
+- `src/app/api/workspaces/members/route.test.ts`: a client request that submits `role: OWNER` must create the new member as `VIEWER`.
+- `src/lib/env-example-safety.test.ts`: CI requires secret-bearing entries in `.env.example` to remain empty and rejects provider API-key-shaped strings.
+- These tests passed in Phase 1 checks and CodeQL on the PR candidates before merge. Main-branch checks also passed on commit `fb492e7d2f803aba508d49769e62dc621b0f05fd`.
+- The repository history still contains the previously exposed credential in an older commit. Rotating the credential and cleaning Git history are separate required actions; the current file fix and regression test do not resolve those tasks.
