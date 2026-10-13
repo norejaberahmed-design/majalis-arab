@@ -67,4 +67,32 @@ describe("curated entity creation", () => {
     expect(response.status).toBe(409);
     expect(mocks.entityCreate).not.toHaveBeenCalled();
   });
+  
+  it("rejects an untrusted origin before resolving the workspace or opening a transaction", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const response = await POST(request("بني تميم"));
+    expect(response.status).toBe(403);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.entityCreate).not.toHaveBeenCalled();
+  });
+
+  it("denies a reviewer who is not on the catalogue curator allowlist", async () => {
+    mocks.isCatalogueCurator.mockReturnValue(false);
+    const response = await POST(request("بني تميم"));
+    expect(response.status).toBe(403);
+    expect(mocks.isCatalogueCurator).toHaveBeenCalledWith("curator@example.test", process.env.CATALOGUE_CURATOR_EMAILS);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.entityCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("denies a user without reviewer-level workspace permissions even if allowlisted", async () => {
+    mocks.roleAtLeast.mockReturnValue(false);
+    const response = await POST(request("بني تميم"));
+    expect(response.status).toBe(403);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.entityCreate).not.toHaveBeenCalled();
+  });
+
 });
