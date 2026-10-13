@@ -137,4 +137,19 @@ describe("workspace member access boundaries", () => {
     expect(mocks.memberCreate).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
+  
+  it("never accepts a client-supplied elevated role when adding a member", async () => {
+    const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ email: "member@example.test", role: "OWNER" })
+    }));
+
+    expect(response.status).toBe(201);
+    expect(mocks.memberCreate).toHaveBeenCalledWith({
+      data: { workspaceId: "workspace-a", userId: "member-b", role: "VIEWER" },
+      select: { id: true, role: true, createdAt: true }
+    });
+  });
+
 });
