@@ -33,6 +33,7 @@ export default async function HomePage() {
         <nav className="home-nav" aria-label="التنقل الرئيسي">
           <Link className="active" href="/"><span>▦</span> نظرة عامة</Link>
           <Link href="/council"><span>◉</span> المجلس والحوار</Link>
+          <Link href="/assistant"><span>✧</span> المساعد المعرفي</Link>
           <Link href="/entities"><span>⌘</span> القبائل والكيانات</Link>
           <Link href="/sources"><span>▤</span> المكتبة والمصادر</Link>
           <Link href="/claims"><span>◈</span> الروايات والادعاءات</Link>

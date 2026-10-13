@@ -1,0 +1,25 @@
+.assistant-hero{padding-bottom:20px}
+.assistant-panel{max-width:900px;margin:0 auto 36px;border:1px solid #e4e9e2;border-radius:14px;background:#fff;overflow:hidden}
+.assistant-intro{display:flex;gap:14px;align-items:flex-start;padding:22px;border-bottom:1px solid #edf0e9}
+.assistant-mark{display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:13px;background:#eaf2ec;color:#245a42;font-size:24px;font-weight:700}
+.assistant-intro h2{font-size:17px;margin:0 0 7px;color:#243a2e}
+.assistant-intro p{font-size:12px;line-height:1.9;color:#78827a;margin:0}
+.assistant-messages{display:grid;gap:12px;min-height:230px;max-height:55vh;overflow:auto;padding:20px;background:#fafbf9}
+.assistant-empty{align-self:center;justify-self:center;max-width:440px;text-align:center;padding:30px 12px;color:#657269}
+.assistant-empty strong{font-size:14px;color:#314a3a}
+.assistant-empty p{font-size:12px;line-height:1.9}
+.assistant-message{max-width:90%;justify-self:start;background:#fff;border:1px solid #e2e8e0;border-radius:12px 12px 12px 3px;padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.assistant-message.user{justify-self:end;background:#eaf2ec;border-color:#dce8dc;border-radius:12px 12px 3px 12px}
+.assistant-message>span{display:block;font-size:10px;color:#67806d;font-weight:700;margin-bottom:6px}
+.assistant-message p{font-size:13px;line-height:1.95;color:#27382d;margin:0}
+.assistant-status{font-size:12px;color:#7b877d;padding:5px}
+.assistant-error{margin:0;padding:10px 20px;color:#9d3939;font-size:12px;background:#fff7f6}
+.assistant-form{padding:16px;border-top:1px solid #e8ece6;background:#fff}
+.assistant-form textarea{display:block;width:100%;resize:vertical;border:1px solid #dce4da;border-radius:9px;background:#fbfcfa;color:#24382c;font:inherit;font-size:13px;line-height:1.8;padding:12px;outline-offset:2px}
+.assistant-form textarea:focus{border-color:#7da48a}
+.assistant-form textarea:disabled{opacity:.7}
+.assistant-form-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:11px}
+.assistant-form-footer small{font-size:10px;line-height:1.7;color:#879087}
+.assistant-form-footer button{border:0;border-radius:8px;background:#245b43;color:#fff;font:inherit;font-size:12px;font-weight:700;padding:10px 16px;cursor:pointer;white-space:nowrap}
+.assistant-form-footer button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:640px){.assistant-intro{padding:16px}.assistant-messages{padding:13px;max-height:60vh}.assistant-message{max-width:96%}.assistant-form{padding:12px}.assistant-form-footer{align-items:stretch;flex-direction:column}.assistant-form-footer button{width:100%}}
