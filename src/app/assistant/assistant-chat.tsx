@@ -27,7 +27,8 @@ export default function AssistantChat() {
       });
       const payload = await response.json() as { answer?: string; error?: string };
       if (!response.ok || !payload.answer) throw new Error(payload.error || "تعذر الحصول على رد.");
-      setMessages([...nextMessages, { role: "assistant", content: payload.answer }].slice(-8));
+      const assistantMessage: Message = { role: "assistant", content: payload.answer };
+      setMessages([...nextMessages, assistantMessage].slice(-8));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "حدث خطأ غير متوقع.");
     } finally {
