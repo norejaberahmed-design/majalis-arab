@@ -317,3 +317,21 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .signin-v2-google button:hover:not(:disabled){background:#f7f9f7;border-color:#b8c7ba}
 .signin-v2-google button:disabled{opacity:.7;cursor:wait}
 .signin-v2-google-g{display:grid;place-items:center;width:22px;height:22px;border:1px solid #e4e8e4;border-radius:50%;background:#fff;color:#4285f4;font-family:Arial,sans-serif;font-size:16px;font-weight:800}
+
+
+/* First-step home: keep the main action focused on tribe search */
+.tribe-home{padding-bottom:42px}
+.tribe-home-hero{max-width:760px;padding-top:58px;padding-bottom:32px}
+.tribe-home-hero h1{margin-bottom:10px}
+.tribe-home-search{display:flex;gap:9px;max-width:650px;margin-top:24px}
+.tribe-home-search input{min-width:0;flex:1;height:50px;padding:0 14px;border:1px solid #d9ddd6;border-radius:9px;background:#fff;color:var(--ink);font:inherit;font-size:14px;outline-color:var(--green)}
+.tribe-home-search button{min-width:94px}
+.tribe-home-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:15px}
+.tribe-home-list{max-width:760px;margin:0 0 28px;padding:20px}
+.tribe-home-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tribe-home-row>div{min-width:0;flex:1}
+.tribe-home-row h3{margin:0;font-size:15px}
+.tribe-home-row p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.tribe-home-row>span{color:var(--green);font-size:18px}
+.tribe-home-footer{max-width:760px;padding:18px 0;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+@media(max-width:520px){.tribe-home-hero{padding-top:38px}.tribe-home-search{gap:7px}.tribe-home-search button{min-width:72px;padding-inline:12px}.tribe-home-list{padding:14px}.tribe-home-actions{gap:12px}}
