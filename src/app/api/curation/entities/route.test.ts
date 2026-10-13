@@ -21,6 +21,9 @@ import { POST } from "./route";
 describe("curated entity creation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.hasTrustedOrigin.mockReturnValue(true);
+    mocks.roleAtLeast.mockReturnValue(true);
+    mocks.isCatalogueCurator.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue({ workspaceId: "workspace-a", user: { id: "curator-a", email: "curator@example.test" }, role: "REVIEWER" });
     mocks.passageFindUnique.mockResolvedValue({ id: "passage-a", passageText: "ورد في النص: قبيلة بني تميم كانت في المنطقة.", entityId: null, reviewedByHuman: true, source: { id: "source-a", title: "Source", humanReviewed: true, accessStatus: "OPEN_ACCESS" } });
     mocks.entityFindUnique.mockResolvedValue(null);
