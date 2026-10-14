@@ -19,10 +19,17 @@ export async function POST(request: NextRequest, route: { params: Promise<{ id: 
     const parsed = councilCommentSchema.safeParse(body.data);
     if (!parsed.success) return NextResponse.json({ error: "اكتب تعليقًا لا يتجاوز 2000 حرف" }, { status: 400, headers: NO_STORE });
 
-    const post = await prisma.councilPost.findFirst({
-      where: { id, workspaceId: workspace.workspaceId },
+    let post = await prisma.councilPost.findFirst({
+      where: { id, workspaceId: workspace.workspaceId, tribeEntityId: null },
       select: { id: true }
     });
+    if (!post) {
+      // Shared tribe-council posts are visible to signed-in workspace members across workspaces.
+      post = await prisma.councilPost.findFirst({
+        where: { id, tribeEntityId: { not: null } },
+        select: { id: true }
+      });
+    }
     if (!post) return NextResponse.json({ error: "المنشور غير موجود في هذا المجلس" }, { status: 404, headers: NO_STORE });
 
     const comment = await prisma.councilComment.create({
