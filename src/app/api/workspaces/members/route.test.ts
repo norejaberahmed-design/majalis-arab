@@ -172,6 +172,19 @@ describe("workspace member access boundaries", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
   
+  it("returns a conflict when concurrent requests race on the membership unique constraint", async () => {
+    mocks.memberCreate.mockRejectedValueOnce({ code: "P2002" });
+    const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ email: "member@example.test" })
+    }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "هذا الحساب عضو بالفعل في المجلس" });
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
   it("never accepts a client-supplied elevated role when adding a member", async () => {
     const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
       method: "POST",
