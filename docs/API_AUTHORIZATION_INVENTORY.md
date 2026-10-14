@@ -27,10 +27,10 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 | `/api/entities/[id]/note` | GET, PUT, DELETE | Private note scoped by workspace and entity; writes require trusted Origin and EDITOR-or-higher | `entities/[id]/note/route.test.ts`; tenant-isolation integration |
 | `/api/addition-requests` | GET, POST | Authenticated member; VIEWER sees own requests, REVIEWER sees requests in active workspace; actor is derived from session | `addition-requests/route.test.ts`; tenant-isolation integration |
 | `/api/addition-requests/[id]` | PATCH | REVIEWER-or-higher, trusted Origin; target lookup and compare-and-set update constrained by request ID and workspace ID | `addition-requests/[id]/route.test.ts`; tenant-isolation integration |
-| `/api/council/posts` | GET, POST | Authenticated workspace member; posts are workspace-scoped; POST validates Origin | Tenant-isolation integration |
-| `/api/council/posts/[id]/comments` | POST | Parent post must belong to active workspace before comment creation; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
-| `/api/council/posts/[id]/reaction` | PUT | Target post belongs to active workspace; reaction is keyed to current user; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
-| `/api/messages` | GET, POST | Active workspace member; only workspace members can start one-to-one conversations; duplicate pair is unique per workspace; POST validates trusted Origin | `messages/route.test.ts` |
+| `/api/council/posts` | GET, POST | Authenticated workspace member; posts are workspace-scoped; POST validates Origin before workspace lookup and writes | Tenant-isolation integration verifies cross-workspace reads and rejects untrusted-Origin post creation without database changes |
+| `/api/council/posts/[id]/comments` | POST | Parent post must belong to active workspace before comment creation; trusted Origin checked first | Tenant-isolation integration tests denied foreign-post writes and untrusted-Origin requests without database changes |
+| `/api/council/posts/[id]/reaction` | PUT | Target post belongs to active workspace; reaction is keyed to current user; trusted Origin checked first | Tenant-isolation integration tests denied foreign-post writes and untrusted-Origin requests without database changes |
+| `/api/messages` | GET, POST | Active workspace member; only workspace members can start one-to-one conversations; duplicate pair is unique per workspace; POST validates trusted Origin before workspace lookup | `messages/route.test.ts` verifies cross-workspace access, duplicate prevention, and untrusted-Origin rejection before database writes |
 | `/api/messages/[id]/messages` | GET, POST | Conversation lookup constrained by active workspace and participant ID; messages are scoped to both workspace and conversation; POST validates trusted Origin and 4,000-character limit | `messages/route.test.ts` cross-workspace, guessed-ID, origin, length, duplicate-conversation, and membership-revocation tests |
 | `/api/curation/entities` | POST | REVIEWER-or-higher plus configured curator allowlist; trusted Origin; audit metadata | `curation/entities/route.test.ts` |
 | `/api/curation/sources/[id]` | PATCH | REVIEWER-or-higher plus curator allowlist; trusted Origin; source review changes audited | `curation/sources/[id]/route.test.ts` |
@@ -69,7 +69,12 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 
 **Do not deploy publicly yet.** This inventory records static review and current tests; it is not proof of a completed independent security review.
 
-## Latest regression additions (2026-10-13)
+## Latest regression additions (2026-10-14)
+
+- `src/app/api/tenant-isolation.integration.test.ts`: untrusted-Origin requests to create council posts, add comments, and add/remove reactions are denied before database writes; the test suite checks record counts remain unchanged.
+- `src/app/api/messages/route.test.ts`: starting a direct conversation from an untrusted Origin is denied before workspace lookup and before any conversation is created.
+
+## Previous regression additions (2026-10-13)
 
 - `src/app/api/curation/entities/route.test.ts`: negative cases verify untrusted Origin is rejected before workspace lookup/transaction, a non-allowlisted reviewer is denied, and curator allowlisting does not bypass the required reviewer role.
 - `src/app/api/workspaces/members/route.test.ts`: a client request that submits `role: OWNER` must create the new member as `VIEWER`; viewer email privacy and origin/role denial are covered.
