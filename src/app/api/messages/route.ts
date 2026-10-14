@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const workspace = await getWorkspaceContext(request.headers);
     if (!workspace) return NextResponse.json({ error: "سجّل الدخول واختر مجلسًا" }, { status: 401, headers: NO_STORE });
 
-    const [members, conversations] = await Promise.all([
+    const [members, conversations, activeMemberIds] = await Promise.all([
       prisma.workspaceMember.findMany({
         where: { workspaceId: workspace.workspaceId, userId: { not: workspace.user.id } },
         orderBy: { createdAt: "asc" },
@@ -32,17 +32,26 @@ export async function GET(request: NextRequest) {
           participantB: { select: { id: true, name: true, image: true } },
           messages: { where: { workspaceId: workspace.workspaceId }, orderBy: { createdAt: "desc" }, take: 1, select: { id: true, content: true, createdAt: true, authorId: true } }
         }
+      }),
+      prisma.workspaceMember.findMany({
+        where: { workspaceId: workspace.workspaceId },
+        select: { userId: true }
       })
     ]);
+    const activeMemberIdSet = new Set(activeMemberIds.map(member => member.userId));
 
     return NextResponse.json({
       members: members.map(member => ({ id: member.user.id, name: member.user.name, image: member.user.image, role: member.role, joinedAt: member.createdAt })),
-      data: conversations.map(conversation => ({
-        id: conversation.id,
-        participant: conversation.participantAId === workspace.user.id ? conversation.participantB : conversation.participantA,
-        updatedAt: conversation.updatedAt,
-        lastMessage: conversation.messages[0] ?? null
-      }))
+      data: conversations
+        .filter(conversation => activeMemberIdSet.has(
+          conversation.participantAId === workspace.user.id ? conversation.participantBId : conversation.participantAId
+        ))
+        .map(conversation => ({
+          id: conversation.id,
+          participant: conversation.participantAId === workspace.user.id ? conversation.participantB : conversation.participantA,
+          updatedAt: conversation.updatedAt,
+          lastMessage: conversation.messages[0] ?? null
+        }))
     }, { headers: NO_STORE });
   } catch (error) {
     console.error("Direct conversations load failed", error);
