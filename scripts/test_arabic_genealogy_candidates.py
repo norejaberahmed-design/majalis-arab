@@ -32,7 +32,7 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
         readable = ("قبيلة عبد القيس من قبائل العرب المعروفة في كتب الأنساب " * 4)
         # Exercise the embedded-text decision through a mocked pdftotext result.
         from unittest.mock import patch
-        with patch("extract_arabic_genealogy_candidates.run", return_value=readable + "\\f"):
+        with patch("extract_arabic_genealogy_candidates.run", return_value=readable + "\f"):
             with patch("extract_arabic_genealogy_candidates.shutil.which", return_value=None):
                 extracted, mode = pages_from_pdf(Path("unused.pdf"))
         self.assertEqual(mode, "embedded-text")
