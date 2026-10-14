@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function CouncilPage() {
   const workspace = await requireWorkspace();
-  const posts = await prisma.councilPost.findMany({
+  const [posts, workspaceMembers] = await Promise.all([
+    prisma.councilPost.findMany({
     where: { workspaceId: workspace.workspaceId },
     orderBy: { createdAt: "desc" },
     take: 40,
@@ -23,7 +24,14 @@ export default async function CouncilPage() {
       reactions: { where: { userId: workspace.user.id }, select: { id: true } },
       _count: { select: { comments: true, reactions: true } }
     }
-  });
+    }),
+    prisma.workspaceMember.findMany({
+      where: { workspaceId: workspace.workspaceId },
+      orderBy: { createdAt: "asc" },
+      take: 60,
+      select: { id: true, role: true, createdAt: true, user: { select: { id: true, name: true, image: true } } }
+    })
+  ]);
 
   const initialPosts = posts.map(post => ({
     id: post.id,
@@ -48,7 +56,17 @@ export default async function CouncilPage() {
         <h1>المجلس والحوار</h1>
         <p className="intro">مكان واحد للأحاديث والأسئلة والنقاشات، مع روابط واضحة لملف القبيلة والمصادر التاريخية.</p>
       </section>
-      <CouncilFeed initialPosts={initialPosts} workspaceName={workspace.workspace.name} />
+      <CouncilFeed
+        initialPosts={initialPosts}
+        workspaceName={workspace.workspace.name}
+        members={workspaceMembers.map(member => ({
+          id: member.id,
+          name: member.user.name,
+          image: member.user.image,
+          role: member.role,
+          joinedAt: member.createdAt.toISOString()
+        }))}
+      />
     </main>
   );
 }
