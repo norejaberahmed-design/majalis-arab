@@ -47,9 +47,7 @@ export default async function EntitiesPage({ searchParams }: { searchParams: Pro
         <Link href="/" className="secondary-button">العودة للبحث</Link>
       </header>
       <EntitySearchPanel initialEntities={entities} initialQuery={query} />
-      <div id="suggest-tribe">
-        <TribeCreateForm />
-      </div>
+      <TribeCreateForm />
     </main>
   );
 }
