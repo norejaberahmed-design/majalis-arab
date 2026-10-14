@@ -390,3 +390,19 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
   .post-card-v2{padding:15px}
   .council-sidebar{grid-template-columns:1fr}
 }
+
+/* Live workspace members panel */
+.members-card-v2{min-width:0}
+.members-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.members-heading .eyebrow{margin:0 0 2px;font-size:10px}
+.members-heading h2{margin:0}
+.members-heading>span{display:grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:8px;background:#eaf1e9;color:#285b40;font-size:12px;font-weight:700}
+.council-members-list{display:grid;gap:2px}
+.council-member-row{display:flex;align-items:center;gap:10px;min-width:0;padding:9px 0;border-bottom:1px solid #edf0e9}
+.council-member-avatar{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;overflow:hidden;border-radius:50%;background:#e8f0eb;color:#285b40;font-size:14px;font-weight:700}
+.council-member-avatar img{width:100%;height:100%;object-fit:cover}
+.council-member-details{display:block;min-width:0;flex:1}
+.council-member-details strong,.council-member-details small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.council-member-details strong{font-size:12px;font-weight:700}
+.council-member-details small{margin-top:2px;color:#7b867d;font-size:10px}
+.members-manage-link{margin-top:12px}
