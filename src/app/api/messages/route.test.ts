@@ -105,6 +105,17 @@ describe("private messages authorization integration", () => {
     expect(await prisma.directMessage.count({ where: { conversationId: ownConversation.id } })).toBe(0);
   });
 
+  it("revokes conversation access when the other participant is removed from the workspace", async () => {
+    await prisma.workspaceMember.deleteMany({ where: { workspaceId: workspaceA.id, userId: userD.id } });
+    try {
+      const response = await listMessages(new NextRequest(`https://majalis.example/api/messages/${ownConversation.id}/messages`), { params: Promise.resolve({ id: ownConversation.id }) });
+      expect(response.status).toBe(404);
+      expect(await response.json()).toMatchObject({ error: expect.any(String) });
+    } finally {
+      await prisma.workspaceMember.create({ data: { workspaceId: workspaceA.id, userId: userD.id, role: "VIEWER" } });
+    }
+  });
+
   it("reuses the same one-to-one conversation instead of creating duplicates", async () => {
     const request = () => new NextRequest("https://majalis.example/api/messages", {
       method: "POST", headers: { origin: "https://majalis.example", "content-type": "application/json" },
