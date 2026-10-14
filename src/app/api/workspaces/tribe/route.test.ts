@@ -108,6 +108,33 @@ describe("tribal council link", () => {
     expect(mocks.linkUpsert).not.toHaveBeenCalled();
   });
 
+  it("rejects an untrusted origin before any tribe-link mutation", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const response = await POST(new NextRequest("https://majalis.example/api/workspaces/tribe", {
+      method: "POST",
+      headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      body: JSON.stringify({ entityId: "tribe-a" })
+    }));
+
+    expect(response.status).toBe(403);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
+    expect(mocks.linkUpsert).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects an untrusted origin before unlinking a tribe", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const response = await DELETE(new NextRequest("https://majalis.example/api/workspaces/tribe", {
+      method: "DELETE",
+      headers: { origin: "https://attacker.example" }
+    }));
+
+    expect(response.status).toBe(403);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
+    expect(mocks.linkDelete).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
   it("scopes unlinking and audit to the active workspace", async () => {
     mocks.linkFindUnique.mockResolvedValue({ entityId: "tribe-a" });
     const response = await DELETE(new NextRequest("https://majalis.example/api/workspaces/tribe", {
