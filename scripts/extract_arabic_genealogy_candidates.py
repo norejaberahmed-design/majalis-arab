@@ -90,8 +90,13 @@ def pages_from_pdf(pdf: Path) -> tuple[list[str], str]:
 
     # Arabic glyph count alone is not enough: scanned PDFs sometimes contain a broken OCR layer.
     # Re-OCR when the text layer is sparse or its token statistics indicate substantial corruption.
-    if len(embedded_pages) >= 5 and total_arabic >= 500 and low_ratio < 0.35 and median_short < 0.42:
-        return embedded_pages, "embedded-text"
+    # A short but readable text-layer PDF should not require OCR merely because it
+    # has fewer than five pages. For longer scans, keep the stricter corruption checks.
+    if total_arabic >= 100:
+        if len(embedded_pages) < 5 and low_ratio < 0.5 and median_short < 0.55:
+            return embedded_pages, "embedded-text"
+        if len(embedded_pages) >= 5 and total_arabic >= 500 and low_ratio < 0.35 and median_short < 0.42:
+            return embedded_pages, "embedded-text"
 
     missing = [tool for tool in ("pdfinfo", "pdftoppm", "tesseract") if not shutil.which(tool)]
     if missing:
