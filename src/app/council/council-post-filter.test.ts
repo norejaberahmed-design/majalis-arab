@@ -13,6 +13,8 @@ describe("council post filtering", () => {
     expect(isCouncilQuestion("ما المصدر؟")).toBe(true);
     expect(isCouncilQuestion("Is this verified?")).toBe(true);
     expect(isCouncilQuestion("  سؤال: ما المرجع")).toBe(true);
+    expect(isCouncilQuestion("هل توجد رواية أخرى")).toBe(true);
+    expect(isCouncilQuestion("أين ورد هذا الخبر")).toBe(true);
     expect(isCouncilQuestion("حديث بلا علامة")).toBe(false);
   });
 
