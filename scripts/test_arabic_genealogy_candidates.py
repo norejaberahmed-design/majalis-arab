@@ -30,7 +30,6 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
 
     def test_short_readable_text_layer_pdf_does_not_require_ocr(self):
         readable = ("قبيلة عبد القيس من قبائل العرب المعروفة في كتب الأنساب " * 4)
-        pages, mode = pages_from_pdf.__globals__["run"], None
         # Exercise the embedded-text decision through a mocked pdftotext result.
         from unittest.mock import patch
         with patch("extract_arabic_genealogy_candidates.run", return_value=readable + "\\f"):
