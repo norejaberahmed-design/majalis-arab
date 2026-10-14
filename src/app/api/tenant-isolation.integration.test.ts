@@ -23,7 +23,7 @@ import { prisma } from "@/lib/prisma";
 import { GET as listAdditionRequests } from "./addition-requests/route";
 import { PATCH as reviewAdditionRequest } from "./addition-requests/[id]/route";
 import { GET as getEntityNote } from "./entities/[id]/note/route";
-import { GET as listCouncilPosts } from "./council/posts/route";
+import { GET as listCouncilPosts, POST as createCouncilPost } from "./council/posts/route";
 import { POST as createCouncilComment } from "./council/posts/[id]/comments/route";
 import { PUT as updateCouncilReaction } from "./council/posts/[id]/reaction/route";
 import { PATCH as reviewCurationDraft } from "./curation/drafts/[id]/route";
@@ -203,7 +203,6 @@ describe("SQLite tenant-isolation integration", () => {
       body: JSON.stringify({ content: "A post from an untrusted origin must be rejected." })
     });
 
-    const { POST: createCouncilPost } = await import("./council/posts/route");
     const response = await createCouncilPost(request);
     const after = await prisma.councilPost.count({ where: { workspaceId: workspaceA.id } });
 
