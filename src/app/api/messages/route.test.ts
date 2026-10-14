@@ -85,6 +85,18 @@ describe("private messages authorization integration", () => {
     expect(await prisma.directConversation.count({ where: { workspaceId: workspaceA.id, OR: [{ participantAId: userA.id, participantBId: userB.id }, { participantAId: userB.id, participantBId: userA.id }] } })).toBe(0);
   });
 
+  it("rejects starting a conversation from an untrusted origin before creating data", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const before = await prisma.directConversation.count({ where: { workspaceId: workspaceA.id } });
+    const response = await startConversation(new NextRequest("https://majalis.example/api/messages", {
+      method: "POST", headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      body: JSON.stringify({ participantUserId: userD.id })
+    }));
+    expect(response.status).toBe(403);
+    expect(await prisma.directConversation.count({ where: { workspaceId: workspaceA.id } })).toBe(before);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
+  });
+
   it("rejects a write from an untrusted origin before creating data", async () => {
     mocks.hasTrustedOrigin.mockReturnValue(false);
     const before = await prisma.directMessage.count({ where: { conversationId: ownConversation.id } });
