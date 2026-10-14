@@ -75,6 +75,11 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ data: { ...member, user }, message: "أُضيف العضو إلى المجلس. يمكنه اختيار المجلس بعد تسجيل الدخول." }, { status: 201, headers: NO_STORE });
   } catch (error) {
+    // The preflight lookup above improves the usual response, but two requests
+    // can race. The database unique constraint is authoritative in that case.
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return NextResponse.json({ error: "هذا الحساب عضو بالفعل في المجلس" }, { status: 409, headers: NO_STORE });
+    }
     console.error("Council member add failed", error);
     return NextResponse.json({ error: "تعذرت إضافة العضو حاليًا" }, { status: 503, headers: NO_STORE });
   }
