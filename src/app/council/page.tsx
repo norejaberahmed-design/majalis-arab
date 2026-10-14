@@ -38,15 +38,15 @@ export default async function CouncilPage() {
   }));
 
   return (
-    <main className="shell">
+    <main className="shell council-shell-v2">
       <header className="topbar">
         <Link href="/council" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>المجلس والحوار</small></span></Link>
         <WorkspaceActions />
       </header>
-      <section className="page-intro council-intro">
-        <p className="eyebrow">مجتمعك يبدأ من هنا</p>
-        <h1>المجلس العربي</h1>
-        <p className="intro">مكان للأحاديث والأسئلة وتبادل الخبرات بين الأعضاء. انشر حديثًا، شارك في النقاش، وتفاعل مع ما يهم مجلسك.</p>
+      <section className="page-intro council-intro council-intro-v2">
+        <p className="eyebrow">مساحة تجمع الأعضاء</p>
+        <h1>المجلس والحوار</h1>
+        <p className="intro">مكان واحد للأحاديث والأسئلة والنقاشات، مع روابط واضحة لملف القبيلة والمصادر التاريخية.</p>
       </section>
       <CouncilFeed initialPosts={initialPosts} workspaceName={workspace.workspace.name} />
     </main>
