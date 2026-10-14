@@ -111,6 +111,9 @@ describe("private messages authorization integration", () => {
       const response = await listMessages(new NextRequest(`https://majalis.example/api/messages/${ownConversation.id}/messages`), { params: Promise.resolve({ id: ownConversation.id }) });
       expect(response.status).toBe(404);
       expect(await response.json()).toMatchObject({ error: expect.any(String) });
+      const indexResponse = await listConversations(new NextRequest("https://majalis.example/api/messages"));
+      const index = await indexResponse.json();
+      expect(index.data.some((item: { id: string }) => item.id === ownConversation.id)).toBe(false);
     } finally {
       await prisma.workspaceMember.create({ data: { workspaceId: workspaceA.id, userId: userD.id, role: "VIEWER" } });
     }
