@@ -134,7 +134,8 @@ export default function EntitySearchPanel({
         {entities.length === 0 ? (
           <div className="empty-state">
             <strong>{searched || initialQuery ? "لا توجد نتائج مطابقة في السجلات الحالية" : "لا توجد سجلات بعد"}</strong>
-            <p>{searched || initialQuery ? "يمكن إضافة الاسم مع مرجع موثوق. لا ننشئ أسماء أو معلومات تاريخية من التخمين." : "ستظهر السجلات بعد إدخالها وربطها بالمصادر."}</p>
+            <p>{searched || initialQuery ? "لم نعثر على سجل محفوظ بهذا الاسم. يمكنك اقتراح إضافة القبيلة لتُراجع قبل اعتمادها." : "ستظهر السجلات بعد إدخالها وربطها بالمصادر."}</p>
+            {(searched || initialQuery) && <Link className="primary-button" href="#suggest-tribe">＋ اقتراح إضافة هذه القبيلة</Link>}
           </div>
         ) : (
           <div className="entity-list">
