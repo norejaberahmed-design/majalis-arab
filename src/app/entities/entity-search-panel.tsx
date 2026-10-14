@@ -145,7 +145,7 @@ export default function EntitySearchPanel({
                   <h3><Link href={`/entities/${encodeURIComponent(entity.id)}`} className="text-link">{entity.name} ←</Link></h3>
                   <p>{entity.summary || "لا يوجد ملخص موثق مسجل لهذا الكيان."}</p>
                   <small>{labels[entity.kind] ?? "نوع غير محدد"}{entity.claimsCount !== undefined ? ` · ${entity.claimsCount} ادعاء` : ""}{entity.passagesCount !== undefined ? ` · ${entity.passagesCount} مقطع دليل` : ""}{entity.relationshipsCount !== undefined ? ` · ${entity.relationshipsCount} علاقة مسجلة` : ""}</small>
-                  <p><Link className="text-link" href="/claims">فحص الادعاءات ←</Link>{" "}<Link className="text-link" href="/sources">تصفح المصادر ←</Link></p>
+                  <p>{["TRIBE", "CLAN"].includes(entity.kind) && <Link className="text-link" href={`/council/tribe/${encodeURIComponent(entity.id)}`}>دخول مجلس القبيلة ←</Link>}{" "}<Link className="text-link" href="/claims">فحص الادعاءات ←</Link>{" "}<Link className="text-link" href="/sources">تصفح المصادر ←</Link></p>
                 </div>
                 <span className="status-label">سجل بحثي</span>
               </article>
