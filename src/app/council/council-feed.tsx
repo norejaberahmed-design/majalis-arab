@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
+import { filterCouncilPosts, isCouncilQuestion } from "./council-post-filter";
 
 type Person = { id: string; name: string; image: string | null };
 type Comment = { id: string; content: string; createdAt: string; author: Person };
@@ -26,10 +27,6 @@ function formatJoinDate(value: string) {
   return new Date(value).toLocaleDateString("ar-SA", { year: "numeric", month: "short" });
 }
 
-function isQuestion(content: string) {
-  return content.includes("؟") || content.includes("?") || /^سؤال[:：\s]/.test(content.trim());
-}
-
 export default function CouncilFeed({ initialPosts, workspaceName, members }: { initialPosts: Post[]; workspaceName: string; members: CouncilMember[] }) {
   const [posts, setPosts] = useState(initialPosts);
   const [content, setContent] = useState("");
@@ -40,14 +37,7 @@ export default function CouncilFeed({ initialPosts, workspaceName, members }: { 
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  const visiblePosts = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("ar");
-    return posts.filter(post => {
-      const matchesQuery = !normalized || post.content.toLocaleLowerCase("ar").includes(normalized)
-        || post.author.name.toLocaleLowerCase("ar").includes(normalized);
-      return matchesQuery && (filter === "all" || isQuestion(post.content));
-    });
-  }, [posts, query, filter]);
+  const visiblePosts = useMemo(() => filterCouncilPosts(posts, query, filter), [posts, query, filter]);
 
   async function createPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -166,7 +156,7 @@ export default function CouncilFeed({ initialPosts, workspaceName, members }: { 
                 <header className="post-header">
                   <span className="post-avatar">{post.author.name.trim().slice(0, 1) || "ع"}</span>
                   <div className="post-author"><strong>{post.author.name}</strong><small>{formatDate(post.createdAt)}</small></div>
-                  <span className="post-menu-label">{isQuestion(post.content) ? "سؤال" : "حديث المجلس"}</span>
+                  <span className="post-menu-label">{isCouncilQuestion(post.content) ? "سؤال" : "حديث المجلس"}</span>
                 </header>
                 <p className="post-content">{post.content}</p>
                 <div className="post-stats"><span>♥ {post.reactionCount} تفاعل</span><span>◯ {post.commentCount} تعليق</span></div>
