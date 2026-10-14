@@ -5,6 +5,7 @@ import { useMemo, useState, type FormEvent } from "react";
 
 type Person = { id: string; name: string; image: string | null };
 type Comment = { id: string; content: string; createdAt: string; author: Person };
+type CouncilMember = { id: string; name: string; image: string | null; role: string; joinedAt: string };
 type Post = {
   id: string;
   content: string;
@@ -25,7 +26,7 @@ function isQuestion(content: string) {
   return content.includes("؟") || content.includes("?") || /^سؤال[:：\s]/.test(content.trim());
 }
 
-export default function CouncilFeed({ initialPosts, workspaceName }: { initialPosts: Post[]; workspaceName: string }) {
+export default function CouncilFeed({ initialPosts, workspaceName, members }: { initialPosts: Post[]; workspaceName: string; members: CouncilMember[] }) {
   const [posts, setPosts] = useState(initialPosts);
   const [content, setContent] = useState("");
   const [query, setQuery] = useState("");
@@ -184,6 +185,16 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
 
         <aside className="council-sidebar">
           <section className="sidebar-card sidebar-card-v2"><p className="eyebrow">مجلسك الحالي</p><h2>{workspaceName}</h2><p>المنشورات والتعليقات هنا مرتبطة بمساحة العمل الحالية، ويظهر اسم الكاتب من حسابه المسجل.</p><div className="sidebar-divider" /><Link href="/setup" className="sidebar-action">إعدادات المجلس <span>←</span></Link></section>
+          <section className="sidebar-card sidebar-card-v2 members-card-v2">
+            <div className="members-heading"><div><p className="eyebrow">أهل المجلس</p><h2>الأعضاء</h2></div><span>{members.length}</span></div>
+            {members.length === 0 ? <p className="muted">لا توجد عضويات ظاهرة في هذا المجلس بعد.</p> : <div className="council-members-list">{members.map(member => (
+              <div className="council-member-row" key={member.id}>
+                <span className="council-member-avatar">{member.image ? <img src={member.image} alt="" /> : (member.name.trim().slice(0, 1) || "ع")}</span>
+                <span className="council-member-details"><strong>{member.name}</strong><small>{member.role === "OWNER" ? "مالك المجلس" : member.role === "EDITOR" ? "محرر" : member.role === "REVIEWER" ? "مراجع" : "عضو"}</small></span>
+              </div>
+            ))}</div>}
+            <Link href="/setup" className="sidebar-action members-manage-link">إدارة الأعضاء <span>←</span></Link>
+          </section>
           <section className="sidebar-card sidebar-card-v2"><h2>تصفّح المجلس</h2><nav className="council-nav"><Link href="/tribe">تاريخ القبيلة وملفها</Link><Link href="/entities">دليل الكيانات</Link><Link href="/sources">المصادر والمراجع</Link><Link href="/claims">الروايات والادعاءات التاريخية</Link><Link href="/requests">طلبات الإضافة</Link></nav></section>
           <section className="sidebar-note sidebar-note-v2"><strong>الذاكرة مسؤولية</strong><p>شارك الروايات باحترام، وأرفق المصدر عند الحديث عن التاريخ. المعلومة غير المراجعة لا تُعرض كحقيقة مؤكدة.</p></section>
         </aside>
