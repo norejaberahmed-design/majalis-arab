@@ -68,7 +68,7 @@ export async function POST(request: NextRequest, route: { params: Promise<{ id: 
     const scriptPath = path.join(process.cwd(), "scripts", "extract_arabic_genealogy_candidates.py");
     try {
       await execFileAsync(process.env.PYTHON_BIN || "python3", [
-        scriptPath, "--pdf", pdfPath, "--title", source.title,
+        scriptPath, pdfPath, "--title", source.title,
         "--url", source.url || "", "--author", source.author || "",
         "--edition", source.edition || "", "--out", outputDir
       ], { timeout: 240_000, maxBuffer: 2 * 1024 * 1024 });
