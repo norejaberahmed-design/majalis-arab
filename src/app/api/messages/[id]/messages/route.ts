@@ -12,7 +12,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 async function getAuthorizedConversation(id: string, workspaceId: string, userId: string) {
   if (!id || id.length > 64) return null;
-  return prisma.directConversation.findFirst({
+  const conversation = await prisma.directConversation.findFirst({
     where: {
       id,
       workspaceId,
@@ -20,6 +20,18 @@ async function getAuthorizedConversation(id: string, workspaceId: string, userId
     },
     select: { id: true, workspaceId: true, participantAId: true, participantBId: true }
   });
+  if (!conversation) return null;
+
+  // A conversation is only accessible while both participants remain members
+  // of this workspace. Removing a member therefore revokes access immediately.
+  const otherParticipantId = conversation.participantAId === userId
+    ? conversation.participantBId
+    : conversation.participantAId;
+  const otherParticipantMembership = await prisma.workspaceMember.findUnique({
+    where: { workspaceId_userId: { workspaceId, userId: otherParticipantId } },
+    select: { userId: true }
+  });
+  return otherParticipantMembership ? conversation : null;
 }
 
 export async function GET(request: NextRequest, route: RouteContext) {
@@ -57,11 +69,17 @@ export async function POST(request: NextRequest, route: RouteContext) {
     const parsed = messageSchema.safeParse(body.data);
     if (!parsed.success) return NextResponse.json({ error: "اكتب رسالة لا تتجاوز 4000 حرف" }, { status: 400, headers: NO_STORE });
 
-    const message = await prisma.directMessage.create({
-      data: { workspaceId: workspace.workspaceId, conversationId: conversation.id, authorId: workspace.user.id, content: parsed.data.content },
-      select: { id: true, content: true, createdAt: true, authorId: true, author: { select: { id: true, name: true, image: true } } }
+    const message = await prisma.$transaction(async tx => {
+      const created = await tx.directMessage.create({
+        data: { workspaceId: workspace.workspaceId, conversationId: conversation.id, authorId: workspace.user.id, content: parsed.data.content },
+        select: { id: true, content: true, createdAt: true, authorId: true, author: { select: { id: true, name: true, image: true } } }
+      });
+      await tx.directConversation.update({
+        where: { id: conversation.id, workspaceId: workspace.workspaceId },
+        data: { updatedAt: created.createdAt }
+      });
+      return created;
     });
-    await prisma.directConversation.update({ where: { id: conversation.id }, data: { updatedAt: message.createdAt } });
     return NextResponse.json({ data: message }, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error("Direct message creation failed", error);
