@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function CouncilPage() {
   const workspace = await requireWorkspace();
   const posts = await prisma.councilPost.findMany({
-    where: { workspaceId: workspace.workspaceId },
+    where: { workspaceId: workspace.workspaceId, tribeEntityId: null },
     orderBy: { createdAt: "desc" },
     take: 40,
     select: {

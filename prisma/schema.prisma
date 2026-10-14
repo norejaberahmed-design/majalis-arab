@@ -24,6 +24,7 @@ model TribalEntity {
   requests    AdditionRequest[]
   workspaceNotes WorkspaceEntityNote[]
   councilWorkspaces WorkspaceTribe[]
+  councilPosts CouncilPost[]
   places       Place[]
   knowledgeEntries TribeKnowledgeEntry[]
 
@@ -341,15 +342,18 @@ model CouncilPost {
   id          String           @id @default(cuid())
   workspaceId String
   authorId    String
+  tribeEntityId String?
   content     String
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tribeEntity TribalEntity?    @relation(fields: [tribeEntityId], references: [id], onDelete: Cascade)
   comments    CouncilComment[]
   reactions   CouncilReaction[]
 
   @@index([workspaceId, createdAt])
+  @@index([tribeEntityId, createdAt])
   @@index([authorId, createdAt])
   @@map("council_post")
 }

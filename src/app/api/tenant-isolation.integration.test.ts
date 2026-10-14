@@ -36,6 +36,7 @@ let workspaceB: { id: string; name: string };
 let entity: { id: string; name: string };
 let foreignRequest: { id: string };
 let foreignPost: { id: string };
+let sharedTribePost: { id: string };
 let source: { id: string };
 let passage: { id: string; passageText: string };
 let foreignSuggestion: { id: string; statement: string };
@@ -94,6 +95,10 @@ describe("SQLite tenant-isolation integration", () => {
     });
     foreignPost = await prisma.councilPost.create({
       data: { workspaceId: workspaceB.id, authorId: userB.id, content: "A post private to workspace B" },
+      select: { id: true }
+    });
+    sharedTribePost = await prisma.councilPost.create({
+      data: { workspaceId: workspaceB.id, authorId: userB.id, tribeEntityId: entity.id, content: "A post shared in the tribe council" },
       select: { id: true }
     });
     source = await prisma.source.create({
@@ -191,6 +196,38 @@ describe("SQLite tenant-isolation integration", () => {
 
     expect(response.status).toBe(200);
     expect(body.data.some(item => item.id === foreignPost.id)).toBe(false);
+  });
+
+  it("shows shared tribe-council posts to a different workspace", async () => {
+    const response = await listCouncilPosts(new NextRequest("https://majalis.example/api/council/posts?tribeId=" + entity.id));
+    const body = await response.json() as { data: Array<{ id: string }> };
+    expect(response.status).toBe(200);
+    expect(body.data.some(item => item.id === sharedTribePost.id)).toBe(true);
+    expect(body.data.some(item => item.id === foreignPost.id)).toBe(false);
+  });
+
+  it("allows a different workspace to comment on a shared tribe-council post", async () => {
+    const request = new NextRequest("https://majalis.example/api/council/posts/" + sharedTribePost.id + "/comments", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: "A comment from another workspace in the same shared tribe council." })
+    });
+    const response = await createCouncilComment(request, { params: Promise.resolve({ id: sharedTribePost.id }) });
+    const comments = await prisma.councilComment.count({ where: { postId: sharedTribePost.id } });
+    expect(response.status).toBe(201);
+    expect(comments).toBe(1);
+  });
+
+  it("allows a different workspace to react to a shared tribe-council post", async () => {
+    const request = new NextRequest("https://majalis.example/api/council/posts/" + sharedTribePost.id + "/reaction", {
+      method: "PUT",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ liked: true })
+    });
+    const response = await updateCouncilReaction(request, { params: Promise.resolve({ id: sharedTribePost.id }) });
+    const reactions = await prisma.councilReaction.count({ where: { postId: sharedTribePost.id, userId: userA.id } });
+    expect(response.status).toBe(200);
+    expect(reactions).toBe(1);
   });
 
   it("rejects a comment against a post in another workspace", async () => {

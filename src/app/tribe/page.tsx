@@ -100,7 +100,7 @@ export default async function MyTribePage() {
             <p className="eyebrow">ملف مستند إلى السجل الفعلي</p>
             <h1>{tribe.name}</h1>
             <p className="intro">{tribe.summary || "لا يوجد ملخص تاريخي موثق مسجل لهذا الكيان حتى الآن."}</p>
-            <div className="hero-actions"><span className="status-label">{kindLabels[tribe.kind] ?? tribe.kind}</span><Link className="secondary-button" href={`/entities/${tribe.id}`}>فتح الملف البحثي الكامل ←</Link><Link className="secondary-button" href="/council">دخول المجلس</Link></div>
+            <div className="hero-actions"><span className="status-label">{kindLabels[tribe.kind] ?? tribe.kind}</span><Link className="secondary-button" href={`/entities/${tribe.id}`}>فتح الملف البحثي الكامل ←</Link><Link className="primary-button" href={`/council/tribe/${tribe.id}`}>دخول مجلس القبيلة</Link></div>
           </section>
           <section className="unknowns compact-unknowns"><strong>تنبيه مهم</strong><p>هذا هو ملف القبيلة المرتبط بمجلسك، وليس إثباتًا شخصيًا للنسب. كل علاقة أو رواية تظهر كما سُجلت، ويجب فحص مصادرها وحالة مراجعتها قبل اعتبارها حقيقة.</p></section>
           <section className="stats" aria-label="ملخص سجل القبيلة">
