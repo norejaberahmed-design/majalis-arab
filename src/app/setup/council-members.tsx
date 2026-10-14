@@ -64,7 +64,7 @@ export default function CouncilMembers() {
       {loading ? <p className="muted">جارٍ تحميل الأعضاء…</p> : members.length === 0 ? <p className="muted">اختر مجلسًا لعرض الأعضاء.</p> :
         <div className="members-list">{members.map(member => <article className="member-row" key={member.id}>
           <span className="member-avatar">{member.user.name.trim().slice(0, 1) || "ع"}</span>
-          <div className="member-details"><strong>{member.user.name}</strong><small>{member.user.email}</small></div>
+          <div className="member-details"><strong>{member.user.name}</strong>{member.user.email && <small>{member.user.email}</small>}</div>
           <span className="member-role">{member.role === "OWNER" ? "مالك المجلس" : member.role === "EDITOR" ? "محرر" : member.role === "REVIEWER" ? "مراجع" : "عضو"}</span>
         </article>)}</div>}
       {canManage && <form className="member-add-form" onSubmit={addMember}>
