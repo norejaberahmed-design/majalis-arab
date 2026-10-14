@@ -17,7 +17,16 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "asc" },
       select: { id: true, role: true, createdAt: true, user: { select: { id: true, name: true, email: true, image: true } } }
     });
-    return NextResponse.json({ data: { workspace: workspace.workspace, role: workspace.role, members } }, { headers: NO_STORE });
+    const canViewMemberEmails = roleAtLeast(workspace.role, "EDITOR");
+    const safeMembers = members.map(member => ({
+      ...member,
+      user: {
+        ...member.user,
+        // Email addresses are available only to members who can manage the roster.
+        email: canViewMemberEmails ? member.user.email : ""
+      }
+    }));
+    return NextResponse.json({ data: { workspace: workspace.workspace, role: workspace.role, members: safeMembers } }, { headers: NO_STORE });
   } catch (error) {
     console.error("Council member list failed", error);
     return NextResponse.json({ error: "تعذر تحميل أعضاء المجلس" }, { status: 503, headers: NO_STORE });
