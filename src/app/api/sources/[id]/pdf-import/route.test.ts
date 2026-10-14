@@ -72,4 +72,20 @@ describe("PDF genealogy import authorization and validation", () => {
     const response = await POST(request(new FormData()), { params: Promise.resolve({ id: "missing" }) });
     expect(response.status).toBe(404);
   });
+
+  it("rejects a non-PDF file by extension", async () => {
+    const body = new FormData();
+    body.set("file", new File(["plain text payload"], "book.txt", { type: "text/plain" }));
+    const response = await POST(request(body), { params: Promise.resolve({ id: "source-a" }) });
+    expect(response.status).toBe(400);
+    expect(mocks.sourceFindUnique).toHaveBeenCalled();
+  });
+
+  it("rejects a file with a PDF extension but without a PDF signature", async () => {
+    const body = new FormData();
+    body.set("file", new File(["this is not a PDF"], "book.pdf", { type: "application/pdf" }));
+    const response = await POST(request(body), { params: Promise.resolve({ id: "source-a" }) });
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toContain("PDF");
+  });
 });
