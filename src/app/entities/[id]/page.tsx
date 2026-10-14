@@ -176,6 +176,7 @@ export default async function EntityProfilePage({ params }: { params: Promise<{ 
           <span className="status-label">{kindLabels[entity.kind] ?? "نوع غير محدد"}</span>
           <span className="status-label">{entity.claims.length} ادعاء مسجل</span>
           <span className="status-label">{relationships.length} علاقة مسجلة</span>
+          {["TRIBE", "CLAN"].includes(entity.kind) && <Link className="primary-button" href={`/council/tribe/${encodeURIComponent(entity.id)}`}>دخول مجلس القبيلة ←</Link>}
         </div>
       </section>
 
