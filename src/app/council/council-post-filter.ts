@@ -6,7 +6,10 @@ type FilterablePost = {
 };
 
 export function isCouncilQuestion(content: string) {
-  return content.includes("؟") || content.includes("?") || /^سؤال[:：\s]/.test(content.trim());
+  const normalized = content.trim();
+  return content.includes("؟") || content.includes("?")
+    || /^سؤال[:：\\s]/.test(normalized)
+    || /^(هل|ما|ماذا|متى|أين|اين|كيف|لماذا|لِماذا|من|أي|أَيّ|كم|أيان)(?:[\\s،:：]|$)/.test(normalized);
 }
 
 export function filterCouncilPosts<T extends FilterablePost>(
