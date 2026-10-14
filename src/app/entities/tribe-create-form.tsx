@@ -44,7 +44,7 @@ export default function TribeCreateForm() {
   }
 
   return (
-    <section className="panel entity-form" aria-labelledby="create-tribe-heading">
+    <section id="suggest-tribe" className="panel entity-form" aria-labelledby="create-tribe-heading">
       <h2 id="create-tribe-heading">اقتراح قبيلة أو إضافة معلومات</h2>
       <p className="muted">إذا لم يكن الاسم موجودًا، يُرسل إلى قائمة المراجعة ولا يُنشأ سجل مشترك تلقائيًا. أما المعلومات المضافة إلى قبيلة موجودة فتُحفظ بوصفها غير مراجعة حتى يراجعها المختصون.</p>
       <form onSubmit={submit}>
