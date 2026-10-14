@@ -7,6 +7,7 @@ from extract_arabic_genealogy_candidates import (
     candidates_on_page,
     extract_candidate_name,
     text_quality,
+    pages_from_pdf,
 )
 
 
@@ -26,6 +27,17 @@ class ArabicGenealogyExtractionTests(unittest.TestCase):
 
     def test_readable_multiword_candidate_is_still_unverified_medium_quality(self):
         self.assertEqual(candidate_quality("عبد القيس", "HIGH"), "MEDIUM")
+
+    def test_short_readable_text_layer_pdf_does_not_require_ocr(self):
+        readable = ("قبيلة عبد القيس من قبائل العرب المعروفة في كتب الأنساب " * 4)
+        pages, mode = pages_from_pdf.__globals__["run"], None
+        # Exercise the embedded-text decision through a mocked pdftotext result.
+        from unittest.mock import patch
+        with patch("extract_arabic_genealogy_candidates.run", return_value=readable + "\\f"):
+            with patch("extract_arabic_genealogy_candidates.shutil.which", return_value=None):
+                extracted, mode = pages_from_pdf(Path("unused.pdf"))
+        self.assertEqual(mode, "embedded-text")
+        self.assertEqual(len(extracted), 1)
 
     def test_quality_report_marks_fragmented_text_low(self):
         report = text_quality("ا م و ١ ٢ ٣ ك ل ب ا د ٧ ن")
