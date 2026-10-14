@@ -302,6 +302,7 @@ model Workspace {
   suggestions ResearchSuggestion[]  entityNotes WorkspaceEntityNote[]
   councilPosts CouncilPost[]
   directConversations DirectConversation[]
+  directMessages DirectMessage[]
   tribeLink WorkspaceTribe?
 }
 
