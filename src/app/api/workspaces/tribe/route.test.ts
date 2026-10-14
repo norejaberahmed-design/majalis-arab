@@ -47,6 +47,7 @@ const owner = {
 describe("tribal council link", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.hasTrustedOrigin.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue(owner);
     mocks.linkFindUnique.mockResolvedValue(null);
     mocks.linkUpsert.mockResolvedValue({ workspaceId: "workspace-a", entityId: "tribe-a", createdAt: new Date("2026-01-01T00:00:00Z") });
