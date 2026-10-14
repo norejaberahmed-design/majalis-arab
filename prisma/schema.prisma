@@ -147,7 +147,8 @@ model ResearchSuggestion {
   evidenceQuote String
   status        String         @default("PENDING")
   reviewedAt    DateTime?
-  reviewedBy    String?  reviewNote    String?
+  reviewedBy    String?
+  reviewNote    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -299,7 +300,8 @@ model Workspace {
   requests    AdditionRequest[]
   decisions   ResearchDecision[]
   auditLogs   AuditLog[]
-  suggestions ResearchSuggestion[]  entityNotes WorkspaceEntityNote[]
+  suggestions ResearchSuggestion[]
+  entityNotes WorkspaceEntityNote[]
   councilPosts CouncilPost[]
   directConversations DirectConversation[]
   directMessages DirectMessage[]
