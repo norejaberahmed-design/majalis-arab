@@ -1,3 +1,4 @@
+import "./tribe-home.css";
 import Link from "next/link";
 import { requireWorkspace } from "@/lib/current-user";
 
