@@ -199,7 +199,7 @@ export default function CouncilFeed({ initialPosts, workspaceName, members }: { 
             ))}</div>}
             <Link href="/setup" className="sidebar-action members-manage-link">إدارة الأعضاء <span>←</span></Link>
           </section>
-          <section className="sidebar-card sidebar-card-v2"><h2>تصفّح المجلس</h2><nav className="council-nav"><Link href="/tribe">تاريخ القبيلة وملفها</Link><Link href="/entities">دليل الكيانات</Link><Link href="/sources">المصادر والمراجع</Link><Link href="/claims">الروايات والادعاءات التاريخية</Link><Link href="/requests">طلبات الإضافة</Link></nav></section>
+          <section className="sidebar-card sidebar-card-v2"><h2>تصفّح المجلس</h2><nav className="council-nav"><Link href="/messages">المراسلات الخاصة</Link><Link href="/tribe">تاريخ القبيلة وملفها</Link><Link href="/entities">دليل الكيانات</Link><Link href="/sources">المصادر والمراجع</Link><Link href="/claims">الروايات والادعاءات التاريخية</Link><Link href="/requests">طلبات الإضافة</Link></nav></section>
           <section className="sidebar-note sidebar-note-v2"><strong>الذاكرة مسؤولية</strong><p>شارك الروايات باحترام، وأرفق المصدر عند الحديث عن التاريخ. المعلومة غير المراجعة لا تُعرض كحقيقة مؤكدة.</p></section>
         </aside>
       </div>
