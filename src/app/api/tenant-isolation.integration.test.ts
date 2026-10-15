@@ -293,4 +293,47 @@ describe("SQLite tenant-isolation integration", () => {
     expect(unchanged.status).toBe("PENDING");
     expect(claims).toBe(0);
   });
+
+  it("completes the council post and comment flow within the active workspace", async () => {
+    const postContent = `Integration post ${suffix}`;
+    const commentContent = `Integration comment ${suffix}`;
+    const createPostResponse = await createCouncilPost(new NextRequest("https://majalis.example/api/council/posts", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: postContent })
+    }));
+    const createdPost = await createPostResponse.json() as { data: { id: string; content: string; authorId: string } };
+
+    expect(createPostResponse.status).toBe(201);
+    expect(createdPost.data.content).toBe(postContent);
+    expect(createdPost.data.authorId).toBe(userA.id);
+
+    const createCommentResponse = await createCouncilComment(new NextRequest(`https://majalis.example/api/council/posts/${createdPost.data.id}/comments`, {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: commentContent })
+    }), { params: Promise.resolve({ id: createdPost.data.id }) });
+    const createdComment = await createCommentResponse.json() as { data: { id: string; content: string; author: { id: string } } };
+
+    expect(createCommentResponse.status).toBe(201);
+    expect(createdComment.data.content).toBe(commentContent);
+    expect(createdComment.data.author.id).toBe(userA.id);
+
+    const feedResponse = await listCouncilPosts(new NextRequest("https://majalis.example/api/council/posts"));
+    const feed = await feedResponse.json() as { data: Array<{ id: string; content: string }> };
+    expect(feedResponse.status).toBe(200);
+    expect(feed.data).toContainEqual(expect.objectContaining({ id: createdPost.data.id, content: postContent }));
+
+    const persistedComment = await prisma.councilComment.findUnique({
+      where: { id: createdComment.data.id },
+      select: { id: true, postId: true, content: true, authorId: true }
+    });
+    expect(persistedComment).toEqual({
+      id: createdComment.data.id,
+      postId: createdPost.data.id,
+      content: commentContent,
+      authorId: userA.id
+    });
+  });
+
 });
