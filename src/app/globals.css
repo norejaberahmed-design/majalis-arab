@@ -436,3 +436,7 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify
 .messages-send-form { display:grid; gap:.6rem; padding:1rem; border-top:1px solid var(--line, #e7e1d8); }
 .messages-send-form div { display:flex; justify-content:space-between; align-items:center; gap:.75rem; }
 @media (max-width: 720px) { .messages-layout { grid-template-columns:1fr; } .messages-thread { min-height:420px; } .messages-list { order:2; } .messages-thread { order:1; } }
+
+/* Member names open a private conversation with the selected member. */
+.council-member-message-link { color:inherit; font-weight:700; text-decoration:none; text-underline-offset:.18em; }
+.council-member-message-link:hover, .council-member-message-link:focus-visible { text-decoration:underline; }
