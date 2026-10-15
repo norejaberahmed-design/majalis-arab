@@ -302,11 +302,11 @@ describe("SQLite tenant-isolation integration", () => {
       headers: { origin: "https://majalis.example", "content-type": "application/json" },
       body: JSON.stringify({ content: postContent })
     }));
-    const createdPost = await createPostResponse.json() as { data: { id: string; content: string; authorId: string } };
+    const createdPost = await createPostResponse.json() as { data: { id: string; content: string; author: { id: string } } };
 
     expect(createPostResponse.status).toBe(201);
     expect(createdPost.data.content).toBe(postContent);
-    expect(createdPost.data.authorId).toBe(userA.id);
+    expect(createdPost.data.author.id).toBe(userA.id);
 
     const createCommentResponse = await createCouncilComment(new NextRequest(`https://majalis.example/api/council/posts/${createdPost.data.id}/comments`, {
       method: "POST",
