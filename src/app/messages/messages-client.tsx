@@ -88,21 +88,27 @@ export default function MessagesClient({ workspaceName }: { workspaceName: strin
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!active || !draft.trim() || sending) return;
+    const conversationId = active.id;
+    const requestSequence = messageLoadSequence.current;
     setSending(true);
     setNotice("");
     try {
-      const response = await fetch(`/api/messages/${encodeURIComponent(active.id)}/messages`, {
+      const response = await fetch(`/api/messages/${encodeURIComponent(conversationId)}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: draft })
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "تعذر إرسال الرسالة");
-      setMessages(current => [...current, result.data]);
-      setDraft("");
+      if (requestSequence === messageLoadSequence.current) {
+        setMessages(current => [...current, result.data]);
+        setDraft("");
+      }
       await loadIndex();
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "تعذر إرسال الرسالة");
+      if (requestSequence === messageLoadSequence.current) {
+        setNotice(error instanceof Error ? error.message : "تعذر إرسال الرسالة");
+      }
     } finally {
       setSending(false);
     }
