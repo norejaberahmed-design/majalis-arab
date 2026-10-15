@@ -27,7 +27,7 @@ describe("central Majalis AI engine", () => {
 
     const options = fetchMock.mock.calls[0][1] as RequestInit;
     expect(options.body).toContain('"store":false');
-    expect(options.body).toContain("MAJALIS");
+    expect(options.body).toContain("مساعد معرفي");
   });
 
   it("marks retrieved evidence as data, not instructions", async () => {
