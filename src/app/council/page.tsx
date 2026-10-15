@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function CouncilPage() {
   const workspace = await requireWorkspace();
-  const posts = await prisma.councilPost.findMany({
+  const [posts, workspaceMembers] = await Promise.all([
+    prisma.councilPost.findMany({
     where: { workspaceId: workspace.workspaceId },
     orderBy: { createdAt: "desc" },
     take: 40,
@@ -23,7 +24,14 @@ export default async function CouncilPage() {
       reactions: { where: { userId: workspace.user.id }, select: { id: true } },
       _count: { select: { comments: true, reactions: true } }
     }
-  });
+    }),
+    prisma.workspaceMember.findMany({
+      where: { workspaceId: workspace.workspaceId },
+      orderBy: { createdAt: "asc" },
+      take: 60,
+      select: { id: true, role: true, createdAt: true, user: { select: { id: true, name: true, image: true } } }
+    })
+  ]);
 
   const initialPosts = posts.map(post => ({
     id: post.id,
@@ -38,17 +46,27 @@ export default async function CouncilPage() {
   }));
 
   return (
-    <main className="shell">
+    <main className="shell council-shell-v2">
       <header className="topbar">
         <Link href="/council" className="brand"><span className="brand-mark">م</span><span><strong>مجالس العرب</strong><small>المجلس والحوار</small></span></Link>
         <WorkspaceActions />
       </header>
-      <section className="page-intro council-intro">
-        <p className="eyebrow">مجتمعك يبدأ من هنا</p>
-        <h1>المجلس العربي</h1>
-        <p className="intro">مكان للأحاديث والأسئلة وتبادل الخبرات بين الأعضاء. انشر حديثًا، شارك في النقاش، وتفاعل مع ما يهم مجلسك.</p>
+      <section className="page-intro council-intro council-intro-v2">
+        <p className="eyebrow">مساحة تجمع الأعضاء</p>
+        <h1>المجلس والحوار</h1>
+        <p className="intro">مكان واحد للأحاديث والأسئلة والنقاشات، مع روابط واضحة لملف القبيلة والمصادر التاريخية.</p>
       </section>
-      <CouncilFeed initialPosts={initialPosts} workspaceName={workspace.workspace.name} />
+      <CouncilFeed
+        initialPosts={initialPosts}
+        workspaceName={workspace.workspace.name}
+        members={workspaceMembers.map(member => ({
+          id: member.user.id,
+          name: member.user.name,
+          image: member.user.image,
+          role: member.role,
+          joinedAt: member.createdAt.toISOString()
+        }))}
+      />
     </main>
   );
 }

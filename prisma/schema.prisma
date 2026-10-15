@@ -236,6 +236,9 @@ model User {
   councilPosts     CouncilPost[]
   councilComments  CouncilComment[]
   councilReactions CouncilReaction[]
+  directConversationsAsA DirectConversation[] @relation("DirectConversationParticipantA")
+  directConversationsAsB DirectConversation[] @relation("DirectConversationParticipantB")
+  directMessages DirectMessage[]
 
   @@map("user")
 }
@@ -300,6 +303,8 @@ model Workspace {
   suggestions ResearchSuggestion[]
   entityNotes WorkspaceEntityNote[]
   councilPosts CouncilPost[]
+  directConversations DirectConversation[]
+  directMessages DirectMessage[]
   tribeLink WorkspaceTribe?
 }
 
@@ -367,6 +372,44 @@ model CouncilComment {
   @@index([postId, createdAt])
   @@index([authorId, createdAt])
   @@map("council_comment")
+}
+
+
+/// Private one-to-one conversation. Participant IDs are stored in sorted order to prevent duplicates.
+model DirectConversation {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  participantAId     String
+  participantBId     String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  participantA       User      @relation("DirectConversationParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
+  participantB       User      @relation("DirectConversationParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
+  messages           DirectMessage[]
+
+  @@unique([workspaceId, participantAId, participantBId])
+  @@index([workspaceId, updatedAt])
+  @@index([participantAId, updatedAt])
+  @@index([participantBId, updatedAt])
+  @@map("direct_conversation")
+}
+
+/// Every message is scoped to its workspace and conversation; API access also checks participant membership.
+model DirectMessage {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  conversationId String
+  authorId       String
+  content        String
+  createdAt      DateTime @default(now())
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversation   DirectConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author         User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, conversationId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("direct_message")
 }
 
 model CouncilReaction {

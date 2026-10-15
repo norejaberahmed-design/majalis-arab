@@ -22,6 +22,16 @@ export function hasTrustedOrigin(request: Request) {
     const requestUrl = new URL(request.url);
     const requestHost = (request.headers.get("host") || requestUrl.host).toLowerCase();
 
+    // Origin headers are serialized origins, not arbitrary URLs. Reject credentials,
+    // paths, queries, and fragments rather than accepting a URL that only shares a host.
+    if (
+      originUrl.username ||
+      originUrl.password ||
+      originUrl.pathname !== "/" ||
+      originUrl.search ||
+      originUrl.hash
+    ) return false;
+
     // Compare the browser Origin with the actual Host header. Do not trust
     // arbitrary forwarded-host headers supplied by clients.
     if (originUrl.host.toLowerCase() !== requestHost) return false;

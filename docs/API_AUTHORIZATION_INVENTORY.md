@@ -16,19 +16,22 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 
 | Route | Methods | Expected boundary | Automated evidence |
 |---|---|---|---|
-| `/api/assistant` | POST | Trusted Origin + authenticated active-workspace membership; bounded message count/length; server-only API key; no app-database conversation persistence; upstream errors are bounded | `assistant/route.test.ts` covers origin/session denial, validation, missing key, mocked response, and `store: false`\n| `/api/auth/[...all]` | Better Auth handler | Better Auth origin checks, persistent rate limits, secure session cookies and password policy | Authentication lifecycle integration; expiry, SMTP failure, resend, duplicate-sign-up and rate-limit regression tests |
+| `/api/assistant` | POST | Trusted Origin + authenticated active-workspace membership; bounded message count/length; server-only API key; no app-database conversation persistence; upstream errors are bounded | `assistant/route.test.ts` covers origin/session denial, validation, missing key, mocked response, and `store: false`
+| `/api/auth/[...all]` | Better Auth handler | Better Auth origin checks, persistent rate limits, secure session cookies and password policy | Authentication lifecycle integration; expiry, SMTP failure, resend, duplicate-sign-up and rate-limit regression tests |
 | `/api/workspaces` | GET, POST | Authenticated user; GET lists only own memberships; POST creates caller as OWNER and validates Origin | Auth lifecycle integration |
 | `/api/workspaces/active` | POST | Caller must be a member before the HTTP-only active-workspace cookie is set | Auth lifecycle integration verifies foreign-workspace rejection |
-| `/api/workspaces/members` | GET, POST | Active workspace; writes require trusted Origin and EDITOR-or-higher; membership predicates are workspace-scoped; client-supplied role is not authority | `workspaces/members/route.test.ts` verifies a submitted `role: OWNER` is stored as `VIEWER` |
-| `/api/workspaces/tribe` | GET, POST, DELETE | Workspace-scoped link; mutations require trusted Origin and OWNER; only TRIBE/CLAN entities are linkable | `workspaces/tribe/route.test.ts` |
+| `/api/workspaces/members` | GET, POST | Active workspace; writes require trusted Origin and EDITOR-or-higher; membership predicates are workspace-scoped; member email addresses are returned only to EDITOR-or-higher; client-supplied role is not authority | `workspaces/members/route.test.ts` verifies email privacy, origin/role denials, duplicate prevention, and that submitted `role: OWNER` is stored as `VIEWER` |
+| `/api/workspaces/tribe` | GET, POST, DELETE | Workspace-scoped link; mutations require trusted Origin and OWNER; only TRIBE/CLAN entities are linkable | `workspaces/tribe/route.test.ts` covers owner boundary, valid entity kinds, workspace scoping, and trusted-Origin rejection for both link and unlink |
 | `/api/tribes` | POST | Authenticated member + trusted Origin; contributions to existing profiles remain UNREVIEWED; missing names go to an addition-request workflow | `tribes/route.test.ts` |
 | `/api/entities` | GET, POST | Authenticated member for shared-catalogue search; POST deliberately returns 503 until catalogue governance is enabled | `entities/route.test.ts` |
 | `/api/entities/[id]/note` | GET, PUT, DELETE | Private note scoped by workspace and entity; writes require trusted Origin and EDITOR-or-higher | `entities/[id]/note/route.test.ts`; tenant-isolation integration |
 | `/api/addition-requests` | GET, POST | Authenticated member; VIEWER sees own requests, REVIEWER sees requests in active workspace; actor is derived from session | `addition-requests/route.test.ts`; tenant-isolation integration |
 | `/api/addition-requests/[id]` | PATCH | REVIEWER-or-higher, trusted Origin; target lookup and compare-and-set update constrained by request ID and workspace ID | `addition-requests/[id]/route.test.ts`; tenant-isolation integration |
-| `/api/council/posts` | GET, POST | Authenticated workspace member; posts are workspace-scoped; POST validates Origin | Tenant-isolation integration |
-| `/api/council/posts/[id]/comments` | POST | Parent post must belong to active workspace before comment creation; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
-| `/api/council/posts/[id]/reaction` | PUT | Target post belongs to active workspace; reaction is keyed to current user; trusted Origin | Tenant-isolation integration tests denied foreign-post writes |
+| `/api/council/posts` | GET, POST | Authenticated workspace member; posts are workspace-scoped; POST validates Origin before workspace lookup and writes | Tenant-isolation integration verifies cross-workspace reads and rejects untrusted-Origin post creation without database changes |
+| `/api/council/posts/[id]/comments` | POST | Parent post must belong to active workspace before comment creation; trusted Origin checked first | Tenant-isolation integration tests denied foreign-post writes and untrusted-Origin requests without database changes |
+| `/api/council/posts/[id]/reaction` | PUT | Target post belongs to active workspace; reaction is keyed to current user; trusted Origin checked first | Tenant-isolation integration tests denied foreign-post writes and untrusted-Origin requests without database changes |
+| `/api/messages` | GET, POST | Active workspace member; only workspace members can start one-to-one conversations; duplicate pair is unique per workspace; POST validates trusted Origin before workspace lookup | `messages/route.test.ts` verifies cross-workspace access, duplicate prevention, and untrusted-Origin rejection before database writes |
+| `/api/messages/[id]/messages` | GET, POST | Conversation lookup constrained by active workspace and participant ID; messages are scoped to both workspace and conversation; POST validates trusted Origin and 4,000-character limit | `messages/route.test.ts` cross-workspace, guessed-ID, origin, length, duplicate-conversation, and membership-revocation tests |
 | `/api/curation/entities` | POST | REVIEWER-or-higher plus configured curator allowlist; trusted Origin; audit metadata | `curation/entities/route.test.ts` |
 | `/api/curation/sources/[id]` | PATCH | REVIEWER-or-higher plus curator allowlist; trusted Origin; source review changes audited | `curation/sources/[id]/route.test.ts` |
 | `/api/curation/claims` | POST | REVIEWER-or-higher plus curator allowlist; trusted Origin; requires reviewed source and evidence passages | `curation/claims/route.test.ts` |
@@ -41,6 +44,12 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 | `/api/sources/import` | POST | REVIEWER-or-higher plus curator allowlist; trusted Origin; bounded batch and per-row validation | `sources/import/route.test.ts` |
 | `/api/sources/[id]/passages` | POST | Reviewer/curator gate, trusted Origin; evidence intake must not falsely set human-reviewed status | `sources/[id]/passages/route.test.ts` |
 | `/api/sources/[id]/passages/import` | POST | Reviewer/curator gate, trusted Origin; bounded batch, duplicate checks, provenance retained | `sources/[id]/passages/import/route.test.ts` |
+
+## Membership-management scope reviewed on 2026-10-14
+
+- The current API exposes member listing and adding only; there is no API route for changing a member role or removing a member. Therefore no client-facing path currently performs owner-role escalation, removes the last owner, or transfers ownership. If role changes/removal are introduced, require OWNER-only authorization, prevent self-escalation, preserve at least one OWNER in a transaction, audit the change, and add negative integration tests before shipping.
+- Adding a member always assigns `VIEWER`; the request body cannot choose a role. Member email addresses are hidden from VIEWER responses.
+- Workspace-to-tribe link/unlink mutations validate trusted Origin before resolving workspace context or performing database writes. Regression tests now assert both denial paths do not mutate records or write audit events.
 
 ## Automated verification present in the repository
 
@@ -60,10 +69,20 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 
 **Do not deploy publicly yet.** This inventory records static review and current tests; it is not proof of a completed independent security review.
 
-## Latest regression additions (2026-10-13)
+## Latest regression additions (2026-10-15)
+
+- `src/lib/access-control.ts` now requires an Origin header to be a serialized origin: credentials, paths, queries, and fragments are rejected even when the hostname matches. `src/lib/access-control.test.ts` adds four malformed-Origin regression cases. CI is required to pass on the final commit before this change is considered verified.
+
+## Previous regression additions (2026-10-14)
+
+- `src/app/api/tenant-isolation.integration.test.ts`: untrusted-Origin requests to create council posts, add comments, and add/remove reactions are denied before database writes; the test suite checks record counts remain unchanged.
+- `src/app/api/messages/route.test.ts`: starting a direct conversation from an untrusted Origin is denied before workspace lookup and before any conversation is created.
+
+## Previous regression additions (2026-10-13)
 
 - `src/app/api/curation/entities/route.test.ts`: negative cases verify untrusted Origin is rejected before workspace lookup/transaction, a non-allowlisted reviewer is denied, and curator allowlisting does not bypass the required reviewer role.
-- `src/app/api/workspaces/members/route.test.ts`: a client request that submits `role: OWNER` must create the new member as `VIEWER`.
+- `src/app/api/workspaces/members/route.test.ts`: a client request that submits `role: OWNER` must create the new member as `VIEWER`; viewer email privacy and origin/role denial are covered.
+- `src/app/api/workspaces/tribe/route.test.ts`: untrusted Origin is rejected for both link and unlink before workspace lookup, mutation, or audit creation.
 - `src/lib/env-example-safety.test.ts`: CI requires secret-bearing entries in `.env.example` to remain empty and rejects provider API-key-shaped strings.
 - These tests passed in Phase 1 checks and CodeQL on the PR candidates before merge. Main-branch checks passed on commit `fb492e7d2f803aba508d49769e62dc621b0f05fd`; the latest `main` credential-placeholder repair is under revalidation.
 - A provider-key-shaped value was reintroduced in an older `.env.example` commit, caught by the regression test, and removed from the current file again. Rotation and Git-history cleanup remain unresolved and are not covered by these tests.

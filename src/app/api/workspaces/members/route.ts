@@ -17,7 +17,16 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "asc" },
       select: { id: true, role: true, createdAt: true, user: { select: { id: true, name: true, email: true, image: true } } }
     });
-    return NextResponse.json({ data: { workspace: workspace.workspace, role: workspace.role, members } }, { headers: NO_STORE });
+    const canViewMemberEmails = roleAtLeast(workspace.role, "EDITOR");
+    const safeMembers = members.map(member => ({
+      ...member,
+      user: {
+        ...member.user,
+        // Email addresses are available only to members who can manage the roster.
+        email: canViewMemberEmails ? member.user.email : ""
+      }
+    }));
+    return NextResponse.json({ data: { workspace: workspace.workspace, role: workspace.role, members: safeMembers } }, { headers: NO_STORE });
   } catch (error) {
     console.error("Council member list failed", error);
     return NextResponse.json({ error: "تعذر تحميل أعضاء المجلس" }, { status: 503, headers: NO_STORE });
@@ -66,6 +75,11 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ data: { ...member, user }, message: "أُضيف العضو إلى المجلس. يمكنه اختيار المجلس بعد تسجيل الدخول." }, { status: 201, headers: NO_STORE });
   } catch (error) {
+    // The preflight lookup above improves the usual response, but two requests
+    // can race. The database unique constraint is authoritative in that case.
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return NextResponse.json({ error: "هذا الحساب عضو بالفعل في المجلس" }, { status: 409, headers: NO_STORE });
+    }
     console.error("Council member add failed", error);
     return NextResponse.json({ error: "تعذرت إضافة العضو حاليًا" }, { status: 503, headers: NO_STORE });
   }

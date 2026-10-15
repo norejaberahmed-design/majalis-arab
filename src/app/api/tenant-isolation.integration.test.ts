@@ -23,7 +23,7 @@ import { prisma } from "@/lib/prisma";
 import { GET as listAdditionRequests } from "./addition-requests/route";
 import { PATCH as reviewAdditionRequest } from "./addition-requests/[id]/route";
 import { GET as getEntityNote } from "./entities/[id]/note/route";
-import { GET as listCouncilPosts } from "./council/posts/route";
+import { GET as listCouncilPosts, POST as createCouncilPost } from "./council/posts/route";
 import { POST as createCouncilComment } from "./council/posts/[id]/comments/route";
 import { PUT as updateCouncilReaction } from "./council/posts/[id]/reaction/route";
 import { PATCH as reviewCurationDraft } from "./curation/drafts/[id]/route";
@@ -123,6 +123,7 @@ describe("SQLite tenant-isolation integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.hasTrustedOrigin.mockReturnValue(true);
     mocks.getWorkspaceContext.mockResolvedValue({
       workspaceId: workspaceA.id,
       user: { id: userA.id, email: userA.email },
@@ -193,6 +194,22 @@ describe("SQLite tenant-isolation integration", () => {
     expect(body.data.some(item => item.id === foreignPost.id)).toBe(false);
   });
 
+  it("rejects post creation from an untrusted origin before database writes", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const before = await prisma.councilPost.count({ where: { workspaceId: workspaceA.id } });
+    const request = new NextRequest("https://majalis.example/api/council/posts", {
+      method: "POST",
+      headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: "A post from an untrusted origin must be rejected." })
+    });
+
+    const response = await createCouncilPost(request);
+    const after = await prisma.councilPost.count({ where: { workspaceId: workspaceA.id } });
+
+    expect(response.status).toBe(403);
+    expect(after).toBe(before);
+  });
+
   it("rejects a comment against a post in another workspace", async () => {
     const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/comments`, {
       method: "POST",
@@ -206,6 +223,23 @@ describe("SQLite tenant-isolation integration", () => {
     expect(comments).toBe(0);
   });
 
+  it("rejects comments from an untrusted origin before database writes", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const before = await prisma.councilComment.count({ where: { postId: foreignPost.id } });
+    const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/comments`, {
+      method: "POST",
+      headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: "This comment must be rejected." })
+    });
+
+    const response = await createCouncilComment(request, { params: Promise.resolve({ id: foreignPost.id }) });
+    const after = await prisma.councilComment.count({ where: { postId: foreignPost.id } });
+
+    expect(response.status).toBe(403);
+    expect(after).toBe(before);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
+  });
+
   it("rejects a reaction against a post in another workspace", async () => {
     const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/reaction`, {
       method: "PUT",
@@ -217,6 +251,23 @@ describe("SQLite tenant-isolation integration", () => {
 
     expect(response.status).toBe(404);
     expect(reactions).toBe(0);
+  });
+
+  it("rejects reactions from an untrusted origin before database writes", async () => {
+    mocks.hasTrustedOrigin.mockReturnValue(false);
+    const before = await prisma.councilReaction.count({ where: { postId: foreignPost.id } });
+    const request = new NextRequest(`https://majalis.example/api/council/posts/${foreignPost.id}/reaction`, {
+      method: "PUT",
+      headers: { origin: "https://attacker.example", "content-type": "application/json" },
+      body: JSON.stringify({ liked: true })
+    });
+
+    const response = await updateCouncilReaction(request, { params: Promise.resolve({ id: foreignPost.id }) });
+    const after = await prisma.councilReaction.count({ where: { postId: foreignPost.id } });
+
+    expect(response.status).toBe(403);
+    expect(after).toBe(before);
+    expect(mocks.getWorkspaceContext).not.toHaveBeenCalled();
   });
 
   it("does not review a draft owned by another workspace", async () => {
@@ -242,4 +293,47 @@ describe("SQLite tenant-isolation integration", () => {
     expect(unchanged.status).toBe("PENDING");
     expect(claims).toBe(0);
   });
+
+  it("completes the council post and comment flow within the active workspace", async () => {
+    const postContent = `Integration post ${suffix}`;
+    const commentContent = `Integration comment ${suffix}`;
+    const createPostResponse = await createCouncilPost(new NextRequest("https://majalis.example/api/council/posts", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: postContent })
+    }));
+    const createdPost = await createPostResponse.json() as { data: { id: string; content: string; author: { id: string } } };
+
+    expect(createPostResponse.status).toBe(201);
+    expect(createdPost.data.content).toBe(postContent);
+    expect(createdPost.data.author.id).toBe(userA.id);
+
+    const createCommentResponse = await createCouncilComment(new NextRequest(`https://majalis.example/api/council/posts/${createdPost.data.id}/comments`, {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: commentContent })
+    }), { params: Promise.resolve({ id: createdPost.data.id }) });
+    const createdComment = await createCommentResponse.json() as { data: { id: string; content: string; author: { id: string } } };
+
+    expect(createCommentResponse.status).toBe(201);
+    expect(createdComment.data.content).toBe(commentContent);
+    expect(createdComment.data.author.id).toBe(userA.id);
+
+    const feedResponse = await listCouncilPosts(new NextRequest("https://majalis.example/api/council/posts"));
+    const feed = await feedResponse.json() as { data: Array<{ id: string; content: string }> };
+    expect(feedResponse.status).toBe(200);
+    expect(feed.data).toContainEqual(expect.objectContaining({ id: createdPost.data.id, content: postContent }));
+
+    const persistedComment = await prisma.councilComment.findUnique({
+      where: { id: createdComment.data.id },
+      select: { id: true, postId: true, content: true, authorId: true }
+    });
+    expect(persistedComment).toEqual({
+      id: createdComment.data.id,
+      postId: createdPost.data.id,
+      content: commentContent,
+      authorId: userA.id
+    });
+  });
+
 });

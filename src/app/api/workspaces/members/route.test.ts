@@ -76,6 +76,40 @@ describe("workspace member access boundaries", () => {
     }));
   });
 
+  it("hides member email addresses from ordinary viewers", async () => {
+    mocks.getWorkspaceContext.mockResolvedValue({ ...owner, role: "VIEWER" });
+    mocks.roleAtLeast.mockReturnValue(false);
+    mocks.memberFindMany.mockResolvedValue([{
+      id: "membership-b",
+      role: "VIEWER",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      user: { id: "member-b", name: "Member B", email: "private@example.test", image: null }
+    }]);
+
+    const response = await GET(new NextRequest("https://majalis.example/api/workspaces/members"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.members[0].user.email).toBe("");
+    expect(JSON.stringify(body)).not.toContain("private@example.test");
+  });
+
+  it("allows roster managers to view member email addresses", async () => {
+    mocks.getWorkspaceContext.mockResolvedValue({ ...owner, role: "EDITOR" });
+    mocks.roleAtLeast.mockReturnValue(true);
+    mocks.memberFindMany.mockResolvedValue([{
+      id: "membership-b",
+      role: "VIEWER",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      user: { id: "member-b", name: "Member B", email: "member@example.test", image: null }
+    }]);
+
+    const response = await GET(new NextRequest("https://majalis.example/api/workspaces/members"));
+    const body = await response.json();
+
+    expect(body.data.members[0].user.email).toBe("member@example.test");
+  });
+
   it("rejects member changes from an untrusted origin before querying workspace data", async () => {
     mocks.hasTrustedOrigin.mockReturnValue(false);
     const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
@@ -138,6 +172,19 @@ describe("workspace member access boundaries", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
   
+  it("returns a conflict when concurrent requests race on the membership unique constraint", async () => {
+    mocks.memberCreate.mockRejectedValueOnce({ code: "P2002" });
+    const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ email: "member@example.test" })
+    }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "هذا الحساب عضو بالفعل في المجلس" });
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
   it("never accepts a client-supplied elevated role when adding a member", async () => {
     const response = await POST(new NextRequest("https://majalis.example/api/workspaces/members", {
       method: "POST",
