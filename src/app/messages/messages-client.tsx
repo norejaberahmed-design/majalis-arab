@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Person = { id: string; name: string; image: string | null };
@@ -24,18 +24,22 @@ export default function MessagesClient({ workspaceName }: { workspaceName: strin
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
+  const messageLoadSequence = useRef(0);
 
-  const loadIndex = useCallback(async () => {
+  const loadIndex = useCallback(async (): Promise<Conversation[]> => {
     setLoading(true);
     try {
       const response = await fetch("/api/messages", { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "تعذر تحميل المراسلات");
       setMembers(result.members || []);
-      setConversations(result.data || []);
+      const index = (result.data || []) as Conversation[];
+      setConversations(index);
       if (requestedRecipient) setRecipientId(requestedRecipient);
+      return index;
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "تعذر تحميل المراسلات");
+      return [];
     } finally {
       setLoading(false);
     }
@@ -44,16 +48,20 @@ export default function MessagesClient({ workspaceName }: { workspaceName: strin
   useEffect(() => { void loadIndex(); }, [loadIndex]);
 
   const loadMessages = useCallback(async (conversation: Conversation) => {
+    const requestSequence = ++messageLoadSequence.current;
     setActive(conversation);
+    setMessages([]);
     setNotice("");
     try {
       const response = await fetch(`/api/messages/${encodeURIComponent(conversation.id)}/messages`, { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "تعذر تحميل الرسائل");
-      setMessages(result.data || []);
+      if (requestSequence === messageLoadSequence.current) setMessages(result.data || []);
     } catch (error) {
-      setMessages([]);
-      setNotice(error instanceof Error ? error.message : "تعذر تحميل الرسائل");
+      if (requestSequence === messageLoadSequence.current) {
+        setMessages([]);
+        setNotice(error instanceof Error ? error.message : "تعذر تحميل الرسائل");
+      }
     }
   }, []);
 
@@ -69,10 +77,8 @@ export default function MessagesClient({ workspaceName }: { workspaceName: strin
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "تعذر بدء المحادثة");
-      await loadIndex();
-      const refreshed = await fetch("/api/messages", { cache: "no-store" });
-      const index = await refreshed.json();
-      const found = (index.data || []).find((item: Conversation) => item.id === result.data.id);
+      const index = await loadIndex();
+      const found = index.find(item => item.id === result.data.id);
       if (found) await loadMessages(found);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "تعذر بدء المحادثة");
