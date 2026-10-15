@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({ hasTrustedOrigin: vi.fn(() => true), getWorkspaceContext: vi.fn() }));
 vi.mock("@/lib/workspace", () => ({ hasTrustedOrigin: mocks.hasTrustedOrigin, getWorkspaceContext: mocks.getWorkspaceContext }));
+vi.mock("@/lib/tribe-evidence", () => ({ buildTribeEvidenceContext: vi.fn(async () => undefined) }));
 
 import { POST } from "./route";
 

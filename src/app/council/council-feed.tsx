@@ -25,6 +25,7 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
   const [posts, setPosts] = useState(initialPosts);
   const [content, setContent] = useState("");
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [analysisByPost, setAnalysisByPost] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -97,6 +98,24 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
     }
   }
 
+  async function analyzePost(postId: string) {
+    setBusyAction(`analysis:${postId}`);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/council/posts/${encodeURIComponent(postId)}/analysis`, { method: "POST" });
+      const result = await response.json() as { data?: { answer?: string }; error?: string };
+      if (!response.ok || !result.data?.answer) {
+        setMessage(result.error || "تعذر تحليل النقاش.");
+        return;
+      }
+      setAnalysisByPost(current => ({ ...current, [postId]: result.data!.answer! }));
+    } catch {
+      setMessage("تعذر الاتصال بخدمة تحليل النقاش.");
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
   return (
     <div className="council-layout">
       <section className="council-main">
@@ -113,7 +132,12 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
             <header className="post-header"><span className="post-avatar">{post.author.name.trim().slice(0, 1) || "ع"}</span><div className="post-author"><strong>{post.author.name}</strong><small>{formatDate(post.createdAt)}</small></div><span className="post-menu-label">المجلس</span></header>
             <p className="post-content">{post.content}</p>
             <div className="post-stats"><span>{post.reactionCount} تفاعل</span><span>{post.commentCount} تعليق</span></div>
-            <div className="post-actions"><button type="button" className={post.reactedByMe ? "post-action active" : "post-action"} disabled={busyAction === `reaction:${post.id}`} onClick={() => react(post)}>{post.reactedByMe ? "♥ أعجبني" : "♡ أعجبني"}</button><a className="post-action" href={`#comments-${post.id}`}>◯ علّق</a></div>
+            <div className="post-actions">
+              <button type="button" className={post.reactedByMe ? "post-action active" : "post-action"} disabled={busyAction === `reaction:${post.id}`} onClick={() => react(post)}>{post.reactedByMe ? "♥ أعجبني" : "♡ أعجبني"}</button>
+              <a className="post-action" href={`#comments-${post.id}`}>◯ علّق</a>
+              <button type="button" className="post-action" disabled={busyAction === `analysis:${post.id}`} onClick={() => analyzePost(post.id)}>{busyAction === `analysis:${post.id}` ? "جارٍ التحليل…" : "تحليل النقاش"}</button>
+            </div>
+            {analysisByPost[post.id] && <section className="sidebar-card" aria-live="polite"><h3>تحليل النقاش</h3><p style={{ whiteSpace: "pre-wrap" }}>{analysisByPost[post.id]}</p><small>تحليل مساعد للمناقشة، وليس حكمًا تاريخيًا نهائيًا. لا ينشر ردًا تلقائيًا.</small></section>}
             <div className="post-comments" id={`comments-${post.id}`}>
               {post.comments.map(comment => <div className="comment-row" key={comment.id}><span className="comment-avatar">{comment.author.name.trim().slice(0, 1) || "ع"}</span><div className="comment-bubble"><strong>{comment.author.name}</strong><p>{comment.content}</p><small>{formatDate(comment.createdAt)}</small></div></div>)}
               {post.commentCount > post.comments.length && <small className="muted">يعرض أحدث جزء من التعليقات فقط.</small>}
