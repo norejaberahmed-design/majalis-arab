@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getWorkspaceContext, hasTrustedOrigin } from "@/lib/workspace";
 import { readJsonBody } from "@/lib/http";
 import { runMajalisAI, MajalisAIError } from "@/lib/ai-engine";
+import { buildTribeEvidenceContext } from "@/lib/tribe-evidence";
 
 export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store, max-age=0" };
@@ -33,9 +34,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "أرسل من رسالة إلى 8 رسائل، على ألا تتجاوز كل رسالة 4000 حرف." }, { status: 400, headers: NO_STORE });
     }
 
+    const latestQuestion = [...parsed.data.messages].reverse().find(message => message.role === "user")?.content;
+    let evidenceContext: string | undefined;
+    if (latestQuestion) {
+      try {
+        evidenceContext = await buildTribeEvidenceContext(workspace.workspaceId, latestQuestion);
+      } catch (error) {
+        console.error("Majalis tribal evidence retrieval failed", error instanceof Error ? error.name : "unknown");
+        return NextResponse.json({ error: "تعذر قراءة فهرس القبائل ومصادره الآن. حاول مرة أخرى." }, { status: 503, headers: NO_STORE });
+      }
+    }
+
     let result;
     try {
-      result = await runMajalisAI({ messages: parsed.data.messages });
+      result = await runMajalisAI({ messages: parsed.data.messages, evidenceContext });
     } catch (error) {
       if (error instanceof MajalisAIError) {
         if (error.message === "AI_PROVIDER_NOT_CONFIGURED") {
