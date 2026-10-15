@@ -36,6 +36,19 @@ describe("state-changing request origin checks", () => {
     }))).toBe(false);
   });
 
+  it.each([
+    "https://user@majalis.example",
+    "https://majalis.example/path",
+    "https://majalis.example/?next=attacker",
+    "https://majalis.example/#fragment"
+  ])("rejects a non-serialized Origin URL (%s)", origin => {
+    const request = new Request("https://majalis.example/api/workspaces", {
+      method: "POST",
+      headers: { origin, host: "majalis.example" }
+    });
+    expect(hasTrustedOrigin(request)).toBe(false);
+  });
+
   it("does not trust a client-controlled forwarded host", () => {
     const request = new Request("https://majalis.example/api/workspaces", {
       method: "POST",
