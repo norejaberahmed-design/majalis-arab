@@ -60,7 +60,7 @@ export default async function CouncilPage() {
         initialPosts={initialPosts}
         workspaceName={workspace.workspace.name}
         members={workspaceMembers.map(member => ({
-          id: member.id,
+          id: member.user.id,
           name: member.user.name,
           image: member.user.image,
           role: member.role,
