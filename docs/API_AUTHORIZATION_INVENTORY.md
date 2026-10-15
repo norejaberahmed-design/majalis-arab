@@ -69,7 +69,11 @@ Audit baseline: `main` as inspected on 2026-10-13 after the neutral assistant ro
 
 **Do not deploy publicly yet.** This inventory records static review and current tests; it is not proof of a completed independent security review.
 
-## Latest regression additions (2026-10-14)
+## Latest regression additions (2026-10-15)
+
+- `src/lib/access-control.ts` now requires an Origin header to be a serialized origin: credentials, paths, queries, and fragments are rejected even when the hostname matches. `src/lib/access-control.test.ts` adds four malformed-Origin regression cases. CI is required to pass on the final commit before this change is considered verified.
+
+## Previous regression additions (2026-10-14)
 
 - `src/app/api/tenant-isolation.integration.test.ts`: untrusted-Origin requests to create council posts, add comments, and add/remove reactions are denied before database writes; the test suite checks record counts remain unchanged.
 - `src/app/api/messages/route.test.ts`: starting a direct conversation from an untrusted Origin is denied before workspace lookup and before any conversation is created.
