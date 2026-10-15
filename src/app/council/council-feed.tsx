@@ -184,7 +184,7 @@ export default function CouncilFeed({ initialPosts, workspaceName, members }: { 
             {members.length === 0 ? <p className="muted">لا توجد عضويات ظاهرة في هذا المجلس بعد.</p> : <div className="council-members-list">{members.map(member => (
               <div className="council-member-row" key={member.id}>
                 <span className="council-member-avatar">{member.image ? <img src={member.image} alt="" /> : (member.name.trim().slice(0, 1) || "ع")}</span>
-                <span className="council-member-details"><strong>{member.name}</strong><small>{member.role === "OWNER" ? "مالك المجلس" : member.role === "EDITOR" ? "محرر" : member.role === "REVIEWER" ? "مراجع" : "عضو"} · انضم {formatJoinDate(member.joinedAt)}</small></span>
+                <span className="council-member-details"><Link href={`/messages?to=${encodeURIComponent(member.id)}`} className="council-member-message-link">{member.name}</Link><small>{member.role === "OWNER" ? "مالك المجلس" : member.role === "EDITOR" ? "محرر" : member.role === "REVIEWER" ? "مراجع" : "عضو"} · انضم {formatJoinDate(member.joinedAt)}</small></span>
               </div>
             ))}</div>}
             <Link href="/setup" className="sidebar-action members-manage-link">إدارة الأعضاء <span>←</span></Link>
