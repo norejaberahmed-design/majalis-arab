@@ -131,6 +131,47 @@ describe("private messages authorization integration", () => {
     }
   });
 
+  it("completes the private messaging flow between two members of the same workspace", async () => {
+    const messageText = `End-to-end message ${suffix}`;
+    const sendResponse = await sendMessage(new NextRequest(`https://majalis.example/api/messages/${ownConversation.id}/messages`, {
+      method: "POST",
+      headers: { origin: "https://majalis.example", "content-type": "application/json" },
+      body: JSON.stringify({ content: messageText })
+    }), { params: Promise.resolve({ id: ownConversation.id }) });
+    const sent = await sendResponse.json() as { data: { id: string; content: string; createdAt: string; authorId: string } };
+
+    expect(sendResponse.status).toBe(201);
+    expect(sent.data.content).toBe(messageText);
+    expect(sent.data.authorId).toBe(userA.id);
+
+    // Switch the authenticated member and exercise the recipient's real route.
+    mocks.getWorkspaceContext.mockResolvedValue({
+      workspaceId: workspaceA.id,
+      user: { id: userD.id, email: userD.email },
+      role: "VIEWER"
+    });
+    const readResponse = await listMessages(
+      new NextRequest(`https://majalis.example/api/messages/${ownConversation.id}/messages`),
+      { params: Promise.resolve({ id: ownConversation.id }) }
+    );
+    const read = await readResponse.json() as { data: Array<{ id: string; content: string; authorId: string }> };
+
+    expect(readResponse.status).toBe(200);
+    expect(read.data).toContainEqual(expect.objectContaining({
+      id: sent.data.id,
+      content: messageText,
+      authorId: userA.id
+    }));
+
+    const inboxResponse = await listConversations(new NextRequest("https://majalis.example/api/messages"));
+    const inbox = await inboxResponse.json() as { data: Array<{ id: string; lastMessage: { content: string } | null }> };
+    expect(inboxResponse.status).toBe(200);
+    expect(inbox.data).toContainEqual(expect.objectContaining({
+      id: ownConversation.id,
+      lastMessage: expect.objectContaining({ content: messageText })
+    }));
+  });
+
   it("reuses the same one-to-one conversation instead of creating duplicates", async () => {
     const request = () => new NextRequest("https://majalis.example/api/messages", {
       method: "POST", headers: { origin: "https://majalis.example", "content-type": "application/json" },
