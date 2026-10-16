@@ -21,7 +21,7 @@
     "db:fetch-wikisource-text": "node scripts/fetch-wikisource-text.mjs",
     "db:fetch-wikisource-batch": "node scripts/fetch-wikisource-batch.mjs",
     "db:audit-research-corpus": "node scripts/audit-research-corpus.mjs",
-    "db:audit-integrity": "node scripts/audit-database-integrity.mjs",
+    "db:audit-integrity": "node --env-file-if-exists=.env scripts/audit-database-integrity.mjs",
     "db:discover-arabic-sources": "node scripts/discover-arabic-history-sources.mjs",
     "db:build-tribal-candidate-report": "node scripts/build-tribal-candidate-report.mjs",
     "data:audit-genealogy-candidates": "node scripts/audit-genealogy-candidate-corpus.mjs"
