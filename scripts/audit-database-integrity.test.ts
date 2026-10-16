@@ -4,7 +4,7 @@ import { buildDatabaseIntegrityReport } from "./audit-database-integrity.mjs";
 describe("read-only database integrity audit", () => {
   it("reports a clean relational dataset without warnings", () => {
     const report = buildDatabaseIntegrityReport({
-      entities: [{ id: "tribe-1", name: "بنو تميم", normalizedName: "بنو تميم" }],
+      entities: [\n        { id: "tribe-1", name: "بنو تميم", normalizedName: "بنو تميم" },\n        { id: "tribe-1b", name: "بنو بكر", normalizedName: "بنو بكر" }\n      ],
       relationships: [{ id: "rel-1", fromEntityId: "tribe-1", toEntityId: "tribe-1b", relationshipType: "RELATED_TO", claimId: "claim-1" }],
       sources: [{ id: "source-1" }],
       passages: [{ id: "passage-1", sourceId: "source-1", entityId: "tribe-1", passageText: "نص موثق" }],
