@@ -290,7 +290,9 @@ async function main() {
       trustedOriginCount: (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "").split(",").map(item => item.trim()).filter(Boolean).length,
       smtpConfigured,
       googleOAuthConfigured: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      codespacesEnvironment: Boolean(process.env.CODESPACE_NAME && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN)
+      codespacesEnvironment: Boolean(process.env.CODESPACE_NAME && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN),
+      rateLimitSummary: { totalRecords: 0, signInRecords: 0, signUpRecords: 0, passwordResetRecords: 0, highestObservedCount: 0 },
+      accountCounts: { users: 0, sessions: 0, accounts: 0 }
     },
     dataIntegrity: null,
     elapsedMs: null
@@ -300,6 +302,20 @@ async function main() {
     if (!databaseUrl) throw new Error("DATABASE_URL is missing.");
     await prisma.$queryRawUnsafe("SELECT 1");
     report.database.connected = true;
+    const [rateLimitRows, userCount, sessionCount, accountCount] = await Promise.all([
+      prisma.rateLimit.findMany({ select: { key: true, count: true } }),
+      prisma.user.count(),
+      prisma.session.count(),
+      prisma.account.count()
+    ]);
+    report.authentication.rateLimitSummary = {
+      totalRecords: rateLimitRows.length,
+      signInRecords: rateLimitRows.filter(row => /sign[-_/]?in/i.test(row.key)).length,
+      signUpRecords: rateLimitRows.filter(row => /sign[-_/]?up/i.test(row.key)).length,
+      passwordResetRecords: rateLimitRows.filter(row => /reset|password/i.test(row.key)).length,
+      highestObservedCount: rateLimitRows.reduce((max, row) => Math.max(max, row.count), 0)
+    };
+    report.authentication.accountCounts = { users: userCount, sessions: sessionCount, accounts: accountCount };
     const integrityRows = await prisma.$queryRawUnsafe("PRAGMA integrity_check");
     report.database.integrityCheck = integrityRows?.[0]?.integrity_check ?? "UNKNOWN";
     report.database.foreignKeyViolations = await prisma.$queryRawUnsafe("PRAGMA foreign_key_check");
