@@ -15,7 +15,7 @@ export default async function CouncilPage() {
     }
   });
   const posts = await prisma.councilPost.findMany({
-    where: { workspaceId: workspace.workspaceId },
+    where: { workspaceId: workspace.workspaceId, tribeEntityId: null },
     orderBy: { createdAt: "desc" },
     take: 40,
     select: {

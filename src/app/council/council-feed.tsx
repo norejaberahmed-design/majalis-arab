@@ -21,7 +21,7 @@ function formatDate(value: string) {
   return new Date(value).toLocaleString("ar-SA", { dateStyle: "medium", timeStyle: "short" });
 }
 
-export default function CouncilFeed({ initialPosts, workspaceName }: { initialPosts: Post[]; workspaceName: string }) {
+export default function CouncilFeed({ initialPosts, workspaceName, tribeEntityId, tribeName }: { initialPosts: Post[]; workspaceName: string; tribeEntityId?: string; tribeName?: string }) {
   const [posts, setPosts] = useState(initialPosts);
   const [content, setContent] = useState("");
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
@@ -39,7 +39,7 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
       const response = await fetch("/api/council/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ content, ...(tribeEntityId ? { tribeEntityId } : {}) })
       });
       const result = await response.json();
       if (!response.ok) { setMessage(result.error || "تعذر نشر الحديث."); return; }
@@ -120,16 +120,16 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
     <div className="council-layout">
       <section className="council-main">
         <form className="compose-card" onSubmit={createPost}>
-          <div className="compose-heading"><span className="compose-avatar">م</span><div><strong>ابدأ حديثًا في المجلس</strong><small>شارك فكرة أو سؤالًا أو خبرًا مع أعضاء المساحة.</small></div></div>
+          <div className="compose-heading"><span className="compose-avatar">م</span><div><strong>{tribeName ? `ابدأ حديثًا في مجلس ${tribeName}` : "ابدأ حديثًا في المجلس"}</strong><small>{tribeName ? "منشورك سيظهر لكل من يزور مجلس القبيلة." : "شارك فكرة أو سؤالًا أو خبرًا مع أعضاء المساحة."}</small></div></div>
           <label className="sr-only" htmlFor="council-post-content">محتوى الحديث</label>
           <textarea id="council-post-content" rows={4} maxLength={5000} value={content} onChange={event => setContent(event.target.value)} placeholder="ما الذي تود مشاركته مع المجلس؟" />
           <div className="compose-footer"><small>{content.length} / 5000</small><button className="primary-button" type="submit" disabled={busy || !content.trim()}>{busy ? "جارٍ النشر…" : "نشر الحديث"}</button></div>
         </form>
         {message && <p className="form-message" role="status">{message}</p>}
-        <div className="feed-heading"><h2>أحاديث المجلس</h2><span>{posts.length} حديثًا محمّلًا</span></div>
+        <div className="feed-heading"><h2>{tribeName ? `أحاديث مجلس ${tribeName}` : "أحاديث المجلس"}</h2><span>{posts.length} حديثًا محمّلًا</span></div>
         {posts.length === 0 ? <div className="empty-state"><strong>المجلس يبدأ بك</strong><p>لا توجد منشورات بعد. اكتب أول حديث وافتح باب النقاش مع أعضاء المجلس.</p></div> :
           <div className="council-feed">{posts.map(post => <article className="post-card" key={post.id}>
-            <header className="post-header"><span className="post-avatar">{post.author.name.trim().slice(0, 1) || "ع"}</span><div className="post-author"><strong>{post.author.name}</strong><small>{formatDate(post.createdAt)}</small></div><span className="post-menu-label">المجلس</span></header>
+            <header className="post-header"><span className="post-avatar">{post.author.name.trim().slice(0, 1) || "ع"}</span><div className="post-author"><strong>{post.author.name}</strong><small>{formatDate(post.createdAt)}</small></div><span className="post-menu-label">{tribeName ? `مجلس ${tribeName}` : "المجلس"}</span></header>
             <p className="post-content">{post.content}</p>
             <div className="post-stats"><span>{post.reactionCount} تفاعل</span><span>{post.commentCount} تعليق</span></div>
             <div className="post-actions">
@@ -150,7 +150,7 @@ export default function CouncilFeed({ initialPosts, workspaceName }: { initialPo
           </article>)}</div>}
       </section>
       <aside className="council-sidebar">
-        <section className="sidebar-card"><p className="eyebrow">مساحتك الحالية</p><h2>{workspaceName}</h2><p>هذا المجلس مخصص للأعضاء في مساحة العمل الحالية. منشورات المجالس الأخرى لا تظهر هنا.</p></section>
+        <section className="sidebar-card"><p className="eyebrow">{tribeName ? "مجلس قبيلة مشترك" : "مساحتك الحالية"}</p><h2>{tribeName || workspaceName}</h2><p>{tribeName ? "المنشورات والتعليقات في هذا المجلس مشتركة بين المستخدمين الذين يفتحون سجل القبيلة نفسه." : "هذا المجلس مخصص للأعضاء في مساحة العمل الحالية. منشورات المجالس الأخرى لا تظهر هنا."}</p></section>
         <section className="sidebar-card"><h2>روابط المجلس</h2><nav className="council-nav"><Link href="/">الرئيسية</Link><Link href="/entities">دليل الكيانات</Link><Link href="/sources">المصادر والمراجع</Link><Link href="/claims">الادعاءات التاريخية</Link><Link href="/requests">طلبات الإضافة</Link></nav></section>
         <section className="sidebar-note"><strong>حوار باحترام</strong><p>اختلف في الفكرة، لا في كرامة صاحبها. لا تنشر بيانات شخصية أو اتهامات بلا دليل.</p></section>
       </aside>
