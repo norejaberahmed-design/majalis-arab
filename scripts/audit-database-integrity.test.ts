@@ -24,11 +24,11 @@ describe("read-only database integrity audit", () => {
       reactions: [{ id: "reaction-1", postId: "post-1", userId: "user-1" }]
     });
 
-    // The relationship above intentionally uses a second entity, so this fixture
-    // checks that missing references are not silently treated as valid.
+    // Both relationship endpoints and its claim exist in this fixture, so it
+    // should be structurally clean. Broken references are covered below.
     expect(report.mode).toBe("READ_ONLY");
-    expect(report.warnings.map(item => item.code)).toContain("BROKEN_RELATIONSHIP_REFERENCE");
-    expect(report.totals).toMatchObject({ entities: 1, relationships: 1, councilPosts: 1, councilComments: 1 });
+    expect(report.warnings).toEqual([]);
+    expect(report.totals).toMatchObject({ entities: 2, relationships: 1, councilPosts: 1, councilComments: 1 });
   });
 
   it("flags broken links, normalized-name mismatches, invalid coordinates, and unsupported claims", () => {
