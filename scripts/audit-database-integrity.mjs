@@ -47,7 +47,6 @@ export function buildDatabaseIntegrityReport(data) {
   const claimIds = ids(claims);
   const workspaceIds = ids(workspaces);
   const userIds = ids(users);
-  const postIds = ids(posts);
   const warnings = [];
 
   const mismatchedNames = entities.filter(entity =>
@@ -349,7 +348,7 @@ async function main() {
 
     report.dataIntegrity = buildDatabaseIntegrityReport({
       entities, relationships, sources,
-      passages: passages.map(({ reviewedByHuman, ...item }) => item),
+      passages,
       claims: claims.map(({ supportingPassages, contradictingPassages, ...item }) => ({
         ...item,
         supportingPassageIds: supportingPassages.map(passage => passage.id),
