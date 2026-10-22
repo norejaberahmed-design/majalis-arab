@@ -1,1 +1,6 @@
-Add Python project metadata
+[project]
+name = "ai-project-scout"
+version = "0.1.0"
+description = "Evidence-first GitHub AI project discovery"
+requires-python = ">=3.12"
+dependencies = []
