@@ -1,0 +1,1 @@
+Implement AI project scouting and reports
