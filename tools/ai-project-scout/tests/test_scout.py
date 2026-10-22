@@ -1,0 +1,1 @@
+Add offline tests for scout storage scoring and reports
