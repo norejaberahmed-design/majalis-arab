@@ -1,6 +1,9 @@
 name: AI Project Scout
 
 on:
+  push:
+    branches:
+      - build/ai-project-scout
   workflow_dispatch:
   schedule:
     - cron: "17 4 * * *"
