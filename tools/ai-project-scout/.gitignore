@@ -1,1 +1,6 @@
-Ignore local scout data
+__pycache__/
+*.py[cod]
+.venv/
+.env
+data/
+reports/
